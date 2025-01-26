@@ -1,6 +1,6 @@
 const MiddleTopColumn = () => {
 	return (
-		<div className="bg-green-500 p-4">
+		<div className="bg-red-500 p-4">
 			<p>Middle Top Column</p>
 		</div>
 	);

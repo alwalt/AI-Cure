@@ -8,6 +8,8 @@ import MiddleBottomColumn from "./MiddleBottomColumn";
 const AicureToolFull = () => {
 	const [showLeft, setShowLeft] = useState(true);
 	const [showRight, setShowRight] = useState(true);
+
+	const toggleRightColumn = () => setShowRight((prev) => !prev);
 	return (
 		<div className="flex h-screen">
 			{showLeft && (
@@ -22,7 +24,10 @@ const AicureToolFull = () => {
 				</div>
 			)}
 			<div className={`flex-grow ${showLeft ? "w-1/2" : "w-3/4"}`}>
-				<MiddleTopColumn />
+				<MiddleTopColumn
+					toggleRightColumn={toggleRightColumn}
+					isRightColumnVisible={showRight}
+				/>
 				<div>
 					<MiddleBottomColumn />
 				</div>
