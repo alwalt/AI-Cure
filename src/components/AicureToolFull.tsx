@@ -32,10 +32,12 @@ const AicureToolFull = () => {
 						: "w-full"
 				}`}
 			>
-				<MiddleTopColumn
-					toggleRightColumn={toggleRightColumn}
-					isRightColumnVisible={showRight}
-				/>
+				<div className="h-3/4">
+					<MiddleTopColumn
+						toggleRightColumn={toggleRightColumn}
+						isRightColumnVisible={showRight}
+					/>
+				</div>
 				<div className="flex-grow">
 					<MiddleBottomColumn />
 				</div>
