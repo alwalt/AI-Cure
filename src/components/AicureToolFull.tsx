@@ -18,9 +18,7 @@ const AicureToolFull = () => {
 					<button
 						onClick={() => setShowLeft(false)}
 						className="bg-gray-700 text-white p-1 mt-1 w-full"
-					>
-						Collapse Left
-					</button>
+					></button>
 				</div>
 			)}
 			<div className={`flex-grow ${showLeft ? "w-1/2" : "w-3/4"}`}>
@@ -35,12 +33,6 @@ const AicureToolFull = () => {
 			{showRight && (
 				<div className="w-1/4">
 					<RightColumn />
-					<button
-						onClick={() => setShowRight(false)}
-						className="bg-gray-700 text-white p-1 mt-1 w-full"
-					>
-						Collapse Right
-					</button>
 				</div>
 			)}
 		</div>
