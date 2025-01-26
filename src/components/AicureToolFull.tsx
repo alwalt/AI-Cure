@@ -12,6 +12,7 @@ const AicureToolFull = () => {
 	const toggleRightColumn = () => setShowRight((prev) => !prev);
 	return (
 		<div className="flex h-screen">
+			{/* Left Column */}
 			{showLeft && (
 				<div className="w-1/4">
 					<LeftColumn />
@@ -21,15 +22,26 @@ const AicureToolFull = () => {
 					></button>
 				</div>
 			)}
-			<div className={`flex-grow ${showLeft ? "w-1/2" : "w-3/4"}`}>
+			{/* Middle Columns */}
+			<div
+				className={`flex flex-col w-full h-screen" ${
+					showLeft && showRight
+						? "w-1/2"
+						: showLeft || showRight
+						? "w-3/4"
+						: "w-full"
+				}`}
+			>
 				<MiddleTopColumn
 					toggleRightColumn={toggleRightColumn}
 					isRightColumnVisible={showRight}
 				/>
-				<div>
+				<div className="flex-grow">
 					<MiddleBottomColumn />
 				</div>
 			</div>
+
+			{/* Right Column */}
 			{showRight && (
 				<div className="w-1/4">
 					<RightColumn />

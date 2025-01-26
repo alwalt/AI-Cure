@@ -1,9 +1,9 @@
-const MiddleTopColumn = () => {
+const RightColumn = () => {
 	return (
-		<div className="bg-red-500 p-4">
-			<p>Middle Top Column</p>
+		<div className="bg-red-500 p-4 h-full">
+			<p>Right Column</p>
 		</div>
 	);
 };
 
-export default MiddleTopColumn;
+export default RightColumn;
