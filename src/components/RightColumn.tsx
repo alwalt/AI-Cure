@@ -8,17 +8,17 @@ const RightColumn: React.FC<RightColumnProps> = ({
 	isRightColumnVisible,
 }) => {
 	return (
-		<div className="bg-red-500 p-4 h-full flex items-start">
+		<div className="bg-red-500 h-full flex flex-col items-start">
 			{/* Toggle Button for Right Column */}
 			<button
 				onClick={toggleRightColumn}
-				className="bg-gray-700 text-white p-2 rounded"
+				className="bg-gray-700 text-white p-2 rounded w-8"
 			>
 				{isRightColumnVisible ? "→" : "←"}
 			</button>
 
 			{/* Show Right Column content only when expanded */}
-			{isRightColumnVisible && <p className="ml-2">Right Column</p>}
+			{isRightColumnVisible && <p>Right Column</p>}
 		</div>
 	);
 };
