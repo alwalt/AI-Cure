@@ -8,7 +8,7 @@ const RightColumn: React.FC<RightColumnProps> = ({
 	isRightColumnVisible,
 }) => {
 	return (
-		<div className="bg-red-500 flex flex-col items-start">
+		<div className="bg-red-500 flex flex-col items-start w-full">
 			{/* Toggle Button for Right Column */}
 			<button
 				onClick={toggleRightColumn}
