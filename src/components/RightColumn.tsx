@@ -8,7 +8,7 @@ const RightColumn: React.FC<RightColumnProps> = ({
 	isRightColumnVisible,
 }) => {
 	return (
-		<div className="bg-red-500 h-full flex flex-col items-start">
+		<div className="bg-red-500 flex flex-col items-start">
 			{/* Toggle Button for Right Column */}
 			<button
 				onClick={toggleRightColumn}
@@ -18,7 +18,12 @@ const RightColumn: React.FC<RightColumnProps> = ({
 			</button>
 
 			{/* Show Right Column content only when expanded */}
-			{isRightColumnVisible && <p>Right Column</p>}
+			{isRightColumnVisible && (
+				<>
+					<p>Right Column</p>
+					{/* <p>Areallylongword</p> */}
+				</>
+			)}
 		</div>
 	);
 };

@@ -12,7 +12,7 @@ const AicureToolFull = () => {
 	const toggleRightColumn = () => setShowRight((prev) => !prev);
 
 	return (
-		<div className="flex h-screen p-2 gap-2">
+		<div className="flex h-screen p-2">
 			{/* Left Column (Always Visible) */}
 			<div className="w-1/4">
 				<LeftColumn />
@@ -29,15 +29,11 @@ const AicureToolFull = () => {
 			</div>
 
 			{/* Right Column (Collapses to small width when hidden) */}
-			<div className="flex-shrink-0">
-				<div
-					className={`${showRight ? "w-1/4" : "w-10"} flex items-start h-full`}
-				>
-					<RightColumn
-						toggleRightColumn={toggleRightColumn}
-						isRightColumnVisible={showRight}
-					/>
-				</div>
+			<div className={`${showRight ? "w-1/4" : "w-10"} flex h-full`}>
+				<RightColumn
+					toggleRightColumn={toggleRightColumn}
+					isRightColumnVisible={showRight}
+				/>
 			</div>
 		</div>
 	);
