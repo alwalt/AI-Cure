@@ -6,49 +6,37 @@ import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
 
 const AicureToolFull = () => {
-	const [showLeft, setShowLeft] = useState(true);
+	// Only track right column visibility now
 	const [showRight, setShowRight] = useState(true);
 
 	const toggleRightColumn = () => setShowRight((prev) => !prev);
+
 	return (
-		<div className="flex h-screen">
-			{/* Left Column */}
-			{showLeft && (
-				<div className="w-1/4">
-					<LeftColumn />
-					<button
-						onClick={() => setShowLeft(false)}
-						className="bg-gray-700 text-white p-1 mt-1 w-full"
-					></button>
-				</div>
-			)}
-			{/* Middle Columns */}
+		<div className="flex h-screen p-2">
+			{/* Left Column (Always Visible) */}
+			<div className="w-1/4">
+				<LeftColumn />
+			</div>
+
+			{/* Middle Column (Adjusts width based on right column state) */}
 			<div
-				className={`flex flex-col w-full h-screen" ${
-					showLeft && showRight
-						? "w-1/2"
-						: showLeft || showRight
-						? "w-3/4"
-						: "w-full"
-				}`}
+				className={`flex flex-col h-screen ${showRight ? "w-3/4" : "w-full"}`}
 			>
 				<div className="h-3/4">
-					<MiddleTopColumn
-						toggleRightColumn={toggleRightColumn}
-						isRightColumnVisible={showRight}
-					/>
+					<MiddleTopColumn />
 				</div>
 				<div className="flex-grow">
 					<MiddleBottomColumn />
 				</div>
 			</div>
 
-			{/* Right Column */}
-			{showRight && (
-				<div className="w-1/4">
-					<RightColumn />
-				</div>
-			)}
+			{/* Right Column (Collapses to small width when hidden) */}
+			<div className={`${showRight ? "w-1/4" : "w-10"} flex items-start`}>
+				<RightColumn
+					toggleRightColumn={toggleRightColumn}
+					isRightColumnVisible={showRight}
+				/>
+			</div>
 		</div>
 	);
 };
