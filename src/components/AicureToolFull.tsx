@@ -5,7 +5,7 @@ import RightColumn from "./RightColumn";
 import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
 
-const AicureToolFull = () => {
+export default function AicureToolFull() {
 	const [showRight, setShowRight] = useState(true);
 
 	const toggleRightColumn = () => setShowRight((prev) => !prev);
@@ -33,6 +33,4 @@ const AicureToolFull = () => {
 			</div>
 		</div>
 	);
-};
-
-export default AicureToolFull;
+}

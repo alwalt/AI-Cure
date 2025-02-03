@@ -1,10 +1,8 @@
-import Files from "./Files";
-const LeftColumn = () => {
+import FilesManager from "./FilesManager";
+export default function LeftColumn() {
 	return (
 		<div className="bg-blue-500 p-4 h-full">
-			<Files />
+			<FilesManager />
 		</div>
 	);
-};
-
-export default LeftColumn;
+}
