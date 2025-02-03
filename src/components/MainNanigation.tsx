@@ -1,7 +1,7 @@
 const MainNavigation = () => {
 	return (
 		<div className="top-0">
-			<p> - Main Naviagation Place Holder - </p>
+			<p>{/*Main Naviagation goes here*/}</p>
 		</div>
 	);
 };
