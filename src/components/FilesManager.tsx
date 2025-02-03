@@ -1,3 +1,10 @@
+import FilesTable from "./FilesTable";
+
 export default function FilesManager() {
-	return <p>Files will go here</p>;
+	return (
+		<>
+			<h2>Files</h2>
+			<FilesTable />
+		</>
+	);
 }
