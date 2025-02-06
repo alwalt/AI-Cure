@@ -1,0 +1,1 @@
+Describe the image and extract key words relevant to space travel. Output in a JSON with the following format: {"Summary":"This is your description of the image", "Keywords":["keyword_1", "keyword_2"]}
