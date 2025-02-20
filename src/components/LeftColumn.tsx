@@ -1,8 +1,14 @@
 import FilesManager from "./FilesManager";
-export default function LeftColumn() {
+import FileUploader from "./FileUploader";
+
+interface LeftColumnProps {
+	onPreview: (csvFilename: string, sessionId: string) => void;
+}
+
+export default function LeftColumn({ onPreview }: LeftColumnProps) {
 	return (
 		<div className="bg-blue-500 p-4 h-full">
-			<FilesManager />
+			<FilesManager onPreview={onPreview} />
 		</div>
 	);
 }
