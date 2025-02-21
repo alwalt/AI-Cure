@@ -12,7 +12,7 @@ type FileItem = {
 const sampleFiles: FileItem[] = [
 	{
 		id: "1",
-		name: "placeHolder1.pdf",
+		name: "new placeHolder1.pdf",
 		type: "PDF",
 		createdAt: "2025-01-30",
 		status: "Uploaded",
