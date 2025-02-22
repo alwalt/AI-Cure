@@ -28,8 +28,10 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
 
 	return (
 		<div className="space-y-6">
-			<h2 className="text-2xl font-bold text-gray-800">Files</h2>
-			<UploadFileButton />
+			<div className="flex justify-content">
+				<h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
+				<UploadFileButton />
+			</div>
 			{/* File uploader component, updates the uploaded tables and the session id. */}
 			{/* <FileUploader
 				onTablesUpdate={handleTablesUpdate}

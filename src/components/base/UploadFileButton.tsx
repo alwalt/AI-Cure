@@ -24,7 +24,7 @@ export default function UploadFileButton() {
 		setUploadedTables(tables);
 	};
 	return (
-		<div className="flex items-center justify-center min-h-screen">
+		<div className="flex items-center justify-center">
 			<button
 				onClick={() => setIsOpen(true)}
 				className="px-4 py-2 bg-blue-600 text-white rounded"
