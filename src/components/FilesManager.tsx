@@ -1,6 +1,6 @@
 import { useState } from "react";
-import FilesTable from "./FilesTable";
-import FileUploader from "./FileUploader";
+// import FilesTable from "./FilesTable";
+// import FileUploader from "./FileUploader"; // This is in UploadFileButton
 import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 
@@ -43,8 +43,8 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
 					onPreview(csvFilename, sessionId)
 				}
 			/>
-			{/* Files table component, displays the uploaded tables. */}
-			<FilesTable />
+			{/* Files table component, displays the uploaded tables.
+			<FilesTable /> */}
 		</div>
 	);
 }

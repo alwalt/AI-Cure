@@ -1,8 +1,18 @@
 "use client";
-import FilesTable from "@/components/FilesTable";
+// import FilesTable from "@/components/FilesTable";
 import { useState, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react"; // for a11y
+import {
+	Dialog,
+	DialogPanel,
+	Transition,
+	TransitionChild,
+} from "@headlessui/react"; // for a11y
 import FileUploader from "@/components/FileUploader"; // Import the component
+
+interface Table {
+	csv_filename: string;
+	display_name: string;
+}
 
 export default function UploadFileButton() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +35,7 @@ export default function UploadFileButton() {
 			<Transition appear show={isOpen} as={Fragment}>
 				<Dialog as="div" className="relative z-50" onClose={setIsOpen}>
 					{/* Background Overlay */}
-					<Transition.Child
+					<TransitionChild
 						as={Fragment}
 						enter="transition-opacity duration-300"
 						enterFrom="opacity-0"
@@ -35,11 +45,11 @@ export default function UploadFileButton() {
 						leaveTo="opacity-0"
 					>
 						<div className="fixed inset-0 bg-black bg-opacity-50" />
-					</Transition.Child>
+					</TransitionChild>
 
-					{/* Modal Panel */}
+					{/* ModalPanel */}
 					<div className="fixed inset-0 flex items-center justify-center p-4">
-						<Transition.Child
+						<TransitionChild
 							as={Fragment}
 							enter="transition-transform duration-300 ease-out"
 							enterFrom="scale-95 opacity-0"
@@ -48,7 +58,10 @@ export default function UploadFileButton() {
 							leaveFrom="scale-100 opacity-100"
 							leaveTo="scale-95 opacity-0"
 						>
-							<Dialog.Panel className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg">
+							<DialogPanel
+								className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg"
+								as="div"
+							>
 								<FileUploader
 									onTablesUpdate={handleTablesUpdate}
 									onSessionUpdate={setSessionId}
@@ -61,8 +74,8 @@ export default function UploadFileButton() {
 								>
 									Close
 								</button>
-							</Dialog.Panel>
-						</Transition.Child>
+							</DialogPanel>
+						</TransitionChild>
 					</div>
 				</Dialog>
 			</Transition>
