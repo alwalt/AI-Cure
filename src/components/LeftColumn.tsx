@@ -1,5 +1,4 @@
 import FilesManager from "./FilesManager";
-import FileUploader from "./FileUploader";
 
 interface LeftColumnProps {
 	onPreview: (csvFilename: string, sessionId: string) => void;

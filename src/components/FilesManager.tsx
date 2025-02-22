@@ -2,12 +2,13 @@ import { useState } from "react";
 import FilesTable from "./FilesTable";
 import FileUploader from "./FileUploader";
 import TableList from "./TableList";
+import UploadFileButton from "@/components/base/UploadFileButton";
 
 // Defining table type based on the response from the API.
 interface Table {
 	csv_filename: string;
 	display_name: string;
-  }
+}
 
 // Defining properties for file manager comp
 interface FilesManagerProps {
@@ -28,16 +29,19 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
 	return (
 		<div className="space-y-6">
 			<h2 className="text-2xl font-bold text-gray-800">Files</h2>
+			<UploadFileButton />
 			{/* File uploader component, updates the uploaded tables and the session id. */}
-			<FileUploader 
+			{/* <FileUploader
 				onTablesUpdate={handleTablesUpdate}
 				onSessionUpdate={setSessionId}
-			/>
+			/> */}
 			{/* Table list component, displays the uploaded tables and allows preview button. */}
-			<TableList 
-				tables={uploadedTables} 
+			<TableList
+				tables={uploadedTables}
 				sessionId={sessionId}
-				onPreview={(csvFilename, sessionId) => onPreview(csvFilename, sessionId)}
+				onPreview={(csvFilename, sessionId) =>
+					onPreview(csvFilename, sessionId)
+				}
 			/>
 			{/* Files table component, displays the uploaded tables. */}
 			<FilesTable />

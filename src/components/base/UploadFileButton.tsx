@@ -1,0 +1,71 @@
+"use client";
+import FilesTable from "@/components/FilesTable";
+import { useState, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react"; // for a11y
+import FileUploader from "@/components/FileUploader"; // Import the component
+
+export default function UploadFileButton() {
+	const [isOpen, setIsOpen] = useState(false);
+	const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
+	const [sessionId, setSessionId] = useState<string>("");
+
+	// This function updates the uploaded tables after api call.
+	const handleTablesUpdate = (tables: Table[]) => {
+		setUploadedTables(tables);
+	};
+	return (
+		<div className="flex items-center justify-center min-h-screen">
+			<button
+				onClick={() => setIsOpen(true)}
+				className="px-4 py-2 bg-blue-600 text-white rounded"
+			>
+				Upload File
+			</button>
+
+			<Transition appear show={isOpen} as={Fragment}>
+				<Dialog as="div" className="relative z-50" onClose={setIsOpen}>
+					{/* Background Overlay */}
+					<Transition.Child
+						as={Fragment}
+						enter="transition-opacity duration-300"
+						enterFrom="opacity-0"
+						enterTo="opacity-100"
+						leave="transition-opacity duration-200"
+						leaveFrom="opacity-100"
+						leaveTo="opacity-0"
+					>
+						<div className="fixed inset-0 bg-black bg-opacity-50" />
+					</Transition.Child>
+
+					{/* Modal Panel */}
+					<div className="fixed inset-0 flex items-center justify-center p-4">
+						<Transition.Child
+							as={Fragment}
+							enter="transition-transform duration-300 ease-out"
+							enterFrom="scale-95 opacity-0"
+							enterTo="scale-100 opacity-100"
+							leave="transition-transform duration-200 ease-in"
+							leaveFrom="scale-100 opacity-100"
+							leaveTo="scale-95 opacity-0"
+						>
+							<Dialog.Panel className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg">
+								<FileUploader
+									onTablesUpdate={handleTablesUpdate}
+									onSessionUpdate={setSessionId}
+								/>{" "}
+								{/* Render InsideCode inside the modal */}
+								{/* Close Button */}
+								<button
+									onClick={() => setIsOpen(false)}
+									className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+								>
+									Close
+								</button>
+							</Dialog.Panel>
+						</Transition.Child>
+					</div>
+				</Dialog>
+			</Transition>
+		</div>
+	);
+}

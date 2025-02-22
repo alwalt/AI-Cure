@@ -63,7 +63,7 @@ export default function FileTable() {
 
 	return (
 		<section className="p-4 bg-gray-100 rounded-lg">
-			<h2 className="text-xl font-semibold mb-4">Uploaded Files</h2>
+			<h2 className="text-xl font-semibold mb-4">Files</h2>
 			<table className="w-full bg-white border border-gray-300 rounded-lg shadow-sm">
 				<thead>
 					<tr className="bg-gray-200 text-left">
