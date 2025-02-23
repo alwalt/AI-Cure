@@ -44,7 +44,10 @@ export default function UploadFileButton() {
 						leaveFrom="opacity-100"
 						leaveTo="opacity-0"
 					>
-						<div className="fixed inset-0 bg-black bg-opacity-50" />
+						<div
+							className="fixed inset-0 bg-black"
+							style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
+						/>
 					</TransitionChild>
 
 					{/* ModalPanel */}
