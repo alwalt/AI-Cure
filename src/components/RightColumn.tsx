@@ -3,10 +3,10 @@ interface RightColumnProps {
 	isRightColumnVisible: boolean;
 }
 
-const RightColumn: React.FC<RightColumnProps> = ({
+export default function RightColumn({
 	toggleRightColumn,
 	isRightColumnVisible,
-}) => {
+}: RightColumnProps) {
 	return (
 		<div className="bg-red-500 flex flex-col items-start w-full">
 			<button
@@ -23,6 +23,4 @@ const RightColumn: React.FC<RightColumnProps> = ({
 			)}
 		</div>
 	);
-};
-
-export default RightColumn;
+}

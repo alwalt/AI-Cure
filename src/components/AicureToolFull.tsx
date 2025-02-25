@@ -5,20 +5,27 @@ import RightColumn from "./RightColumn";
 import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
 
-const AicureToolFull = () => {
+export default function AicureToolFull() {
 	const [showRight, setShowRight] = useState(true);
+	const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
+	const [sessionId, setSessionId] = useState<string>("");
 
 	const toggleRightColumn = () => setShowRight((prev) => !prev);
+
+	const handlePreview = (csvFilename: string, currentSessionId: string) => {
+		setPreviewCsv(csvFilename);
+		setSessionId(currentSessionId);
+	};
 
 	return (
 		<div className="flex h-screen p-2">
 			<div className="w-1/4">
-				<LeftColumn />
+				<LeftColumn onPreview={handlePreview} />
 			</div>
 
 			<div className="flex flex-col h-screen flex-grow">
 				<div className="h-3/4">
-					<MiddleTopColumn />
+					<MiddleTopColumn sessionId={sessionId} previewCsv={previewCsv} />
 				</div>
 				<div className="flex-grow">
 					<MiddleBottomColumn />
@@ -33,6 +40,4 @@ const AicureToolFull = () => {
 			</div>
 		</div>
 	);
-};
-
-export default AicureToolFull;
+}
