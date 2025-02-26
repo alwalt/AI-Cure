@@ -15,6 +15,7 @@ Pillow==11.1.0
 # LLM and vector database
 ollama
 <<<<<<< HEAD
+<<<<<<< HEAD
 # langchain
 # langchain-community
 # langchain_ollama
@@ -24,16 +25,38 @@ langchain
 langchain_ollama
 langchain_core
 >>>>>>> 4640ab0 (fixing dependency issue)
+=======
+langchain
+langchain-ollama
+langchain-core
+langchain-community
+=======
+# langchain
+# langchain-community
+# langchain_ollama
+# langchain_core
+>>>>>>> 3a1ef6c (Install requirements for fastapi-backend)
+>>>>>>> 5d5f44b (Install requirements for fastapi-backend)
 PyMuPDF
 chromadb
 
 # Embeddings
+<<<<<<< HEAD
 # sentence-transformers==3.4.1
 huggingface-hub==0.28.1
 <<<<<<< HEAD
 # transformers==4.48.3
 =======
 >>>>>>> 4640ab0 (fixing dependency issue)
+=======
+<<<<<<< HEAD
+huggingface-hub==0.28.1
+=======
+# sentence-transformers==3.4.1
+huggingface-hub==0.28.1
+# transformers==4.48.3
+>>>>>>> 3a1ef6c (Install requirements for fastapi-backend)
+>>>>>>> 5d5f44b (Install requirements for fastapi-backend)
 torch==2.2.2
 
 # Utilities
