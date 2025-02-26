@@ -23,14 +23,14 @@ import uvicorn
 import ollama
 import tempfile
 
-from langchain.document_loaders import PyMuPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain_core.documents import Document
-from langchain.chains import ConversationalRetrievalChain
-from langchain_ollama import ChatOllama
-from langchain.prompts import PromptTemplate
+# from langchain.document_loaders import PyMuPDFLoader
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.vectorstores import Chroma
+# from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain_core.documents import Document
+# from langchain.chains import ConversationalRetrievalChain
+# from langchain_ollama import ChatOllama
+# from langchain.prompts import PromptTemplate
 
 
 logging.basicConfig(level=logging.INFO)
