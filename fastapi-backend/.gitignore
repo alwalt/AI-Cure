@@ -2,3 +2,6 @@ node_modules/
 .venv/
 *.log
 myenv/
+uploaded_files/
+output_tables/
+__pycache__/
