@@ -23,6 +23,7 @@ import uvicorn
 import ollama
 import tempfile
 
+<<<<<<< HEAD
 # from langchain.document_loaders import PyMuPDFLoader
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain.vectorstores import Chroma
@@ -31,6 +32,16 @@ import tempfile
 # from langchain.chains import ConversationalRetrievalChain
 # from langchain_ollama import ChatOllama
 # from langchain.prompts import PromptTemplate
+=======
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_core.documents import Document
+from langchain.chains import ConversationalRetrievalChain
+from langchain_ollama import ChatOllama
+from langchain.prompts import PromptTemplate
+>>>>>>> 4e46239 (Bug fix for table preview)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -85,6 +96,9 @@ async def upload_excel(file: UploadFile = File(...)):
         
         logging.info("File saved, processing tables...")
         table_info = segment_and_export_tables(file_path, session_id)
+        
+        # Store the table info in the SESSION_TABLES dictionary in main.py
+        SESSION_TABLES[session_id] = table_info
         
         response_data = {
             "session_id": session_id,
