@@ -21,7 +21,7 @@ langchain-community
 PyMuPDF
 chromadb
 
-git# Embeddings
+# Embeddings
 huggingface-hub==0.28.1
 torch==2.2.2
 
