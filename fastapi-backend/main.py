@@ -23,16 +23,6 @@ import uvicorn
 import ollama
 import tempfile
 
-<<<<<<< HEAD
-# from langchain.document_loaders import PyMuPDFLoader
-# from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.vectorstores import Chroma
-# from langchain.embeddings import HuggingFaceEmbeddings
-# from langchain_core.documents import Document
-# from langchain.chains import ConversationalRetrievalChain
-# from langchain_ollama import ChatOllama
-# from langchain.prompts import PromptTemplate
-=======
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -41,7 +31,6 @@ from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
->>>>>>> 4e46239 (Bug fix for table preview)
 
 
 logging.basicConfig(level=logging.INFO)
