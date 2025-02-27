@@ -1,11 +1,8 @@
 node_modules/
 .venv/
 *.log
-<<<<<<< HEAD
 myenv/
 uploaded_files/
 output_tables/
 __pycache__/
-=======
 myenv/
->>>>>>> 4d1da26 (Removed langchain imports in fastapi-backend)
