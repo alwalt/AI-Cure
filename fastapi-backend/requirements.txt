@@ -15,16 +15,14 @@ Pillow==11.1.0
 # LLM and vector database
 ollama
 langchain
+langchain-ollama
+langchain-core
 langchain-community
-langchain_ollama
-langchain_core
 PyMuPDF
 chromadb
 
 # Embeddings
-sentence-transformers==3.4.1
 huggingface-hub==0.28.1
-transformers==4.48.3
 torch==2.2.2
 
 # Utilities

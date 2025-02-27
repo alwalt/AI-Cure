@@ -23,7 +23,7 @@ import uvicorn
 import ollama
 import tempfile
 
-from langchain.document_loaders import PyMuPDFLoader
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -85,6 +85,9 @@ async def upload_excel(file: UploadFile = File(...)):
         
         logging.info("File saved, processing tables...")
         table_info = segment_and_export_tables(file_path, session_id)
+        
+        # Store the table info in the SESSION_TABLES dictionary in main.py
+        SESSION_TABLES[session_id] = table_info
         
         response_data = {
             "session_id": session_id,
