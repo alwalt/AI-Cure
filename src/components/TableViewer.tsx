@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,8 +11,8 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-} from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 
 interface TablePreviewerProps {
   sessionId: string;
@@ -30,29 +30,45 @@ const fetchTablePreview = async ({
   queryKey: any[];
 }): Promise<PreviewResponse> => {
   const [_key, sessionId, csvFilename] = queryKey;
+  console.log("fetch table preview, queryKey", queryKey);
   // Build query parameters for the API call.
   const params = new URLSearchParams({
     session_id: sessionId,
     csv_filename: csvFilename,
   });
-  const response = await fetch(`http://localhost:8000/api/preview_table?${params.toString()}`);
+  const response = await fetch(
+    `http://localhost:8000/api/preview_table?${params.toString()}`
+  );
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
+  console.log("res from fetching preview table: ", response.formData);
   return response.json();
 };
 
-export default function TablePreviewer({ sessionId, csvFilename }: TablePreviewerProps) {
+export default function TablePreviewer({
+  sessionId,
+  csvFilename,
+}: TablePreviewerProps) {
+  console.log("useQuery enabled:", !!csvFilename);
   // Only fetch the preview when a CSV filename is provided.
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['tablePreview', sessionId, csvFilename],
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["tablePreview", sessionId, csvFilename],
     queryFn: fetchTablePreview,
     enabled: !!csvFilename,
   });
 
+  console.log("TablePreviewer csvFilename:", csvFilename);
+
   if (!csvFilename) {
+    console.log("No csvFilename, TablePreviewer not rendering.");
     return null;
   }
+
+  useEffect(() => {
+    console.log("Refetching table preview...");
+    refetch();
+  }, [refetch]);
 
   return (
     <Card sx={{ mt: 3 }}>
@@ -60,9 +76,7 @@ export default function TablePreviewer({ sessionId, csvFilename }: TablePreviewe
         {isLoading ? (
           <CircularProgress />
         ) : error ? (
-          <Typography color="error">
-            Error loading preview.
-          </Typography>
+          <Typography color="error">Error loading preview.</Typography>
         ) : data ? (
           <>
             <Typography variant="h6" gutterBottom>

@@ -21,6 +21,7 @@ export default function UploadFileButton() {
 
 	// This function updates the uploaded tables after api call.
 	const handleTablesUpdate = (tables: Table[]) => {
+		console.log("UploadFileButton, Tables: ", tables)
 		setUploadedTables(tables);
 	};
 	return (
