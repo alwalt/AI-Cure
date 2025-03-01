@@ -23,7 +23,6 @@ chromadb
 
 # Embeddings
 huggingface-hub==0.28.1
-torch==2.2.2
 
 # Utilities
 pydantic==2.10.6

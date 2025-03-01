@@ -81,6 +81,8 @@ export default function FileUploader({ onTablesUpdate, onSessionUpdate }: FileUp
         }
       );
 
+      console.log("FileUploader Upload response:", response.data);
+
       setSessionId(response.data.session_id);
       setTables(response.data.tables);
       onTablesUpdate?.(response.data.tables);

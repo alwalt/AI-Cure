@@ -8,7 +8,7 @@ export default function RightColumn({
 	isRightColumnVisible,
 }: RightColumnProps) {
 	return (
-		<div className="bg-red-500 flex flex-col items-start w-full">
+		<div className="border-red-500 border-2 bg-primaryBlack flex flex-col items-start w-full">
 			<button
 				onClick={toggleRightColumn}
 				className="bg-gray-700 text-white p-2 rounded w-8"

@@ -1,4 +1,9 @@
-__pycache__
+node_modules/
+.venv/
+*.log
 myenv/
-output_tables/
 uploaded_files/
+output_tables/
+__pycache__/
+
+

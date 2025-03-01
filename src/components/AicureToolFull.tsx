@@ -6,7 +6,7 @@ import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
 
 export default function AicureToolFull() {
-	const [showRight, setShowRight] = useState(true);
+	const [showRight, setShowRight] = useState(true); 
 	const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
 	const [sessionId, setSessionId] = useState<string>("");
 
@@ -18,7 +18,7 @@ export default function AicureToolFull() {
 	};
 
 	return (
-		<div className="flex h-screen p-2">
+		<div className="flex h-screen">
 			<div className="w-1/4">
 				<LeftColumn onPreview={handlePreview} />
 			</div>
