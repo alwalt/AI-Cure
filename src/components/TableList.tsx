@@ -13,16 +13,23 @@ interface TableListProps {
   sessionId: string;
 }
 
-export default function TableList({ tables, onTableSelect, onPreview, sessionId }: TableListProps) {
+export default function TableList({
+  tables,
+  onTableSelect,
+  onPreview,
+  sessionId,
+}: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
 
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {
-      const isSelected = prev.some(t => t.csv_filename === table.csv_filename);
+      const isSelected = prev.some(
+        (t) => t.csv_filename === table.csv_filename
+      );
       const newSelection = isSelected
         ? prev.filter((t) => t.csv_filename !== table.csv_filename)
         : [...prev, table];
-      
+
       // Call the parent callback if provided
       onTableSelect?.(newSelection);
       return newSelection;
@@ -39,8 +46,10 @@ export default function TableList({ tables, onTableSelect, onPreview, sessionId 
 
   return (
     <div className="bg-gray-200 rounded-lg p-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Tables</h3>
-      
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">
+        Available Tables
+      </h3>
+
       {/* Scrollable container */}
       <div className="max-h-[400px] overflow-y-auto">
         <div className="space-y-2">
@@ -51,7 +60,9 @@ export default function TableList({ tables, onTableSelect, onPreview, sessionId 
                 flex items-center justify-between
                 p-3 rounded-md transition-colors cursor-pointer
                 ${
-                  selectedTables.some(t => t.csv_filename === table.csv_filename)
+                  selectedTables.some(
+                    (t) => t.csv_filename === table.csv_filename
+                  )
                     ? "bg-blue-50 border-2 border-blue-500"
                     : "bg-white hover:bg-gray-50 border-2 border-transparent"
                 }
@@ -61,15 +72,17 @@ export default function TableList({ tables, onTableSelect, onPreview, sessionId 
               <div className="flex items-center space-x-3">
                 <input
                   type="checkbox"
-                  checked={selectedTables.some(t => t.csv_filename === table.csv_filename)}
+                  checked={selectedTables.some(
+                    (t) => t.csv_filename === table.csv_filename
+                  )}
                   onChange={() => handleTableSelect(table)}
                   className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                 />
                 <div>
-                  <p className="text-gray-700 font-medium">{table.display_name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-gray-700 font-medium">
                     {table.display_name}
                   </p>
+                  <p className="text-sm text-gray-500">{table.display_name}</p>
                 </div>
               </div>
 
@@ -105,7 +118,8 @@ export default function TableList({ tables, onTableSelect, onPreview, sessionId 
       {selectedTables.length > 0 && (
         <div className="mt-4 p-3 bg-blue-50 rounded-md">
           <p className="text-sm text-blue-700">
-            {selectedTables.length} table{selectedTables.length !== 1 ? 's' : ''} selected
+            {selectedTables.length} table
+            {selectedTables.length !== 1 ? "s" : ""} selected
           </p>
         </div>
       )}

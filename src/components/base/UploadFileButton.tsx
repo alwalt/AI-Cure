@@ -1,13 +1,12 @@
 "use client";
-// import FilesTable from "@/components/FilesTable";
 import { useState, Fragment } from "react";
 import {
   Dialog,
   DialogPanel,
   Transition,
   TransitionChild,
-} from "@headlessui/react"; // for a11y
-import FileUploader from "@/components/FileUploader"; // Import the component
+} from "@headlessui/react";
+import FileUploader from "@/components/FileUploader";
 
 interface Table {
   csv_filename: string;
@@ -27,11 +26,10 @@ export default function UploadFileButton({
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
 
-  // This function updates the uploaded tables after API call.
   const handleTablesUpdate = (tables: Table[]) => {
     console.log("UploadFileButton, Tables: ", tables);
     setUploadedTables(tables);
-    onTablesUpdate(tables); // Call the parent function to update state in FilesManager
+    onTablesUpdate(tables);
   };
 
   return (
@@ -45,7 +43,6 @@ export default function UploadFileButton({
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={setIsOpen}>
-          {/* Background Overlay */}
           <TransitionChild
             as={Fragment}
             enter="transition-opacity duration-300"
@@ -61,7 +58,6 @@ export default function UploadFileButton({
             />
           </TransitionChild>
 
-          {/* ModalPanel */}
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <TransitionChild
               as={Fragment}
@@ -80,8 +76,6 @@ export default function UploadFileButton({
                   onTablesUpdate={handleTablesUpdate}
                   onSessionUpdate={setSessionId}
                 />{" "}
-                {/* Render InsideCode inside the modal */}
-                {/* Close Button */}
                 <button
                   onClick={() => setIsOpen(false)}
                   className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
