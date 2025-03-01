@@ -32,7 +32,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-content">
+      <div className="flex justify-between w-full">
         <h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
         <UploadFileButton
           onTablesUpdate={handleTablesUpdate}

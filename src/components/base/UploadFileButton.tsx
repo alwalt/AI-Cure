@@ -7,6 +7,7 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import FileUploader from "@/components/FileUploader";
+import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 
 interface Table {
   csv_filename: string;
@@ -34,11 +35,8 @@ export default function UploadFileButton({
 
   return (
     <div className="flex items-center justify-center">
-      <button
-        onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
-      >
-        Upload File
+      <button onClick={() => setIsOpen(true)} className="text-white rounded">
+        <ArrowUpTrayIcon className="h-6 w-6" />
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>
