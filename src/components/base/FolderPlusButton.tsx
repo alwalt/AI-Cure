@@ -18,7 +18,7 @@ export default function FolderPlusButton({ onClick }: FolderPlusButtonProps) {
       </button>
 
       {/* Tooltip (appears on hover) - Hover to display Add Folder is not working */}
-      <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1">
+      <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1">
         Add folder
       </span>
     </div>

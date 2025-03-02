@@ -3,6 +3,7 @@ import { useState } from "react";
 import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
+import PlayButton from "./base/PlayButton";
 
 // Defining table type based on the response from the API.
 interface Table {
@@ -41,6 +42,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
             onSessionUpdate={setSessionId}
           />
           <FolderPlusButton />
+          <PlayButton />
         </div>
       </div>
       {/* File uploader component, updates the uploaded tables and the session id. */}
