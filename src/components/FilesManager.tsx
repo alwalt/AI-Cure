@@ -1,7 +1,8 @@
 import { useState } from "react";
-import FileUploader from "./FileUploader"; // This is in UploadFileButton
+// import FileUploader from "./FileUploader"; // This is in UploadFileButton
 import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
+import FolderPlusButton from "./base/FolderPlusButton";
 
 // Defining table type based on the response from the API.
 interface Table {
@@ -34,10 +35,13 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
     <div className="space-y-6">
       <div className="flex justify-between w-full">
         <h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
-        <UploadFileButton
-          onTablesUpdate={handleTablesUpdate}
-          onSessionUpdate={setSessionId}
-        />
+        <div className="flex justify-content">
+          <UploadFileButton
+            onTablesUpdate={handleTablesUpdate}
+            onSessionUpdate={setSessionId}
+          />
+          <FolderPlusButton />
+        </div>
       </div>
       {/* File uploader component, updates the uploaded tables and the session id. */}
       {/* <FileUploader
