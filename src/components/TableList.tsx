@@ -57,14 +57,14 @@ export default function TableList({
             <div
               key={table.csv_filename}
               className={`
-                flex items-center justify-between
-                p-2 rounded transition-colors cursor-pointer
+                flex items-stretch justify-between w-full
+                p-2 cursor-pointer
                 ${
                   selectedTables.some(
                     (t) => t.csv_filename === table.csv_filename
                   )
-                    ? "bg-blue-100 rounded-none"
-                    : "bg-primaryWhite hover:bg-gray-100 hover:rounded-none border border-transparent"
+                    ? "bg-blue-100"
+                    : "bg-primaryWhite hover:bg-gray-100 hover:rounded-none border border-transparent transition-colors"
                 }
               `}
               onClick={() => handleTableSelect(table)}
@@ -88,9 +88,9 @@ export default function TableList({
               </div>
 
               {/* Preview/Actions buttons */}
-              <div className="flex flex-col items-center ">
+              <div className="flex flex-col items-center flex-1 text-right">
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Trigger the parent callback when preview is clicked.
@@ -100,7 +100,7 @@ export default function TableList({
                   Preview
                 </button>
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Add download functionality
