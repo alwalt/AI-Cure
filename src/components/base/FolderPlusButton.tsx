@@ -15,6 +15,7 @@ export default function FolderPlusButton({ onClick }: FolderPlusButtonProps) {
       {/* Button */}
       <button onClick={handleClick} className="flex">
         <FolderPlusIcon className="h-8 w-8 stroke-primaryWhite stroke-1 text-primaryBlack p-1 hover:stroke-redFill transition-colors duration-300" />
+
       </button>
 
       {/* Tooltip (appears on hover) - Hover to display Add Folder is not working */}
