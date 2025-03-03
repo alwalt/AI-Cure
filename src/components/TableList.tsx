@@ -52,19 +52,19 @@ export default function TableList({
 
       {/* Scrollable container */}
       <div className="max-h-[400px] overflow-y-auto bg-primaryWhite rounded">
-        <div className="space-y-2">
+        <div>
           {tables.map((table, idx) => (
             <div
               key={table.csv_filename}
               className={`
                 flex items-center justify-between
-                p-3 rounded transition-colors cursor-pointer
+                p-2 rounded transition-colors cursor-pointer
                 ${
                   selectedTables.some(
                     (t) => t.csv_filename === table.csv_filename
                   )
-                    ? "bg-blue-50 border-2 border-blue-500"
-                    : "bg-primaryWhite hover:bg-gray-50 border-2 border-transparent"
+                    ? "bg-blue-100 rounded-none"
+                    : "bg-primaryWhite hover:bg-gray-100 hover:rounded-none border border-transparent"
                 }
               `}
               onClick={() => handleTableSelect(table)}
@@ -78,18 +78,19 @@ export default function TableList({
                   onChange={() => handleTableSelect(table)}
                   className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                 />
+                <label htmlFor={`table-checkbox-${idx}`} className="sr-only">
+                  Select {table.display_name}
+                </label>
                 <div>
-                  <p className="text-gray-700 font-medium">
-                    {table.display_name}
-                  </p>
-                  <p className="text-sm text-gray-500">{table.display_name}</p>
+                  <p className="text-gray-700 text-sm">{table.display_name}</p>
+                  <p className="text-xs text-gray-500">{table.display_name}</p>
                 </div>
               </div>
 
               {/* Preview/Actions buttons */}
               <div className="flex flex-col items-center ">
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-blue-50 rounded transition-colors"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Trigger the parent callback when preview is clicked.
@@ -99,7 +100,7 @@ export default function TableList({
                   Preview
                 </button>
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-gray-50 rounded transition-colors"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Add download functionality
