@@ -75,6 +75,7 @@ export default function TableList({
                   checked={selectedTables.some(
                     (t) => t.csv_filename === table.csv_filename
                   )}
+                  onClick={(e) => e.stopPropagation()}
                   onChange={() => handleTableSelect(table)}
                   className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                 />
