@@ -117,8 +117,8 @@ export default function TableList({
 
       {/* Selection summary */}
       {selectedTables.length > 0 && (
-        <div className="mt-4 p-3 bg-blue-50 rounded border-primaryBlue border">
-          <p className="text-sm text-blue-700">
+        <div className=" mt-2 p-2 bg-blue-50 rounded border-primaryBlue border">
+          <p className="text-sm text-primaryBlue">
             {selectedTables.length} table
             {selectedTables.length !== 1 ? "s" : ""} selected
           </p>
