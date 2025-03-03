@@ -88,7 +88,7 @@ export default function TableList({
               </div>
 
               {/* Preview/Actions buttons */}
-              <div className="flex flex-col items-center flex-1 text-right">
+              <div className="flex flex-col items-center text-right">
                 <button
                   className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={(e) => {
