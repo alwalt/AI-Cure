@@ -38,33 +38,33 @@ export default function TableList({
 
   if (!tables.length) {
     return (
-      <div className="p-4 bg-gray-100 rounded-lg text-gray-500 text-center">
+      <div className="p-2 bg-gray-100 rounded text-gray-500 text-center">
         No tables available. Please upload a file first.
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-200 rounded-lg p-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">
+    <div className="bg-gray-200 rounded p-2">
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">
         Available Tables
       </h3>
 
       {/* Scrollable container */}
-      <div className="max-h-[400px] overflow-y-auto">
+      <div className="max-h-[400px] overflow-y-auto bg-primaryWhite rounded">
         <div className="space-y-2">
           {tables.map((table, idx) => (
             <div
               key={table.csv_filename}
               className={`
                 flex items-center justify-between
-                p-3 rounded-md transition-colors cursor-pointer
+                p-3 rounded transition-colors cursor-pointer
                 ${
                   selectedTables.some(
                     (t) => t.csv_filename === table.csv_filename
                   )
                     ? "bg-blue-50 border-2 border-blue-500"
-                    : "bg-white hover:bg-gray-50 border-2 border-transparent"
+                    : "bg-primaryWhite hover:bg-gray-50 border-2 border-transparent"
                 }
               `}
               onClick={() => handleTableSelect(table)}
@@ -87,9 +87,9 @@ export default function TableList({
               </div>
 
               {/* Preview/Actions buttons */}
-              <div className="flex space-x-2">
+              <div className="flex flex-col items-center ">
                 <button
-                  className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-blue-50 rounded transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Trigger the parent callback when preview is clicked.
@@ -99,7 +99,7 @@ export default function TableList({
                   Preview
                 </button>
                 <button
-                  className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-gray-50 rounded transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Add download functionality
@@ -116,7 +116,7 @@ export default function TableList({
 
       {/* Selection summary */}
       {selectedTables.length > 0 && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+        <div className="mt-4 p-3 bg-blue-50 rounded border-primaryBlue border">
           <p className="text-sm text-blue-700">
             {selectedTables.length} table
             {selectedTables.length !== 1 ? "s" : ""} selected
