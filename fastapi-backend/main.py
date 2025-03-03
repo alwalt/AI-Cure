@@ -40,10 +40,12 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
+
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://frontend:5173"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -343,5 +345,40 @@ async def get_chat_response(
     
     return JSONResponse(content={"answer": result["answer"]})
 
+# Analyze table and provide summary and keywords
+@app.post("/api/analyze_table")
+def analyze_table(
+    session_id: str = Form(...),
+    table_name: str = Form(...),
+    columns: str = Form(...),
+    rows: str = Form(...)
+):
+    """
+    Analyze a table and provide a summary and keywords.
+    """
+
+        # 1 Get the table from the session
+
+    try:
+        # 2 Load the table with pandas 
+
+        # 3 Create a text representation fo the table
+            # TODO: Add code to create a text summary of the table
+        # - Include dimensions, column names
+        # - Add statistical information
+        # - Include sample data
+
+        # 4 create a prompt for ollama
+
+        # 5. call Ollama API
+
+        # 6. Parse the JSON response
+
+        # 7. Return the response
+        return "hi"
+    except Exception as e:
+        logging.error(f"Error analyzing table: {str(e)}")
+        #return JSONResponse(content={"error": str(e)}, status_code=500)
+        return "hi"
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

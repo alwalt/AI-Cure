@@ -1,0 +1,48 @@
+
+
+services:
+  backend:
+    build: ./fastapi-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi-backend:/app
+      - backend_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    build: ./react-frontend 
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+    volumes:
+      - ./react-frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  backend_data:
+  ollama_data:
+
+networks:
+  app-network:
+    driver: bridge
