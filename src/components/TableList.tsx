@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Table {
   csv_filename: string;
@@ -20,6 +20,10 @@ export default function TableList({
   sessionId,
 }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
+
+  useEffect(() => {
+    console.log("TableList: Received sessionId:", sessionId);
+  }, [sessionId]);
 
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {
@@ -95,6 +99,11 @@ export default function TableList({
                   onClick={(e) => {
                     e.stopPropagation();
                     // Trigger the parent callback when preview is clicked.
+                    console.log(
+                      "!!! Preview button clicked: ",
+                      table.csv_filename,
+                      sessionId
+                    );
                     onPreview?.(table.csv_filename, sessionId);
                   }}
                 >

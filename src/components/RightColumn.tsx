@@ -1,6 +1,6 @@
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
-import TablePreviewer from "./TableViewer";
+import TablePreviewer from "./TablePreviewer";
 
 interface RightColumnProps {
   toggleRightColumn: () => void;
@@ -26,11 +26,11 @@ export default function RightColumn({
       </button>
 
       {isRightColumnVisible && (
-        <>
+        <div className="p-2">
           {previewCsv && (
             <TablePreviewer sessionId={sessionId} csvFilename={previewCsv} />
           )}
-        </>
+        </div>
       )}
     </div>
   );

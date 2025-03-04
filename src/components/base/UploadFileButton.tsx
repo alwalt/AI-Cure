@@ -28,9 +28,15 @@ export default function UploadFileButton({
   const [sessionId, setSessionId] = useState<string>("");
 
   const handleTablesUpdate = (tables: Table[]) => {
-    console.log("UploadFileButton, Tables: ", tables);
     setUploadedTables(tables);
     onTablesUpdate(tables);
+  };
+
+  // For finding if seesionId is being set
+  const handleSessionUpdate = (newSessionId: string) => {
+    console.log("UploadFileButton: New sessionId received:", newSessionId);
+    setSessionId(newSessionId);
+    onSessionUpdate(newSessionId); // Ensure it's passed up
   };
 
   return (
@@ -74,7 +80,7 @@ export default function UploadFileButton({
               >
                 <FileUploader
                   onTablesUpdate={handleTablesUpdate}
-                  onSessionUpdate={setSessionId}
+                  onSessionUpdate={handleSessionUpdate} // changed from setSessionId > handleSessionUpdate for debugging
                 />{" "}
                 <button
                   onClick={() => setIsOpen(false)}
