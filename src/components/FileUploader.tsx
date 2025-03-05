@@ -18,7 +18,10 @@ interface FileUploaderProps {
   onSessionUpdate?: (sessionId: string) => void;
 }
 
-export default function FileUploader({ onTablesUpdate, onSessionUpdate }: FileUploaderProps) {
+export default function FileUploader({
+  onTablesUpdate,
+  onSessionUpdate,
+}: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,9 +83,6 @@ export default function FileUploader({ onTablesUpdate, onSessionUpdate }: FileUp
           timeout: 30000,
         }
       );
-
-      console.log("FileUploader Upload response:", response.data);
-
       setSessionId(response.data.session_id);
       setTables(response.data.tables);
       onTablesUpdate?.(response.data.tables);
@@ -180,7 +180,6 @@ export default function FileUploader({ onTablesUpdate, onSessionUpdate }: FileUp
                 >
                   {isUploading ? "Uploading..." : "Upload File"}
                 </button>
-
               </div>
             </div>
           )}

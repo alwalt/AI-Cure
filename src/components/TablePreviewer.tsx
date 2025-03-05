@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+"use client";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -16,12 +17,12 @@ import { useQuery } from "@tanstack/react-query";
 
 interface TablePreviewerProps {
   sessionId: string;
-  csvFilename?: string; // When undefined, the previewer stays empty.
+  csvFilename?: string;
 }
 
 interface PreviewResponse {
   columns: string[];
-  preview: Array<Record<string, any>>; // Each row is an object with keys matching the columns.
+  preview: Array<Record<string, any>>;
 }
 
 const fetchTablePreview = async ({
@@ -48,7 +49,6 @@ export default function TablePreviewer({
   sessionId,
   csvFilename,
 }: TablePreviewerProps) {
-  // Only fetch the preview when a CSV filename is provided.
   const { data, error, isLoading } = useQuery({
     queryKey: ["tablePreview", sessionId, csvFilename],
     queryFn: fetchTablePreview,

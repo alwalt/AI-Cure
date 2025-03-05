@@ -26,6 +26,11 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
     setUploadedTables(tables);
   };
 
+  // For finding if sessionid is set
+  const handleSessionUpdate = (newSessionId: string) => {
+    setSessionId(newSessionId);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between w-full">
@@ -33,7 +38,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={setSessionId}
+            onSessionUpdate={handleSessionUpdate}
           />
           <FolderPlusButton />
           <PlayButton />
