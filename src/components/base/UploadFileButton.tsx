@@ -34,9 +34,8 @@ export default function UploadFileButton({
 
   // For finding if seesionId is being set
   const handleSessionUpdate = (newSessionId: string) => {
-    console.log("UploadFileButton: New sessionId received:", newSessionId);
     setSessionId(newSessionId);
-    onSessionUpdate(newSessionId); // Ensure it's passed up
+    onSessionUpdate(newSessionId);
   };
 
   return (
@@ -80,7 +79,7 @@ export default function UploadFileButton({
               >
                 <FileUploader
                   onTablesUpdate={handleTablesUpdate}
-                  onSessionUpdate={handleSessionUpdate} // changed from setSessionId > handleSessionUpdate for debugging
+                  onSessionUpdate={handleSessionUpdate}
                 />{" "}
                 <button
                   onClick={() => setIsOpen(false)}

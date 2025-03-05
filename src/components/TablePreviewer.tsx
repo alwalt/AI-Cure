@@ -17,12 +17,12 @@ import { useQuery } from "@tanstack/react-query";
 
 interface TablePreviewerProps {
   sessionId: string;
-  csvFilename?: string; // When undefined, the previewer stays empty.
+  csvFilename?: string;
 }
 
 interface PreviewResponse {
   columns: string[];
-  preview: Array<Record<string, any>>; // Each row is an object with keys matching the columns.
+  preview: Array<Record<string, any>>;
 }
 
 const fetchTablePreview = async ({
@@ -30,10 +30,7 @@ const fetchTablePreview = async ({
 }: {
   queryKey: any[];
 }): Promise<PreviewResponse> => {
-  console.log("TOP of fetchTablePreview called with queryKey: ", queryKey);
   const [_key, sessionId, csvFilename] = queryKey;
-  console.log("sessionId:", sessionId, "csvFilename:", csvFilename);
-
   // Build query parameters for the API call.
   const params = new URLSearchParams({
     session_id: sessionId,
@@ -45,7 +42,6 @@ const fetchTablePreview = async ({
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
-  console.log("fetch response ", response);
   return response.json();
 };
 
@@ -53,7 +49,6 @@ export default function TablePreviewer({
   sessionId,
   csvFilename,
 }: TablePreviewerProps) {
-  // Only fetch the preview when a CSV filename is provided.
   const { data, error, isLoading } = useQuery({
     queryKey: ["tablePreview", sessionId, csvFilename],
     queryFn: fetchTablePreview,

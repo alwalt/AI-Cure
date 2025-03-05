@@ -21,10 +21,6 @@ export default function TableList({
 }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
 
-  useEffect(() => {
-    console.log("TableList: Received sessionId:", sessionId);
-  }, [sessionId]);
-
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {
       const isSelected = prev.some(
@@ -34,7 +30,6 @@ export default function TableList({
         ? prev.filter((t) => t.csv_filename !== table.csv_filename)
         : [...prev, table];
 
-      // Call the parent callback if provided
       onTableSelect?.(newSelection);
       return newSelection;
     });
@@ -98,12 +93,6 @@ export default function TableList({
                   className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Trigger the parent callback when preview is clicked.
-                    console.log(
-                      "!!! Preview button clicked: ",
-                      table.csv_filename,
-                      sessionId
-                    );
                     onPreview?.(table.csv_filename, sessionId);
                   }}
                 >

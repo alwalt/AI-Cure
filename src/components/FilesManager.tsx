@@ -28,7 +28,6 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
 
   // For finding if sessionid is set
   const handleSessionUpdate = (newSessionId: string) => {
-    console.log("FilesManager: Received sessionId update:", newSessionId);
     setSessionId(newSessionId);
   };
 
@@ -39,7 +38,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={handleSessionUpdate} // changed from setSessionId > handleSessionUpdate for debugging
+            onSessionUpdate={handleSessionUpdate}
           />
           <FolderPlusButton />
           <PlayButton />
