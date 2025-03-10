@@ -8,12 +8,14 @@ import { Table, UploadedFile } from "@/types/files";
 
 interface FilesManagerProps {
   onPreview: (csvFilename: string, sessionId: string) => void;
+  onFilePreview: (file: UploadedFile | null) => void;
 }
 
-export default function FilesManager({ onPreview }: FilesManagerProps) {
+export default function FilesManager({ onPreview, onFilePreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
+  const [currentPreviewFile, setCurrentPreviewFile] = useState<UploadedFile | null>(null);
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
@@ -37,6 +39,17 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
     });
   };
 
+  const handleFilePreview = (file: UploadedFile | null) => {
+    // When a file is selected for preview, clear any CSV previews
+    if (file) {
+      setCurrentPreviewFile(file);
+      onFilePreview(file);
+    } else {
+      setCurrentPreviewFile(null);
+      onFilePreview(null);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between w-full">
@@ -51,13 +64,19 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
           <PlayButton />
         </div>
       </div>
-      <UploadedFiles files={uploadedFiles} />
+      <UploadedFiles 
+        files={uploadedFiles}
+        onFilePreview={handleFilePreview}
+        currentPreviewFile={currentPreviewFile}
+      />
       <TableList
         tables={uploadedTables}
         sessionId={sessionId}
-        onPreview={(csvFilename, sessionId) =>
-          onPreview(csvFilename, sessionId)
-        }
+        onPreview={(csvFilename, sessionId) => {
+          // Clear any file previews when a CSV is previewed
+          setCurrentPreviewFile(null);
+          onPreview(csvFilename, sessionId);
+        }}
       />
     </div>
   );

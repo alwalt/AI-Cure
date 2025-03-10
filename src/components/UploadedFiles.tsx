@@ -7,11 +7,17 @@ import FilePreview from "./FilePreview";
 interface UploadedFilesProps {
   files: UploadedFile[];
   onFileSelect?: (files: UploadedFile[]) => void;
+  onFilePreview: (file: UploadedFile | null) => void;
+  currentPreviewFile: UploadedFile | null;
 }
 
-export default function UploadedFiles({ files, onFileSelect }: UploadedFilesProps) {
+export default function UploadedFiles({ 
+  files, 
+  onFileSelect, 
+  onFilePreview,
+  currentPreviewFile
+}: UploadedFilesProps) {
   const [selectedFiles, setSelectedFiles] = useState<UploadedFile[]>([]);
-  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null);
 
   const handleFileSelect = (file: UploadedFile) => {
     setSelectedFiles((prev) => {
@@ -27,11 +33,13 @@ export default function UploadedFiles({ files, onFileSelect }: UploadedFilesProp
 
   const handlePreview = (file: UploadedFile, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent file selection when clicking preview
-    setPreviewFile(file);
-  };
-
-  const closePreview = () => {
-    setPreviewFile(null);
+    
+    // If the file is already being previewed, toggle it off
+    if (currentPreviewFile && currentPreviewFile.name === file.name) {
+      onFilePreview(null);
+    } else {
+      onFilePreview(file);
+    }
   };
 
   const canPreview = (fileType: string) => {
@@ -69,6 +77,7 @@ export default function UploadedFiles({ files, onFileSelect }: UploadedFilesProp
                 className={`
                   cursor-pointer hover:bg-gray-100
                   ${selectedFiles.some(f => f.name === file.name) ? "bg-blue-100" : ""}
+                  ${currentPreviewFile?.name === file.name ? "bg-green-100" : ""}
                 `}
                 onClick={() => handleFileSelect(file)}
               >
@@ -97,9 +106,13 @@ export default function UploadedFiles({ files, onFileSelect }: UploadedFilesProp
                   {canPreview(file.type) && (
                     <button
                       onClick={(e) => handlePreview(file, e)}
-                      className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                      className={`px-2 py-1 ${
+                        currentPreviewFile?.name === file.name 
+                          ? "bg-green-500" 
+                          : "bg-blue-500"
+                      } text-white text-xs rounded hover:bg-blue-600`}
                     >
-                      Preview
+                      {currentPreviewFile?.name === file.name ? "Previewing" : "Preview"}
                     </button>
                   )}
                 </td>
@@ -115,10 +128,6 @@ export default function UploadedFiles({ files, onFileSelect }: UploadedFilesProp
             {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""} selected
           </p>
         </div>
-      )}
-
-      {previewFile && (
-        <FilePreview file={previewFile} onClose={closePreview} />
       )}
     </div>
   );
