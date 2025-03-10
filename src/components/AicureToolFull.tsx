@@ -37,10 +37,10 @@ export default function AicureToolFull() {
 
       <div className={`${showRight ? "w-1/4" : "w-10"} flex h-full`}>
         <RightColumn
-        //   toggleRightColumn={toggleRightColumn}
-        //   isRightColumnVisible={showRight}
-        //   sessionId={sessionId}
-        //   previewCsv={previewCsv}
+          toggleRightColumn={toggleRightColumn}
+          isRightColumnVisible={showRight}
+          //   sessionId={sessionId}
+          //   previewCsv={previewCsv}
         />
       </div>
     </div>
