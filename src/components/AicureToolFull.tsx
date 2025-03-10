@@ -4,11 +4,14 @@ import LeftColumn from "./LeftColumn";
 import RightColumn from "./RightColumn";
 import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 
 export default function AicureToolFull() {
   const [showRight, setShowRight] = useState(true);
-  const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
-  const [sessionId, setSessionId] = useState<string>("");
+  //   const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
+  //   const [sessionId, setSessionId] = useState<string>("");
+  const { sessionId, previewCsv, setSessionId, setPreviewCsv } =
+    useSessionFileStore(); // Use the store
 
   const toggleRightColumn = () => setShowRight((prev) => !prev);
 
@@ -34,10 +37,10 @@ export default function AicureToolFull() {
 
       <div className={`${showRight ? "w-1/4" : "w-10"} flex h-full`}>
         <RightColumn
-          toggleRightColumn={toggleRightColumn}
-          isRightColumnVisible={showRight}
-          sessionId={sessionId}
-          previewCsv={previewCsv}
+        //   toggleRightColumn={toggleRightColumn}
+        //   isRightColumnVisible={showRight}
+        //   sessionId={sessionId}
+        //   previewCsv={previewCsv}
         />
       </div>
     </div>

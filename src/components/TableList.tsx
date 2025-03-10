@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 
 interface Table {
   csv_filename: string;
@@ -17,9 +18,10 @@ export default function TableList({
   tables,
   onTableSelect,
   onPreview,
-  sessionId,
-}: TableListProps) {
-  const [selectedTables, setSelectedTables] = useState<Table[]>([]);
+}: // sessionId,
+TableListProps) {
+  // const [selectedTables, setSelectedTables] = useState<Table[]>([]);
+  const { sessionId } = useSessionFileStore(); // Use sessionId from the store
 
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {
@@ -30,6 +32,7 @@ export default function TableList({
         ? prev.filter((t) => t.csv_filename !== table.csv_filename)
         : [...prev, table];
 
+      // Call the parent callback if provided
       onTableSelect?.(newSelection);
       return newSelection;
     });

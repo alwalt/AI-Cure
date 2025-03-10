@@ -1,20 +1,21 @@
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import TablePreviewer from "./TablePreviewer";
+// import { useSessionFileStore } from "../store/useSessionFileStore";
 
 interface RightColumnProps {
   toggleRightColumn: () => void;
   isRightColumnVisible: boolean;
-  sessionId: string;
-  previewCsv?: string;
+  // sessionId: string;
+  // previewCsv?: string;
 }
 
 export default function RightColumn({
   toggleRightColumn,
   isRightColumnVisible,
-  sessionId,
-  previewCsv,
-}: RightColumnProps) {
+}: // sessionId,
+// previewCsv,
+RightColumnProps) {
   return (
     <div className="border-red-500 border-2 bg-primaryBlack flex flex-col items-start w-full">
       <button onClick={toggleRightColumn} className="text-white rounded">
@@ -25,13 +26,7 @@ export default function RightColumn({
         )}
       </button>
 
-      {isRightColumnVisible && (
-        <div className="p-2">
-          {previewCsv && (
-            <TablePreviewer sessionId={sessionId} csvFilename={previewCsv} />
-          )}
-        </div>
-      )}
+      {isRightColumnVisible && <div className="p-2">{<TablePreviewer />}</div>}
     </div>
   );
 }

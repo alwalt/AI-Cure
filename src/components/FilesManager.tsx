@@ -3,6 +3,7 @@ import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
 import PlayButton from "./base/PlayButton";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 
 interface Table {
   csv_filename: string;
@@ -20,7 +21,8 @@ interface UploadFileButtonProps {
 
 export default function FilesManager({ onPreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
-  const [sessionId, setSessionId] = useState<string>("");
+  // const [sessionId, setSessionId] = useState<string>("");
+  const { sessionId, setSessionId } = useSessionFileStore(); // Use the store
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
@@ -38,7 +40,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={handleSessionUpdate}
+            onSessionUpdate={setSessionId} // Update sessionId in the store
           />
           <FolderPlusButton />
           <PlayButton />

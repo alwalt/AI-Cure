@@ -8,6 +8,7 @@ import {
 } from "@headlessui/react";
 import FileUploader from "@/components/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 
 interface Table {
   csv_filename: string;
@@ -25,7 +26,8 @@ export default function UploadFileButton({
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
-  const [sessionId, setSessionId] = useState<string>("");
+  // const [sessionId, setSessionId] = useState<string>("");
+  const { setSessionId } = useSessionFileStore(); // Use the store
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
@@ -79,7 +81,7 @@ export default function UploadFileButton({
               >
                 <FileUploader
                   onTablesUpdate={handleTablesUpdate}
-                  onSessionUpdate={handleSessionUpdate}
+                  onSessionUpdate={setSessionId} // Update sessionId in the store
                 />{" "}
                 <button
                   onClick={() => setIsOpen(false)}
