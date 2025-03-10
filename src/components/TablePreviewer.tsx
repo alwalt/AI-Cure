@@ -26,7 +26,7 @@ const fetchTablePreview = async ({
 }: {
   queryKey: any[];
 }): Promise<PreviewResponse> => {
-  const [_key, sessionId, previewCsv] = queryKey; // Use previewCsv instead of csvFilename
+  const [_key, sessionId, previewCsv] = queryKey;
   // Build query parameters for the API call.
   const params = new URLSearchParams({
     session_id: sessionId,

@@ -4,13 +4,10 @@ import LeftColumn from "./LeftColumn";
 import RightColumn from "./RightColumn";
 import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
-import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 export default function AicureToolFull() {
   const [showRight, setShowRight] = useState(true);
-  //   const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
-  //   const [sessionId, setSessionId] = useState<string>("");
-  // Use the store
   const sessionId = useSessionFileStore((state) => state.sessionId);
   const previewCsv = useSessionFileStore((state) => state.previewCsv);
   const setSessionId = useSessionFileStore((state) => state.setSessionId);

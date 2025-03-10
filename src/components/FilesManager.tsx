@@ -21,8 +21,6 @@ interface UploadFileButtonProps {
 
 export default function FilesManager({ onPreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
-  // const [sessionId, setSessionId] = useState<string>("");
-  // const { sessionId, setSessionId } = useSessionFileStore(); // Use the store
   const sessionId = useSessionFileStore((state) => state.sessionId);
   const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
@@ -42,7 +40,7 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={setSessionId} // Update sessionId in the store
+            onSessionUpdate={setSessionId}
           />
           <FolderPlusButton />
           <PlayButton />
