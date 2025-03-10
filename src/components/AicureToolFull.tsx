@@ -10,8 +10,11 @@ export default function AicureToolFull() {
   const [showRight, setShowRight] = useState(true);
   //   const [previewCsv, setPreviewCsv] = useState<string | undefined>(undefined);
   //   const [sessionId, setSessionId] = useState<string>("");
-  const { sessionId, previewCsv, setSessionId, setPreviewCsv } =
-    useSessionFileStore(); // Use the store
+  // Use the store
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const previewCsv = useSessionFileStore((state) => state.previewCsv);
+  const setSessionId = useSessionFileStore((state) => state.setSessionId);
+  const setPreviewCsv = useSessionFileStore((state) => state.setPreviewCsv);
 
   const toggleRightColumn = () => setShowRight((prev) => !prev);
 

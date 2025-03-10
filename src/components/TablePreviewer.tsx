@@ -43,10 +43,8 @@ const fetchTablePreview = async ({
 
 export default function TablePreviewer() {
   // Access sessionId and previewCsv from Zustand store
-  const { sessionId, previewCsv } = useSessionFileStore((state) => ({
-    sessionId: state.sessionId,
-    previewCsv: state.previewCsv,
-  }));
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const previewCsv = useSessionFileStore((state) => state.previewCsv);
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["tablePreview", sessionId, previewCsv], // Use previewCsv here

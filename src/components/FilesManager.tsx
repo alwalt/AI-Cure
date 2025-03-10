@@ -22,7 +22,9 @@ interface UploadFileButtonProps {
 export default function FilesManager({ onPreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
   // const [sessionId, setSessionId] = useState<string>("");
-  const { sessionId, setSessionId } = useSessionFileStore(); // Use the store
+  // const { sessionId, setSessionId } = useSessionFileStore(); // Use the store
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);

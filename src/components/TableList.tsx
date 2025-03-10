@@ -20,8 +20,8 @@ export default function TableList({
   onPreview,
 }: // sessionId,
 TableListProps) {
-  // const [selectedTables, setSelectedTables] = useState<Table[]>([]);
-  const { sessionId } = useSessionFileStore(); // Use sessionId from the store
+  const [selectedTables, setSelectedTables] = useState<Table[]>([]);
+  const sessionId = useSessionFileStore((state) => state.sessionId); // Use sessionId from the store
 
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {

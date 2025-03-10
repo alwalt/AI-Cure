@@ -27,7 +27,9 @@ export default function UploadFileButton({
   const [isOpen, setIsOpen] = useState(false);
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
   // const [sessionId, setSessionId] = useState<string>("");
-  const { setSessionId } = useSessionFileStore(); // Use the store
+  // const { setSessionId } = useSessionFileStore(); // Use the store
+  const sessionId = useSessionFileStore((state) => state.sessionId); // better way to set sessionId
+  const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
