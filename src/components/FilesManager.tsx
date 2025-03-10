@@ -3,32 +3,51 @@ import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
 import PlayButton from "./base/PlayButton";
-
-interface Table {
-  csv_filename: string;
-  display_name: string;
-}
+import UploadedFiles from "./UploadedFiles";
+import { Table, UploadedFile } from "@/types/files";
 
 interface FilesManagerProps {
   onPreview: (csvFilename: string, sessionId: string) => void;
+  onFilePreview: (file: UploadedFile | null) => void;
 }
 
-interface UploadFileButtonProps {
-  onTablesUpdate: (tables: Table[]) => void;
-  onSessionUpdate: (sessionId: string) => void;
-}
-
-export default function FilesManager({ onPreview }: FilesManagerProps) {
+export default function FilesManager({ onPreview, onFilePreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
+  const [currentPreviewFile, setCurrentPreviewFile] = useState<UploadedFile | null>(null);
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
   };
 
-  // For finding if sessionid is set
   const handleSessionUpdate = (newSessionId: string) => {
     setSessionId(newSessionId);
+  };
+  
+  const handleFilesUpdate = (files: UploadedFile[]) => {
+    setUploadedFiles(prev => {
+      // Create a map of existing files to avoid duplicates
+      const existingFiles = new Map(prev.map(file => [file.name, file]));
+      
+      // Add new files, replacing existing ones with the same name
+      files.forEach(file => {
+        existingFiles.set(file.name, file);
+      });
+      
+      return Array.from(existingFiles.values());
+    });
+  };
+
+  const handleFilePreview = (file: UploadedFile | null) => {
+    // When a file is selected for preview, clear any CSV previews
+    if (file) {
+      setCurrentPreviewFile(file);
+      onFilePreview(file);
+    } else {
+      setCurrentPreviewFile(null);
+      onFilePreview(null);
+    }
   };
 
   return (
@@ -39,17 +58,25 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
             onSessionUpdate={handleSessionUpdate}
+            onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
           <PlayButton />
         </div>
       </div>
+      <UploadedFiles 
+        files={uploadedFiles}
+        onFilePreview={handleFilePreview}
+        currentPreviewFile={currentPreviewFile}
+      />
       <TableList
         tables={uploadedTables}
         sessionId={sessionId}
-        onPreview={(csvFilename, sessionId) =>
-          onPreview(csvFilename, sessionId)
-        }
+        onPreview={(csvFilename, sessionId) => {
+          // Clear any file previews when a CSV is previewed
+          setCurrentPreviewFile(null);
+          onPreview(csvFilename, sessionId);
+        }}
       />
     </div>
   );

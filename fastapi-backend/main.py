@@ -177,7 +177,7 @@ def export_subset(
 @app.post("/api/analyze_image")
 def analyze_image(
     image_file: UploadFile = File(...),
-    model: str = Form(...),
+    model: str = Form("llama3.1"),
     prompt: str = Form(...),
 ):
     """

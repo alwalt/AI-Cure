@@ -2,12 +2,15 @@ import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import TablePreviewer from "./TablePreviewer";
 import SummaryViewer from "./SummaryViewer";
+import { useState, useEffect } from "react";
+import { UploadedFile } from "@/types/files";
 
 interface RightColumnProps {
   toggleRightColumn: () => void;
   isRightColumnVisible: boolean;
   sessionId: string;
   previewCsv?: string;
+  previewFile?: UploadedFile | null;
 }
 
 export default function RightColumn({
@@ -15,7 +18,67 @@ export default function RightColumn({
   isRightColumnVisible,
   sessionId,
   previewCsv,
+  previewFile,
 }: RightColumnProps) {
+  const [objectUrl, setObjectUrl] = useState<string>("");
+
+  // Create object URL when previewFile changes
+  useEffect(() => {
+    if (previewFile?.file) {
+      const url = URL.createObjectURL(previewFile.file);
+      setObjectUrl(url);
+      
+      // Cleanup function
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    // Reset URL when no file is set
+    setObjectUrl("");
+  }, [previewFile]);
+
+  // Render file preview based on file type
+  const renderFilePreview = () => {
+    if (!previewFile || !objectUrl) return null;
+
+    const { type, name } = previewFile;
+    
+    if (type === 'pdf') {
+      return (
+        <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
+          <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">{name}</h3>
+          <iframe 
+            src={objectUrl} 
+            className="w-full flex-1" 
+            title={name}
+          />
+        </div>
+      );
+    } else if (type === 'png' || type === 'jpg' || type === 'jpeg') {
+      return (
+        <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
+          <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">{name}</h3>
+          <div className="p-4 flex items-center justify-center bg-gray-50 flex-1">
+            <img 
+              src={objectUrl} 
+              alt={name} 
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
+        <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">{name}</h3>
+        <div className="p-4 flex items-center justify-center bg-gray-50 flex-1">
+          <p className="text-gray-500">Preview not available for this file type</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="border-red-500 border-2 bg-primaryBlack flex flex-col items-start w-full">
       <button onClick={toggleRightColumn} className="text-white rounded">
@@ -27,16 +90,20 @@ export default function RightColumn({
       </button>
 
       {isRightColumnVisible && (
-        <div className="p-2">
-          {previewCsv && (
-            <TablePreviewer sessionId={sessionId} csvFilename={previewCsv} />
-          )}
-        </div>
-      )}
-      {isRightColumnVisible && (
-        <div className="p-2">
-          {previewCsv && (
-            <SummaryViewer sessionId={sessionId} csvFilename={previewCsv} />
+        <div className="p-2 w-full">
+          {/* Show file preview if a file is selected */}
+          {previewFile && renderFilePreview()}
+          
+          {/* Show CSV preview if no file is selected but CSV is */}
+          {!previewFile && previewCsv && (
+            <>
+              <div className="mb-4">
+                <TablePreviewer sessionId={sessionId} csvFilename={previewCsv} />
+              </div>
+              <div>
+                <SummaryViewer sessionId={sessionId} csvFilename={previewCsv} />
+              </div>
+            </>
           )}
         </div>
       )}
