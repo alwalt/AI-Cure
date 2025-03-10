@@ -104,3 +104,30 @@ def segment_and_export_tables(xlsx_path, session_id) -> List[str]:
 
     SESSION_TABLES[session_id] = results
     return results
+
+def create_table_summary_prompt(table_df):
+    # Comprehensive text representation of the table
+    table_text = f"""
+    Dimensions: {table_df.shape[0]} rows × {table_df.shape[1]} columns
+    Column Names: {', '.join(table_df.columns.tolist())}
+
+    Statistical Summary:
+    {table_df.describe().to_string()}
+
+    Table Data (all rows):
+    {table_df.to_string()}
+    """
+    # Prompt for LLM
+    prompt = f"""Analyze this tabular data and extract key insights.
+
+    Output your analysis in JSON format with the following structure:
+    {{
+    "summary": "Comprehensive description of the table data",
+    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+    }}
+
+    Here is the table information:
+    {table_text}
+    """
+
+    return prompt

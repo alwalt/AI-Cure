@@ -14,7 +14,7 @@ from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from utils import segment_and_export_tables, clean_dataframe
+from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
 
 from pydantic import BaseModel
 import base64
@@ -344,7 +344,6 @@ async def get_chat_response(
     
     return JSONResponse(content={"answer": result["answer"]})
 
-# Analyze table and provide summary and keywords
 @app.post("/api/analyze_table")
 def analyze_table(
     session_id: str = Form(...),
@@ -354,48 +353,21 @@ def analyze_table(
     """
     Analyze a table and provide a summary and keywords.
     """
-    # 1. Get the table from the session
+    # Get the table from the session
     table_info = SESSION_TABLES.get(session_id, [])
-    
     match = [p for (p, n) in table_info if n == csv_name]
     if not match:
         return JSONResponse(
             content={"error": f"Table '{csv_name}' not found in session"}, 
             status_code=404
         )
-    
     csv_path = match[0]
     try:
-        # 2. Load the table with pandas 
+        # Load the table with pandas 
         df = pd.read_csv(csv_path)
         table_df = clean_dataframe(df)
-
-        # 3. Comprehensive text representation of the table
-        table_text = f"""
-        Dimensions: {table_df.shape[0]} rows × {table_df.shape[1]} columns
-        Column Names: {', '.join(table_df.columns.tolist())}
-
-        Statistical Summary:
-        {table_df.describe().to_string()}
-
-        Table Data (all rows):
-        {table_df.to_string()}
-        """
-
-        # 4 create a prompt for ollama
-        prompt = f"""Analyze this tabular data and extract key insights.
-
-        Output your analysis in JSON format with the following structure:
-        {{
-        "summary": "Comprehensive description of the table data",
-        "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
-        }}
-
-        Here is the table information:
-        {table_text}
-        """
-
-        # 5. call Ollama API
+        prompt = create_table_summary_prompt(table_df)
+        # Call Ollama API
         res = ollama.chat(
             model=model,
             messages=[
@@ -405,11 +377,9 @@ def analyze_table(
                 }
             ]
         )
-
-        # 6. Parse the JSON response
+        # Parse the JSON response
         json_output = {}
         res_text = res['message']['content']
-        
         # look for JSON objects within the text
         json_match = re.search(r'\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
         if json_match:
