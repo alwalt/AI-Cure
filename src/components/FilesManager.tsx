@@ -3,32 +3,38 @@ import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
 import PlayButton from "./base/PlayButton";
-
-interface Table {
-  csv_filename: string;
-  display_name: string;
-}
+import UploadedFiles from "./UploadedFiles";
+import { Table, UploadedFile } from "@/types/files";
 
 interface FilesManagerProps {
   onPreview: (csvFilename: string, sessionId: string) => void;
 }
 
-interface UploadFileButtonProps {
-  onTablesUpdate: (tables: Table[]) => void;
-  onSessionUpdate: (sessionId: string) => void;
-}
-
 export default function FilesManager({ onPreview }: FilesManagerProps) {
   const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
 
   const handleTablesUpdate = (tables: Table[]) => {
     setUploadedTables(tables);
   };
 
-  // For finding if sessionid is set
   const handleSessionUpdate = (newSessionId: string) => {
     setSessionId(newSessionId);
+  };
+  
+  const handleFilesUpdate = (files: UploadedFile[]) => {
+    setUploadedFiles(prev => {
+      // Create a map of existing files to avoid duplicates
+      const existingFiles = new Map(prev.map(file => [file.name, file]));
+      
+      // Add new files, replacing existing ones with the same name
+      files.forEach(file => {
+        existingFiles.set(file.name, file);
+      });
+      
+      return Array.from(existingFiles.values());
+    });
   };
 
   return (
@@ -39,11 +45,13 @@ export default function FilesManager({ onPreview }: FilesManagerProps) {
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
             onSessionUpdate={handleSessionUpdate}
+            onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
           <PlayButton />
         </div>
       </div>
+      <UploadedFiles files={uploadedFiles} />
       <TableList
         tables={uploadedTables}
         sessionId={sessionId}
