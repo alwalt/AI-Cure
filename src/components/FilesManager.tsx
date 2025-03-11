@@ -3,38 +3,49 @@ import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
 import PlayButton from "./base/PlayButton";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
+
+interface Table {
+  csv_filename: string;
+  display_name: string;
+}
 import UploadedFiles from "./UploadedFiles";
-import { Table, UploadedFile } from "@/types/files";
+import { Table as TableType, UploadedFile } from "@/types/files";
 
 interface FilesManagerProps {
   onPreview: (csvFilename: string, sessionId: string) => void;
   onFilePreview: (file: UploadedFile | null) => void;
 }
 
-export default function FilesManager({ onPreview, onFilePreview }: FilesManagerProps) {
-  const [uploadedTables, setUploadedTables] = useState<Table[]>([]);
+export default function FilesManager({
+  onPreview,
+  onFilePreview,
+}: FilesManagerProps) {
+  const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const setSessionId = useSessionFileStore((state) => state.setSessionId);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [sessionId, setSessionId] = useState<string>("");
-  const [currentPreviewFile, setCurrentPreviewFile] = useState<UploadedFile | null>(null);
+  const [currentPreviewFile, setCurrentPreviewFile] =
+    useState<UploadedFile | null>(null);
 
-  const handleTablesUpdate = (tables: Table[]) => {
+  const handleTablesUpdate = (tables: TableType[]) => {
     setUploadedTables(tables);
   };
 
   const handleSessionUpdate = (newSessionId: string) => {
     setSessionId(newSessionId);
   };
-  
+
   const handleFilesUpdate = (files: UploadedFile[]) => {
-    setUploadedFiles(prev => {
+    setUploadedFiles((prev) => {
       // Create a map of existing files to avoid duplicates
-      const existingFiles = new Map(prev.map(file => [file.name, file]));
-      
+      const existingFiles = new Map(prev.map((file) => [file.name, file]));
+
       // Add new files, replacing existing ones with the same name
-      files.forEach(file => {
+      files.forEach((file) => {
         existingFiles.set(file.name, file);
       });
-      
+
       return Array.from(existingFiles.values());
     });
   };
@@ -57,14 +68,14 @@ export default function FilesManager({ onPreview, onFilePreview }: FilesManagerP
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={handleSessionUpdate}
+            onSessionUpdate={setSessionId}
             onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
           <PlayButton />
         </div>
       </div>
-      <UploadedFiles 
+      <UploadedFiles
         files={uploadedFiles}
         onFilePreview={handleFilePreview}
         currentPreviewFile={currentPreviewFile}

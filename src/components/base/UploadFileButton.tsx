@@ -8,7 +8,13 @@ import {
 } from "@headlessui/react";
 import FileUploader from "@/components/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
-import { Table, UploadedFile } from "@/types/files";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
+import { Table as TableType, UploadedFile } from "@/types/files";
+
+interface Table {
+  csv_filename: string;
+  display_name: string;
+}
 
 interface UploadFileButtonProps {
   onTablesUpdate: (tables: Table[]) => void;
@@ -22,7 +28,9 @@ export default function UploadFileButton({
   onFilesUpdate,
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [sessionId, setSessionId] = useState("");
+  const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
     onTablesUpdate(tables);
@@ -77,11 +85,17 @@ export default function UploadFileButton({
                 leaveTo="opacity-0 scale-95"
               >
                 <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <FileUploader 
+                  <FileUploader
                     onTablesUpdate={handleTablesUpdate}
                     onSessionUpdate={handleSessionUpdate}
                     onFilesUpdate={handleFilesUpdate}
                   />
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+                  >
+                    Close
+                  </button>
                 </DialogPanel>
               </TransitionChild>
             </div>

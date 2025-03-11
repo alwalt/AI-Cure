@@ -14,11 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-
-interface TablePreviewerProps {
-  sessionId: string;
-  csvFilename?: string;
-}
+import { useSessionFileStore } from "../store/useSessionFileStore"; // Import the store
 
 interface PreviewResponse {
   columns: string[];
@@ -30,11 +26,11 @@ const fetchTablePreview = async ({
 }: {
   queryKey: any[];
 }): Promise<PreviewResponse> => {
-  const [_key, sessionId, csvFilename] = queryKey;
+  const [_key, sessionId, previewCsv] = queryKey;
   // Build query parameters for the API call.
   const params = new URLSearchParams({
     session_id: sessionId,
-    csv_filename: csvFilename,
+    csv_filename: previewCsv || "", // Use previewCsv from Zustand
   });
   const response = await fetch(
     `http://localhost:8000/api/preview_table?${params.toString()}`
@@ -45,17 +41,18 @@ const fetchTablePreview = async ({
   return response.json();
 };
 
-export default function TablePreviewer({
-  sessionId,
-  csvFilename,
-}: TablePreviewerProps) {
+export default function TablePreviewer() {
+  // Access sessionId and previewCsv from Zustand store
+  const sessionId = useSessionFileStore((state) => state.sessionId);
+  const previewCsv = useSessionFileStore((state) => state.previewCsv);
+
   const { data, error, isLoading } = useQuery({
-    queryKey: ["tablePreview", sessionId, csvFilename],
+    queryKey: ["tablePreview", sessionId, previewCsv], // Use previewCsv here
     queryFn: fetchTablePreview,
-    enabled: !!csvFilename,
+    enabled: !!previewCsv, // Only fetch if previewCsv is available
   });
 
-  if (!csvFilename) {
+  if (!previewCsv) {
     return null;
   }
 
@@ -69,7 +66,7 @@ export default function TablePreviewer({
         ) : data ? (
           <>
             <Typography variant="h6" gutterBottom>
-              Table Preview: {csvFilename}
+              Table Preview: {previewCsv}
             </Typography>
             <TableContainer component={Paper}>
               <Table size="small">
