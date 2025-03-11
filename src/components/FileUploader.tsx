@@ -1,29 +1,22 @@
 "use client";
 import { useState, useRef } from "react";
 import axios from "axios";
-
-// Table interface shared by FileUploader and FilesManager
-interface Table {
-  csv_filename: string;
-  display_name: string;
-}
-
-interface UploadResponse {
-  session_id: string;
-  tables: Table[];
-}
+import { Table, UploadResponse, UploadedFile } from "@/types/files";
 
 interface FileUploaderProps {
   onTablesUpdate?: (tables: Table[]) => void;
   onSessionUpdate?: (sessionId: string) => void;
+  onFilesUpdate?: (files: UploadedFile[]) => void;
 }
 
 export default function FileUploader({
   onTablesUpdate,
   onSessionUpdate,
+  onFilesUpdate,
 }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sessionId, setSessionId] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<string>("");
@@ -46,67 +39,139 @@ export default function FileUploader({
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      // Only take the first file
-      setFiles([e.dataTransfer.files[0]]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      // Handle multiple files
+      const fileArray = Array.from(e.dataTransfer.files);
+      setFiles(prev => [...prev, ...fileArray]);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      // Only take the first file
-      setFiles([e.target.files[0]]);
+    if (e.target.files && e.target.files.length > 0) {
+      // Handle multiple files
+      const fileArray = Array.from(e.target.files);
+      setFiles(prev => [...prev, ...fileArray]);
+    }
+  };
+
+  const getFileType = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    switch (extension) {
+      case 'xlsx':
+      case 'xls':
+        return 'xlsx';
+      case 'csv':
+        return 'csv';
+      case 'pdf':
+        return 'pdf';
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return 'png';
+      default:
+        return extension;
     }
   };
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      setUploadStatus("Please select a file first");
+      setUploadStatus("Please select files first");
       return;
     }
 
     setIsUploading(true);
-    setUploadStatus("Uploading file...");
+    setUploadStatus("Uploading files...");
 
-    const formData = new FormData();
-    formData.append("file", files[0]);
+    // Separate Excel/CSV files from other types
+    const excelFiles = files.filter(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      return ext === 'xlsx' || ext === 'xls' || ext === 'csv';
+    });
 
-    try {
-      const response = await axios.post<UploadResponse>(
-        "http://localhost:8000/api/upload_excel",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 30000,
+    // Add non-Excel files directly to uploadedFiles
+    const nonExcelFiles = files.filter(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      return ext !== 'xlsx' && ext !== 'xls' && ext !== 'csv';
+    });
+
+    // Create UploadedFile objects for non-Excel files
+    const newNonExcelUploadedFiles = nonExcelFiles.map(file => ({
+      name: file.name,
+      type: getFileType(file.name),
+      dateCreated: new Date().toLocaleDateString(),
+      size: file.size,
+      file: file,
+      selected: false
+    }));
+
+    // Add non-Excel files to state
+    setUploadedFiles(prev => [...prev, ...newNonExcelUploadedFiles]);
+    
+    // Only process Excel files with the API
+    if (excelFiles.length > 0) {
+      try {
+        const formData = new FormData();
+        // Add each Excel file
+        for (const file of excelFiles) {
+          formData.append("file", file);
         }
-      );
-      setSessionId(response.data.session_id);
-      setTables(response.data.tables);
-      onTablesUpdate?.(response.data.tables);
-      onSessionUpdate?.(response.data.session_id);
-      setUploadStatus("File uploaded successfully!");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setUploadStatus(
-          `Upload failed: ${error.response?.data?.error || error.message}`
+
+        const response = await axios.post<UploadResponse>(
+          "http://localhost:8000/api/upload_excel",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            timeout: 30000,
+          }
         );
-      } else {
-        setUploadStatus("Upload failed: Unknown error occurred");
+
+        setSessionId(response.data.session_id);
+        setTables(response.data.tables);
+        onTablesUpdate?.(response.data.tables);
+        onSessionUpdate?.(response.data.session_id);
+
+        // Create UploadedFile objects for Excel files
+        const newExcelUploadedFiles = excelFiles.map(file => ({
+          name: file.name,
+          type: getFileType(file.name),
+          dateCreated: new Date().toLocaleDateString(),
+          size: file.size,
+          file: file,
+          selected: false
+        }));
+
+        // Combine all uploaded files
+        const allNewFiles = [...newExcelUploadedFiles, ...newNonExcelUploadedFiles];
+        setUploadedFiles(prev => [...prev, ...allNewFiles]);
+        onFilesUpdate?.(allNewFiles);
+
+        setUploadStatus("Files uploaded successfully!");
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          setUploadStatus(
+            `Upload failed: ${error.response?.data?.error || error.message}`
+          );
+        } else {
+          setUploadStatus("Upload failed: Unknown error occurred");
+        }
+        console.error("Upload error:", error);
       }
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
+    } else {
+      // Only non-Excel files were uploaded
+      onFilesUpdate?.(newNonExcelUploadedFiles);
+      setUploadStatus("Files added successfully!");
     }
+
+    setIsUploading(false);
   };
 
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
-    setSessionId("");
-    setTables([]);
-    setUploadStatus("");
+    setUploadedFiles(prev => prev.filter(file => file.name !== fileName));
+    onFilesUpdate?.(uploadedFiles.filter(file => file.name !== fileName));
   };
 
   return (
@@ -123,14 +188,15 @@ export default function FileUploader({
         <input
           ref={inputRef}
           type="file"
-          accept=".xlsx,.xls,.csv"
+          accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg"
           onChange={handleChange}
+          multiple
           className="hidden"
         />
 
         <div className="space-y-4">
           <div className="text-gray-700 font-medium">
-            <p>Drag and drop your Excel file here, or</p>
+            <p>Drag and drop your files here, or</p>
             <button
               onClick={() => inputRef.current?.click()}
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -147,7 +213,7 @@ export default function FileUploader({
           {files.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Selected File:
+                Selected Files:
               </h3>
               <div className="space-y-2">
                 {files.map((file, idx) => (
@@ -178,7 +244,7 @@ export default function FileUploader({
                   disabled={isUploading || isExtracting}
                   className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
                 >
-                  {isUploading ? "Uploading..." : "Upload File"}
+                  {isUploading ? "Uploading..." : "Upload Files"}
                 </button>
               </div>
             </div>

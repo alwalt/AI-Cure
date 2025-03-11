@@ -5,6 +5,7 @@ import uuid
 import shutil
 from typing import Dict, List, Optional
 import logging
+import re
 
 import pandas as pd
 import numpy as np
@@ -13,7 +14,7 @@ from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from utils import segment_and_export_tables, clean_dataframe
+from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
 
 from pydantic import BaseModel
 import base64
@@ -176,7 +177,7 @@ def export_subset(
 @app.post("/api/analyze_image")
 def analyze_image(
     image_file: UploadFile = File(...),
-    model: str = Form(...),
+    model: str = Form("llama3.1"),
     prompt: str = Form(...),
 ):
     """
@@ -343,5 +344,62 @@ async def get_chat_response(
     
     return JSONResponse(content={"answer": result["answer"]})
 
+@app.post("/api/analyze_table")
+def analyze_table(
+    session_id: str = Form(...),
+    csv_name: str = Form(...),
+    model: str = Form("llama3.1"),
+):
+    """
+    Analyze a table and provide a summary and keywords.
+    """
+    # Get the table from the session
+    table_info = SESSION_TABLES.get(session_id, [])
+    match = [p for (p, n) in table_info if n == csv_name]
+    if not match:
+        return JSONResponse(
+            content={"error": f"Table '{csv_name}' not found in session"}, 
+            status_code=404
+        )
+    csv_path = match[0]
+    try:
+        # Load the table with pandas 
+        df = pd.read_csv(csv_path)
+        table_df = clean_dataframe(df)
+        prompt = create_table_summary_prompt(table_df)
+        # Call Ollama API
+        res = ollama.chat(
+            model=model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        )
+        # Parse the JSON response
+        json_output = {}
+        res_text = res['message']['content']
+        # look for JSON objects within the text
+        json_match = re.search(r'\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
+        if json_match:
+            json_text = json_match.group(0)
+            try:
+                json_output = json.loads(json_text)
+            except json.decoder.JSONDecodeError:
+                json_output['Error'] = res_text
+        else:
+            # If no JSON object found, try to clean the text and parse
+            res_text = res_text.replace("```json", "").replace("```", "")
+            try:
+                json_output = json.loads(res_text)
+            except json.decoder.JSONDecodeError:
+                json_output['Error'] = res_text
+            
+        return JSONResponse(content=json_output)
+    except Exception as e:
+        logging.error(f"Error analyzing table: {str(e)}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
