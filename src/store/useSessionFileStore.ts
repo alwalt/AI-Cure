@@ -1,18 +1,25 @@
 import { create } from "zustand";
+import { UploadedFile } from "@/types/files";
 
 interface SessionFileState {
   sessionId: string;
-  previewCsv: string | undefined;
+  previewCsv?: string;
+  previewFile: UploadedFile | null;
   setSessionId: (id: string) => void;
-  setPreviewCsv: (csvFilename: string | undefined) => void;
+  setPreviewCsv: (filename?: string) => void;
+  setPreviewFile: (file: UploadedFile | null) => void;
 }
 
-export const useSessionFileStore = create<SessionFileState>(
-  (set: (state: Partial<SessionFileState>) => void) => ({
-    sessionId: "",
-    previewCsv: undefined,
-    setSessionId: (id: string) => set({ sessionId: id }),
-    setPreviewCsv: (csvFilename: string | undefined) =>
-      set({ previewCsv: csvFilename }),
-  })
-);
+export const useSessionFileStore = create<SessionFileState>((set) => ({
+  sessionId: "",
+  previewCsv: undefined,
+  previewFile: null,
+  setSessionId: (id) => set({ sessionId: id }),
+  setPreviewCsv: (filename) => set({ previewCsv: filename }),
+  setPreviewFile: (file) =>
+    set((state) => ({
+      previewFile: file,
+      // If a file is set, clear CSV preview
+      previewCsv: file ? undefined : state.previewCsv,
+    })),
+}));

@@ -1,9 +1,10 @@
-import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
-import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDoubleRightIcon,
+  ChevronDoubleLeftIcon,
+} from "@heroicons/react/24/outline";
 import TablePreviewer from "./TablePreviewer";
-import SummaryViewer from "./SummaryViewer";
 import { useState, useEffect } from "react";
-import { UploadedFile } from "@/types/files";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 interface RightColumnProps {
   toggleRightColumn: () => void;
@@ -14,6 +15,7 @@ export default function RightColumn({
   toggleRightColumn,
   isRightColumnVisible,
 }: RightColumnProps) {
+  const previewFile = useSessionFileStore((state) => state.previewFile);
   const [objectUrl, setObjectUrl] = useState<string>("");
 
   // Create object URL when previewFile changes
@@ -22,16 +24,13 @@ export default function RightColumn({
       const url = URL.createObjectURL(previewFile.file);
       setObjectUrl(url);
 
-      // Cleanup function
       return () => {
         URL.revokeObjectURL(url);
       };
     }
-    // Reset URL when no file is set
     setObjectUrl("");
   }, [previewFile]);
 
-  // Render file preview based on file type
   const renderFilePreview = () => {
     if (!previewFile || !objectUrl) return null;
 
@@ -87,7 +86,12 @@ export default function RightColumn({
         )}
       </button>
 
-      {isRightColumnVisible && <div className="p-2">{<TablePreviewer />}</div>}
+      {isRightColumnVisible && (
+        <div className="p-2">
+          <TablePreviewer />
+          {renderFilePreview()}
+        </div>
+      )}
     </div>
   );
 }
