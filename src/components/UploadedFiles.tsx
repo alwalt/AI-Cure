@@ -1,7 +1,5 @@
 "use client";
-import Image from "next/image";
 import { UploadedFile } from "@/types/files";
-import FilePreview from "./FilePreview";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 interface UploadedFilesProps {
