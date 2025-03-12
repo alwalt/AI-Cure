@@ -7,25 +7,10 @@ import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 
-// interface Table {
-//   csv_filename: string;
-//   display_name: string;
-// }
-
-// interface FilesManagerProps {
-//   onPreview: (csvFilename: string, sessionId: string) => void;
-//   onFilePreview: (file: UploadedFile | null) => void;
-// }
-
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const sessionId = useSessionFileStore((state) => state.sessionId);
   const setSessionId = useSessionFileStore((state) => state.setSessionId);
-  const handlePreview = useSessionFileStore((state) => state.handlePreview);
-  const handleFilePreview = useSessionFileStore(
-    (state) => state.handleFilePreview
-  );
 
   const [currentPreviewFile, setCurrentPreviewFile] =
     useState<UploadedFile | null>(null);
@@ -33,10 +18,6 @@ export default function FilesManager() {
   const handleTablesUpdate = (tables: TableType[]) => {
     setUploadedTables(tables);
   };
-
-  // const handleSessionUpdate = (newSessionId: string) => {
-  //   setSessionId(newSessionId);
-  // };
 
   const handleFilesUpdate = (files: UploadedFile[]) => {
     setUploadedFiles((prev) => {
@@ -50,17 +31,6 @@ export default function FilesManager() {
       return Array.from(existingFiles.values());
     });
   };
-
-  // const handleFilePreview = (file: UploadedFile | null) => {
-  //   // When a file is selected for preview, clear any CSV previews
-  //   if (file) {
-  //     setCurrentPreviewFile(file);
-  //     onFilePreview(file);
-  //   } else {
-  //     setCurrentPreviewFile(null);
-  //     onFilePreview(null);
-  //   }
-  // };
 
   return (
     <div className="space-y-2">
@@ -78,7 +48,6 @@ export default function FilesManager() {
       </div>
       <UploadedFiles
         files={uploadedFiles}
-        // onFilePreview={handleFilePreview}
         currentPreviewFile={currentPreviewFile}
       />
       <TableList tables={uploadedTables} />
