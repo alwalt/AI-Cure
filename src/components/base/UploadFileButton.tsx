@@ -9,12 +9,7 @@ import {
 import FileUploader from "@/components/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-import { Table as TableType, UploadedFile } from "@/types/files";
-
-interface Table {
-  csv_filename: string;
-  display_name: string;
-}
+import { Table, UploadedFile } from "@/types/files";
 
 interface UploadFileButtonProps {
   onTablesUpdate: (tables: Table[]) => void;
@@ -28,8 +23,6 @@ export default function UploadFileButton({
   onFilesUpdate,
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
-  const sessionId = useSessionFileStore((state) => state.sessionId);
   const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
