@@ -1,13 +1,12 @@
 "use client";
 import { useState, useRef } from "react";
 import axios from "axios";
-import { Table, UploadResponse, UploadedFile } from "@/types/files";
-
-interface FileUploaderProps {
-  onTablesUpdate?: (tables: Table[]) => void;
-  onSessionUpdate?: (sessionId: string) => void;
-  onFilesUpdate?: (files: UploadedFile[]) => void;
-}
+import {
+  Table,
+  UploadResponse,
+  UploadedFile,
+  FileUploaderProps,
+} from "@/types/files";
 
 export default function FileUploader({
   onTablesUpdate,

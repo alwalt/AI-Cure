@@ -32,3 +32,30 @@ export interface RightColumnProps {
   toggleRightColumn: () => void;
   isRightColumnVisible: boolean;
 }
+
+export interface SummaryViewerProps {
+  sessionId: string;
+  csvFilename: string | undefined;
+}
+
+export interface AnalysisResponse {
+  summary: string;
+  keywords: string[];
+  error?: string;
+}
+
+export interface PreviewResponse {
+  columns: string[];
+  preview: Array<Record<string, any>>;
+}
+
+export interface UploadedFilesProps {
+  files: UploadedFile[];
+  currentPreviewFile: UploadedFile | null;
+}
+
+export interface FileUploaderProps {
+  onTablesUpdate?: (tables: Table[]) => void;
+  onSessionUpdate?: (sessionId: string) => void;
+  onFilesUpdate?: (files: UploadedFile[]) => void;
+}

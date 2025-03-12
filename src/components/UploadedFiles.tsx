@@ -1,11 +1,7 @@
 "use client";
 import { UploadedFile } from "@/types/files";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-
-interface UploadedFilesProps {
-  files: UploadedFile[];
-  currentPreviewFile: UploadedFile | null;
-}
+import { UploadedFilesProps } from "@/types/files";
 
 export default function UploadedFiles({
   files,

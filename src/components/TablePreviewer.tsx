@@ -15,11 +15,7 @@ import {
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useSessionFileStore } from "../store/useSessionFileStore"; // Import the store
-
-interface PreviewResponse {
-  columns: string[];
-  preview: Array<Record<string, any>>;
-}
+import { PreviewResponse } from "@/types/files";
 
 const fetchTablePreview = async ({
   queryKey,

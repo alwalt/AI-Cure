@@ -2,17 +2,18 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 
-interface SummaryViewerProps {
-  sessionId: string;
-  csvFilename: string | undefined;
-}
+// interface SummaryViewerProps {
+//   sessionId: string;
+//   csvFilename: string | undefined;
+// }
 
-interface AnalysisResponse {
-  summary: string;
-  keywords: string[];
-  error?: string;
-}
+// interface AnalysisResponse {
+//   summary: string;
+//   keywords: string[];
+//   error?: string;
+// }
 
 const fetchTableAnalysis = async ({
   queryKey,
@@ -20,7 +21,7 @@ const fetchTableAnalysis = async ({
   queryKey: any[];
 }): Promise<AnalysisResponse> => {
   const [_key, sessionId, csvFilename] = queryKey;
-  
+
   if (!sessionId || !csvFilename) {
     return { summary: "", keywords: [] };
   }
@@ -43,7 +44,10 @@ const fetchTableAnalysis = async ({
   return response.data;
 };
 
-export default function SummaryViewer({ sessionId, csvFilename }: SummaryViewerProps) {
+export default function SummaryViewer({
+  sessionId,
+  csvFilename,
+}: SummaryViewerProps) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["tableAnalysis", sessionId, csvFilename],
     queryFn: fetchTableAnalysis,
@@ -73,7 +77,9 @@ export default function SummaryViewer({ sessionId, csvFilename }: SummaryViewerP
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
-        <p className="text-red-500">Error analyzing table: {error?.toString()}</p>
+        <p className="text-red-500">
+          Error analyzing table: {error?.toString()}
+        </p>
       </div>
     );
   }
@@ -90,13 +96,15 @@ export default function SummaryViewer({ sessionId, csvFilename }: SummaryViewerP
   return (
     <div className="p-4 bg-gray-800 rounded-lg text-white w-[400px] overflow-x-auto">
       <h2 className="text-xl font-bold mb-4">Analysis</h2>
-      
+
       {/* Summary Section */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Summary</h3>
-        <p className="text-gray-300">{data?.summary || "No summary available"}</p>
+        <p className="text-gray-300">
+          {data?.summary || "No summary available"}
+        </p>
       </div>
-      
+
       {/* Output Section (JSON-like display) */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Output</h3>
@@ -106,7 +114,7 @@ export default function SummaryViewer({ sessionId, csvFilename }: SummaryViewerP
           </pre>
         </div>
       </div>
-      
+
       {/* Keywords Section */}
       <div>
         <h3 className="text-lg font-semibold mb-2">Keywords</h3>
