@@ -4,27 +4,29 @@ import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
 import PlayButton from "./base/PlayButton";
 import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
-
-interface Table {
-  csv_filename: string;
-  display_name: string;
-}
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 
-interface FilesManagerProps {
-  onPreview: (csvFilename: string, sessionId: string) => void;
-  onFilePreview: (file: UploadedFile | null) => void;
-}
+// interface Table {
+//   csv_filename: string;
+//   display_name: string;
+// }
 
-export default function FilesManager({
-  onPreview,
-  onFilePreview,
-}: FilesManagerProps) {
+// interface FilesManagerProps {
+//   onPreview: (csvFilename: string, sessionId: string) => void;
+//   onFilePreview: (file: UploadedFile | null) => void;
+// }
+
+export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const sessionId = useSessionFileStore((state) => state.sessionId);
   const setSessionId = useSessionFileStore((state) => state.setSessionId);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const handlePreview = useSessionFileStore((state) => state.handlePreview);
+  const handleFilePreview = useSessionFileStore(
+    (state) => state.handleFilePreview
+  );
+
   const [currentPreviewFile, setCurrentPreviewFile] =
     useState<UploadedFile | null>(null);
 
@@ -32,15 +34,14 @@ export default function FilesManager({
     setUploadedTables(tables);
   };
 
-  const handleSessionUpdate = (newSessionId: string) => {
-    setSessionId(newSessionId);
-  };
+  // const handleSessionUpdate = (newSessionId: string) => {
+  //   setSessionId(newSessionId);
+  // };
 
   const handleFilesUpdate = (files: UploadedFile[]) => {
     setUploadedFiles((prev) => {
       // Create a map of existing files to avoid duplicates
       const existingFiles = new Map(prev.map((file) => [file.name, file]));
-
       // Add new files, replacing existing ones with the same name
       files.forEach((file) => {
         existingFiles.set(file.name, file);
@@ -50,16 +51,16 @@ export default function FilesManager({
     });
   };
 
-  const handleFilePreview = (file: UploadedFile | null) => {
-    // When a file is selected for preview, clear any CSV previews
-    if (file) {
-      setCurrentPreviewFile(file);
-      onFilePreview(file);
-    } else {
-      setCurrentPreviewFile(null);
-      onFilePreview(null);
-    }
-  };
+  // const handleFilePreview = (file: UploadedFile | null) => {
+  //   // When a file is selected for preview, clear any CSV previews
+  //   if (file) {
+  //     setCurrentPreviewFile(file);
+  //     onFilePreview(file);
+  //   } else {
+  //     setCurrentPreviewFile(null);
+  //     onFilePreview(null);
+  //   }
+  // };
 
   return (
     <div className="space-y-2">
@@ -77,18 +78,10 @@ export default function FilesManager({
       </div>
       <UploadedFiles
         files={uploadedFiles}
-        onFilePreview={handleFilePreview}
+        // onFilePreview={handleFilePreview}
         currentPreviewFile={currentPreviewFile}
       />
-      <TableList
-        tables={uploadedTables}
-        sessionId={sessionId}
-        onPreview={(csvFilename, sessionId) => {
-          // Clear any file previews when a CSV is previewed
-          setCurrentPreviewFile(null);
-          onPreview(csvFilename, sessionId);
-        }}
-      />
+      <TableList tables={uploadedTables} />
     </div>
   );
 }

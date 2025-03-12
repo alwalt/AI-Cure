@@ -1,49 +1,38 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 import { UploadedFile } from "@/types/files";
 import FilePreview from "./FilePreview";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 interface UploadedFilesProps {
   files: UploadedFile[];
-  onFileSelect?: (files: UploadedFile[]) => void;
-  onFilePreview: (file: UploadedFile | null) => void;
   currentPreviewFile: UploadedFile | null;
 }
 
-export default function UploadedFiles({ 
-  files, 
-  onFileSelect, 
-  onFilePreview,
-  currentPreviewFile
+export default function UploadedFiles({
+  files,
+  currentPreviewFile,
 }: UploadedFilesProps) {
-  const [selectedFiles, setSelectedFiles] = useState<UploadedFile[]>([]);
+  // Retrieve Zustand state values & actions
+  const selectedFiles = useSessionFileStore((state) => state.selectedFiles);
+  const setSelectedFiles = useSessionFileStore(
+    (state) => state.setSelectedFiles
+  );
+  const handleFilePreview = useSessionFileStore(
+    (state) => state.handleFilePreview
+  );
 
   const handleFileSelect = (file: UploadedFile) => {
-    setSelectedFiles((prev) => {
-      const isSelected = prev.some((f) => f.name === file.name);
-      const newSelection = isSelected
-        ? prev.filter((f) => f.name !== file.name)
-        : [...prev, file];
-
-      onFileSelect?.(newSelection);
-      return newSelection;
+    setSelectedFiles((prevFiles) => {
+      const isSelected = prevFiles.some((f) => f.name === file.name);
+      return isSelected
+        ? prevFiles.filter((f) => f.name !== file.name)
+        : [...prevFiles, file];
     });
   };
 
-  const handlePreview = (file: UploadedFile, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent file selection when clicking preview
-    
-    // If the file is already being previewed, toggle it off
-    if (currentPreviewFile && currentPreviewFile.name === file.name) {
-      onFilePreview(null);
-    } else {
-      onFilePreview(file);
-    }
-  };
-
   const canPreview = (fileType: string) => {
-    return ['pdf', 'png', 'jpg', 'jpeg'].includes(fileType.toLowerCase());
+    return ["pdf", "png", "jpg", "jpeg"].includes(fileType.toLowerCase());
   };
 
   if (!files.length) {
@@ -56,8 +45,10 @@ export default function UploadedFiles({
 
   return (
     <div className="bg-gray-200 rounded p-2">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Uploaded Files</h3>
-      
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        Uploaded Files
+      </h3>
+
       <div className="max-h-[300px] overflow-y-auto bg-primaryWhite rounded">
         <table className="w-full">
           <thead className="bg-gray-100 text-gray-700 text-sm">
@@ -71,20 +62,25 @@ export default function UploadedFiles({
             </tr>
           </thead>
           <tbody>
-            {files.map((file, idx) => (
-              <tr 
+            {files.map((file) => (
+              <tr
                 key={file.name}
-                className={`
-                  cursor-pointer hover:bg-gray-100
-                  ${selectedFiles.some(f => f.name === file.name) ? "bg-blue-100" : ""}
-                  ${currentPreviewFile?.name === file.name ? "bg-green-100" : ""}
+                className={`cursor-pointer hover:bg-gray-100
+                  ${
+                    selectedFiles.some((f) => f.name === file.name)
+                      ? "bg-blue-100"
+                      : ""
+                  }
+                  ${
+                    currentPreviewFile?.name === file.name ? "bg-green-100" : ""
+                  }
                 `}
                 onClick={() => handleFileSelect(file)}
               >
                 <td className="p-2">
                   <input
                     type="checkbox"
-                    checked={selectedFiles.some(f => f.name === file.name)}
+                    checked={selectedFiles.some((f) => f.name === file.name)}
                     onChange={() => handleFileSelect(file)}
                     onClick={(e) => e.stopPropagation()}
                     className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
@@ -101,18 +97,22 @@ export default function UploadedFiles({
                   </div>
                 </td>
                 <td className="p-2 text-sm text-gray-600">{file.type}</td>
-                <td className="p-2 text-sm text-gray-600">{file.dateCreated}</td>
+                <td className="p-2 text-sm text-gray-600">
+                  {file.dateCreated}
+                </td>
                 <td className="p-2">
                   {canPreview(file.type) && (
                     <button
-                      onClick={(e) => handlePreview(file, e)}
+                      onClick={() => handleFilePreview(file)}
                       className={`px-2 py-1 ${
-                        currentPreviewFile?.name === file.name 
-                          ? "bg-green-500" 
+                        currentPreviewFile?.name === file.name
+                          ? "bg-green-500"
                           : "bg-blue-500"
                       } text-white text-xs rounded hover:bg-blue-600`}
                     >
-                      {currentPreviewFile?.name === file.name ? "Previewing" : "Preview"}
+                      {currentPreviewFile?.name === file.name
+                        ? "Previewing"
+                        : "Preview"}
                     </button>
                   )}
                 </td>
@@ -121,11 +121,12 @@ export default function UploadedFiles({
           </tbody>
         </table>
       </div>
-      
+
       {selectedFiles.length > 0 && (
         <div className="mt-2 p-2 bg-blue-50 rounded border-primaryBlue border">
           <p className="text-sm text-primaryBlue">
-            {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""} selected
+            {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}{" "}
+            selected
           </p>
         </div>
       )}
@@ -134,19 +135,39 @@ export default function UploadedFiles({
 }
 
 function getFileIcon(fileType: string) {
-  switch(fileType.toLowerCase()) {
-    case 'pdf':
-      return <div className="w-5 h-5 flex items-center justify-center text-red-500 text-xs">PDF</div>;
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-      return <div className="w-5 h-5 flex items-center justify-center text-blue-500 text-xs">IMG</div>;
-    case 'xlsx':
-    case 'xls':
-      return <div className="w-5 h-5 flex items-center justify-center text-green-500 text-xs">XLS</div>;
-    case 'csv':
-      return <div className="w-5 h-5 flex items-center justify-center text-gray-500 text-xs">CSV</div>;
+  switch (fileType.toLowerCase()) {
+    case "pdf":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-red-500 text-xs">
+          PDF
+        </div>
+      );
+    case "png":
+    case "jpg":
+    case "jpeg":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-blue-500 text-xs">
+          IMG
+        </div>
+      );
+    case "xlsx":
+    case "xls":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-green-500 text-xs">
+          XLS
+        </div>
+      );
+    case "csv":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-gray-500 text-xs">
+          CSV
+        </div>
+      );
     default:
-      return <div className="w-5 h-5 flex items-center justify-center text-gray-400 text-xs">FILE</div>;
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-gray-400 text-xs">
+          FILE
+        </div>
+      );
   }
 }

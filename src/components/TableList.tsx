@@ -10,17 +10,18 @@ interface Table {
 interface TableListProps {
   tables: Table[];
   onTableSelect?: (selectedTables: Table[]) => void;
-  onPreview?: (csvFilename: string, sessionId: string) => void;
-  sessionId: string;
+  // onPreview?: (csvFilename: string, sessionId: string) => void;
+  // sessionId: string;
 }
 
 export default function TableList({
   tables,
   onTableSelect,
-  onPreview,
-}: TableListProps) {
+}: // onPreview,
+TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
   const sessionId = useSessionFileStore((state) => state.sessionId);
+  const handlePreview = useSessionFileStore((state) => state.handlePreview);
 
   const handleTableSelect = (table: Table) => {
     setSelectedTables((prev) => {
@@ -92,10 +93,9 @@ export default function TableList({
               <div className="flex flex-col items-center text-right">
                 <button
                   className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview?.(table.csv_filename, sessionId);
-                  }}
+                  onClick={() =>
+                    handlePreview(table.csv_filename, sessionId || "")
+                  }
                 >
                   Preview
                 </button>
