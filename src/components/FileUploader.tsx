@@ -1,13 +1,12 @@
 "use client";
 import { useState, useRef } from "react";
 import axios from "axios";
-import { Table, UploadResponse, UploadedFile } from "@/types/files";
-
-interface FileUploaderProps {
-  onTablesUpdate?: (tables: Table[]) => void;
-  onSessionUpdate?: (sessionId: string) => void;
-  onFilesUpdate?: (files: UploadedFile[]) => void;
-}
+import {
+  Table,
+  UploadResponse,
+  UploadedFile,
+  FileUploaderProps,
+} from "@/types/files";
 
 export default function FileUploader({
   onTablesUpdate,
@@ -42,7 +41,7 @@ export default function FileUploader({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       // Handle multiple files
       const fileArray = Array.from(e.dataTransfer.files);
-      setFiles(prev => [...prev, ...fileArray]);
+      setFiles((prev) => [...prev, ...fileArray]);
     }
   };
 
@@ -51,24 +50,24 @@ export default function FileUploader({
     if (e.target.files && e.target.files.length > 0) {
       // Handle multiple files
       const fileArray = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...fileArray]);
+      setFiles((prev) => [...prev, ...fileArray]);
     }
   };
 
   const getFileType = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    const extension = fileName.split(".").pop()?.toLowerCase() || "";
     switch (extension) {
-      case 'xlsx':
-      case 'xls':
-        return 'xlsx';
-      case 'csv':
-        return 'csv';
-      case 'pdf':
-        return 'pdf';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-        return 'png';
+      case "xlsx":
+      case "xls":
+        return "xlsx";
+      case "csv":
+        return "csv";
+      case "pdf":
+        return "pdf";
+      case "png":
+      case "jpg":
+      case "jpeg":
+        return "png";
       default:
         return extension;
     }
@@ -84,30 +83,30 @@ export default function FileUploader({
     setUploadStatus("Uploading files...");
 
     // Separate Excel/CSV files from other types
-    const excelFiles = files.filter(file => {
-      const ext = file.name.split('.').pop()?.toLowerCase();
-      return ext === 'xlsx' || ext === 'xls' || ext === 'csv';
+    const excelFiles = files.filter((file) => {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      return ext === "xlsx" || ext === "xls" || ext === "csv";
     });
 
     // Add non-Excel files directly to uploadedFiles
-    const nonExcelFiles = files.filter(file => {
-      const ext = file.name.split('.').pop()?.toLowerCase();
-      return ext !== 'xlsx' && ext !== 'xls' && ext !== 'csv';
+    const nonExcelFiles = files.filter((file) => {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      return ext !== "xlsx" && ext !== "xls" && ext !== "csv";
     });
 
     // Create UploadedFile objects for non-Excel files
-    const newNonExcelUploadedFiles = nonExcelFiles.map(file => ({
+    const newNonExcelUploadedFiles = nonExcelFiles.map((file) => ({
       name: file.name,
       type: getFileType(file.name),
       dateCreated: new Date().toLocaleDateString(),
       size: file.size,
       file: file,
-      selected: false
+      selected: false,
     }));
 
     // Add non-Excel files to state
-    setUploadedFiles(prev => [...prev, ...newNonExcelUploadedFiles]);
-    
+    setUploadedFiles((prev) => [...prev, ...newNonExcelUploadedFiles]);
+
     // Only process Excel files with the API
     if (excelFiles.length > 0) {
       try {
@@ -134,18 +133,21 @@ export default function FileUploader({
         onSessionUpdate?.(response.data.session_id);
 
         // Create UploadedFile objects for Excel files
-        const newExcelUploadedFiles = excelFiles.map(file => ({
+        const newExcelUploadedFiles = excelFiles.map((file) => ({
           name: file.name,
           type: getFileType(file.name),
           dateCreated: new Date().toLocaleDateString(),
           size: file.size,
           file: file,
-          selected: false
+          selected: false,
         }));
 
         // Combine all uploaded files
-        const allNewFiles = [...newExcelUploadedFiles, ...newNonExcelUploadedFiles];
-        setUploadedFiles(prev => [...prev, ...allNewFiles]);
+        const allNewFiles = [
+          ...newExcelUploadedFiles,
+          ...newNonExcelUploadedFiles,
+        ];
+        setUploadedFiles((prev) => [...prev, ...allNewFiles]);
         onFilesUpdate?.(allNewFiles);
 
         setUploadStatus("Files uploaded successfully!");
@@ -170,8 +172,8 @@ export default function FileUploader({
 
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
-    setUploadedFiles(prev => prev.filter(file => file.name !== fileName));
-    onFilesUpdate?.(uploadedFiles.filter(file => file.name !== fileName));
+    setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));
+    onFilesUpdate?.(uploadedFiles.filter((file) => file.name !== fileName));
   };
 
   return (

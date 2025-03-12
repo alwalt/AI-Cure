@@ -5,11 +5,7 @@ import {
 import TablePreviewer from "./TablePreviewer";
 import { useState, useEffect } from "react";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-
-interface RightColumnProps {
-  toggleRightColumn: () => void;
-  isRightColumnVisible: boolean;
-}
+import { RightColumnProps } from "@/types/files";
 
 export default function RightColumn({
   toggleRightColumn,
