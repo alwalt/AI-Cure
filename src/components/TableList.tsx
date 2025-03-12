@@ -10,15 +10,9 @@ interface Table {
 interface TableListProps {
   tables: Table[];
   onTableSelect?: (selectedTables: Table[]) => void;
-  // onPreview?: (csvFilename: string, sessionId: string) => void;
-  // sessionId: string;
 }
 
-export default function TableList({
-  tables,
-  onTableSelect,
-}: // onPreview,
-TableListProps) {
+export default function TableList({ tables, onTableSelect }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
   const sessionId = useSessionFileStore((state) => state.sessionId);
   const handlePreview = useSessionFileStore((state) => state.handlePreview);

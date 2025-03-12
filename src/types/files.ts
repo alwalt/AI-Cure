@@ -22,3 +22,13 @@ export interface UploadFileButtonProps {
   onSessionUpdate: (sessionId: string) => void;
   onFilesUpdate: (files: UploadedFile[]) => void;
 }
+
+export interface FilePreviewProps {
+  file: UploadedFile | null;
+  onClose: () => void;
+}
+
+export interface RightColumnProps {
+  toggleRightColumn: () => void;
+  isRightColumnVisible: boolean;
+}
