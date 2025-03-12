@@ -15,4 +15,10 @@ export interface Table {
 export interface UploadResponse {
   session_id: string;
   tables: Table[];
-} 
+}
+
+export interface UploadFileButtonProps {
+  onTablesUpdate: (tables: Table[]) => void;
+  onSessionUpdate: (sessionId: string) => void;
+  onFilesUpdate: (files: UploadedFile[]) => void;
+}

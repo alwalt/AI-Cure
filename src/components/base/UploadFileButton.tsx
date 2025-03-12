@@ -9,13 +9,7 @@ import {
 import FileUploader from "@/components/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-import { Table, UploadedFile } from "@/types/files";
-
-interface UploadFileButtonProps {
-  onTablesUpdate: (tables: Table[]) => void;
-  onSessionUpdate: (sessionId: string) => void;
-  onFilesUpdate: (files: UploadedFile[]) => void;
-}
+import { Table, UploadedFile, UploadFileButtonProps } from "@/types/files";
 
 export default function UploadFileButton({
   onTablesUpdate,
