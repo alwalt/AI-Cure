@@ -2,6 +2,9 @@ import ollama
 import json
 from langchain.document_loaders import PyMuPDFLoader
 import tempfile
+import docx
+import io
+from langchain_core.documents import Document
 
 #from pydantic import BaseModel
 #from typing import List
@@ -66,4 +69,14 @@ class PDFAnalyzer:
 		data = loader.load()
 		return data
 
+
+class DocXAnalyzer:
+	def __init__(self, uploaded_file):
+		self.uploaded_file = uploaded_file
+	#
+	def handlefileandingest(self):
+		doc = docx.Document(io.BytesIO(self.uploaded_file.getvalue()))
+		data = [section.text for section in doc.paragraphs]
+		data = Document(page_content='\n'.join(data), metadata={"source": self.uploaded_file.name},)
+		return [data]
 	

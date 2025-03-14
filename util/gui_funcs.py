@@ -36,9 +36,12 @@ def check_for_files_updated(uploaded_files):
 				st.session_state.images[uploaded_file.name]['img_base64'] = convert_to_base64(image)
 			elif file_type == 'PDF':
 				st.session_state.pdfs[uploaded_file.name] = uploaded_file
+			elif file_type == 'DOCX':
+				st.session_state.docxs[uploaded_file.name] = uploaded_file
 		#
 		st.session_state.image_order = list(st.session_state.images.keys())
 		st.session_state.pdf_order = list(st.session_state.pdfs.keys())
+		st.session_state.docx_order = list(st.session_state.docxs.keys())
 
 def next_step_action():
 	if st.session_state.button_stage == 'Generate JSON(s)':
@@ -60,7 +63,8 @@ def get_next_step_button():
 	#if (len(st.session_state.jsons) == 0) and (len(st.session_state.images)>0):
 	if len(st.session_state.images)>0:
 		#if st.session_state.make_jsons == False:
-		if len(st.session_state.vectorstore) == 0:
+		#if len(st.session_state.vectorstore) == 0:
+		if type(st.session_state.vectorstore) == list:
 			next_step_button = st.button(st.session_state.button_stage, type="primary", on_click=next_step_action, disabled = False)
 		elif st.session_state.enter_chat == False:
 			button_cols = st.columns(2)
