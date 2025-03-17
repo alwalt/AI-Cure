@@ -4,16 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 
-// interface SummaryViewerProps {
-//   sessionId: string;
-//   csvFilename: string | undefined;
-// }
+interface SummaryViewerProps {
+  sessionId: string;
+  csvFilename: string | undefined;
+}
 
-// interface AnalysisResponse {
-//   summary: string;
-//   keywords: string[];
-//   error?: string;
-// }
+interface AnalysisResponse {
+  summary: string;
+  keywords: string[];
+  error?: string;
+}
 
 const fetchTableAnalysis = async ({
   queryKey,
