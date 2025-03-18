@@ -68,32 +68,65 @@ class ChatHistory(BaseModel):
 ###############################################################################
 # API Routes
 ###############################################################################
-@app.post("/api/upload_excel")
-async def upload_excel(file: UploadFile = File(...)):
+@app.post("/api/upload_file")
+async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
+    """
+    Upload a file and return a session id.
+    """
+    print(f"Upload request received: {file.filename}")
+    print(f"File content type: {file.content_type}")
     try:
         session_id = uuid.uuid4().hex
         logging.info(f"Starting upload for session: {session_id}")
         
-        file_ext = file.filename.split(".")[-1]
-        if file_ext not in ["xls", "xlsx"]:
-            return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
+        if file_type == "excel":
+            file_ext = file.filename.split(".")[-1]
+            
 
-        unique_name = f"{session_id}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_name)
+            unique_name = f"{session_id}.{file_ext}"
+            file_path = os.path.join(UPLOAD_DIR, unique_name)
         
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        logging.info("File saved, processing tables...")
-        table_info = segment_and_export_tables(file_path, session_id)
-        
-        # Store the table info in the SESSION_TABLES dictionary in main.py
-        SESSION_TABLES[session_id] = table_info
-        
-        response_data = {
-            "session_id": session_id,
-            "tables": [{"csv_filename": csv_name, "display_name": csv_name} for _, csv_name in table_info],
-        }
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            logging.info("File saved, processing tables...")
+            table_info = segment_and_export_tables(file_path, session_id)
+            
+            # Store the table info in the SESSION_TABLES dictionary in main.py
+            SESSION_TABLES[session_id] = table_info
+            
+            response_data = {
+                "session_id": session_id,
+                "tables": [{"csv_filename": csv_name, "display_name": file.filename} for _, csv_name in table_info],
+            }
+        elif file.content_type == "application/pdf":
+            file_ext = "pdf"
+            file_name = file.filename
+            unique_name = f"{session_id}_{file_name}.{file_ext}"
+            file_path = os.path.join(UPLOAD_DIR, unique_name)
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            response_data = {
+                "session_id": session_id,
+                "file_name": file_name
+            }
+        elif file.content_type == "image/jpeg" or file.content_type == "image/png":
+            file_ext = "jpg"
+            file_name = file.filename
+            unique_name = f"{session_id}_{file_name}.{file_ext}"
+            file_path = os.path.join(UPLOAD_DIR, unique_name)
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            response_data = {
+                "session_id": session_id,
+                "file_name": file_name
+            }
+        else:
+            return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
         logging.info("Upload complete")
         return JSONResponse(content=response_data)
 
@@ -172,56 +205,6 @@ def export_subset(
     tmp_path = os.path.join(OUTPUT_DIR, tmp_name)
     sub_df.to_csv(tmp_path, index=False)
     return FileResponse(tmp_path, media_type="text/csv", filename=tmp_name)
-
-# Image Analyzer
-@app.post("/api/analyze_image")
-def analyze_image(
-    image_file: UploadFile = File(...),
-    model: str = Form("llama3.1"),
-    prompt: str = Form(...),
-):
-    """
-    Analyze an image and return a json object with a summary.
-    """
-    res = ollama.chat(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-                "images": [image_file.file]
-            }
-        ]
-    )
-    json_output = {}
-    res_text = res['message']['content']
-    res_text = res_text.replace("```json", "").replace("```", "")
-    try:
-        json_output = json.loads(res_text)
-    except json.decoder.JSONDecodeError:
-        json_output['Error'] = res_text
-        
-    return JSONResponse(content=json_output)
-
-# PDF Analyzer
-@app.post("/api/analyze_pdf")
-def analyze_pdf(pdf_file: UploadFile = File(...),):
-    """
-    Analyze a PDF and return a json object with a summary.
-    """
-    # We'll use PyMuPDF to load the PDF
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
-
-    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        tmp_file.write(pdf_file.getvalue())
-        tmp_file_path = tmp_file.name
-
-    loader = PyMuPDFLoader(file_path=tmp_file_path)
-    data = loader.load()
-    return JSONResponse(content={
-        "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
-    })
     
 ###############################################################################
 # AI and Vector Routes
@@ -343,6 +326,85 @@ async def get_chat_response(
     SESSIONS[session_id]["history"] = history + [(query, result["answer"])]
     
     return JSONResponse(content={"answer": result["answer"]})
+
+# Image Analyzer
+@app.post("/api/analyze_image")
+async def analyze_image(
+    model: str = Form("llava"),
+    session_id: str = Form(...),
+    file_name: str = Form(...),
+):
+    """
+    Analyze an image and return a json object with a summary.
+    """
+    print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
+    # get the image from the session
+    image_path = os.path.join(UPLOAD_DIR, f"{session_id}_{file_name}.jpg")
+    with open(image_path, "rb") as image_file:
+        contents = image_file.read()
+
+    prompt = "Describe the image and extract key words relevant to space experiments. Output in a JSON with the following format: {\"Summary\":\"This is your description of the image\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}"
+    res = ollama.chat(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+                "images": [contents]
+            }
+        ]
+    )
+    # Parse the JSON response
+    json_output = {}
+    res_text = res['message']['content']
+    # First try to parse directly
+    try:
+        clean_text = res_text.replace("```json", "").replace("```", "").strip()
+        json_output = json.loads(clean_text)
+    except json.decoder.JSONDecodeError:
+        # If that fails, try regex extraction
+        json_match = re.search(r'(?i)\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
+        if json_match:
+            json_text = json_match.group(0)
+            try:
+                json_output = json.loads(json_text)
+            except json.decoder.JSONDecodeError:
+                json_output['Error'] = res_text
+        else:
+            json_output['Error'] = res_text
+
+    # Normalize the keys
+    normalized_output = {
+        "summary": json_output.get("Summary") or json_output.get("summary", ""),
+        "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
+    }
+
+    if "Error" in json_output or "error" in json_output:
+        normalized_output["error"] = json_output.get("Error") or json_output.get("error")
+
+    return JSONResponse(content=normalized_output)
+
+
+# PDF Analyzer
+@app.post("/api/analyze_pdf")
+def analyze_pdf(pdf_file: UploadFile = File(...),):
+    """
+    Analyze a PDF and return a json object with a summary.
+    """
+    # We'll use PyMuPDF to load the PDF
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        tmp_file.write(pdf_file.getvalue())
+        tmp_file_path = tmp_file.name
+
+    loader = PyMuPDFLoader(file_path=tmp_file_path)
+    data = loader.load()
+    
+    return JSONResponse(content={
+        "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
+    })
 
 @app.post("/api/analyze_table")
 def analyze_table(

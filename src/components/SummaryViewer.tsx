@@ -4,16 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 
-// interface SummaryViewerProps {
-//   sessionId: string;
-//   csvFilename: string | undefined;
-// }
+interface SummaryViewerProps {
+  sessionId: string;
+  csvFilename: string | undefined;
+  file: File | undefined;
+  fileName: string | undefined;
+}
 
-// interface AnalysisResponse {
-//   summary: string;
-//   keywords: string[];
-//   error?: string;
-// }
+interface AnalysisResponse {
+  summary: string;
+  keywords: string[];
+  error?: string;
+}
 
 const fetchTableAnalysis = async ({
   queryKey,
@@ -44,22 +46,65 @@ const fetchTableAnalysis = async ({
   return response.data;
 };
 
+const fetchImageAnalysis = async ({
+  queryKey,
+}: {
+  queryKey: any[];
+}): Promise<AnalysisResponse> => {
+  const [_key, sessionId, fileName] = queryKey;
+
+  if (!sessionId || !fileName) {
+    return { summary: "", keywords: [] };
+  }
+
+  const formData = new FormData();
+  formData.append("session_id", sessionId);
+  formData.append("file_name", fileName);
+  // Use default model (llama3)
+  console.log(formData);
+  console.log(sessionId);
+  console.log(fileName);
+  const response = await axios.post(
+    "http://localhost:8000/api/analyze_image",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};
+
 export default function SummaryViewer({
   sessionId,
   csvFilename,
+  file,
+  fileName,
 }: SummaryViewerProps) {
+  const isImage = file && (
+    file.type.startsWith('image/') || 
+    ["png", "jpg", "jpeg", "gif"].some(ext => 
+      file.name.toLowerCase().endsWith(`.${ext}`)
+    )
+  );
+  console.log(file);
+  // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["tableAnalysis", sessionId, csvFilename],
-    queryFn: fetchTableAnalysis,
-    enabled: !!sessionId && !!csvFilename,
+    queryKey: isImage 
+      ? ["imageAnalysis", sessionId, fileName] 
+      : ["tableAnalysis", sessionId, csvFilename],
+    queryFn: isImage ? fetchImageAnalysis : fetchTableAnalysis,
+    enabled: !!sessionId && (isImage ? !!file : !!csvFilename),
     refetchOnWindowFocus: false,
   });
 
-  if (!csvFilename) {
+  if (!csvFilename && !isImage) {
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
-        <p className="text-gray-400">Select a table to view its analysis</p>
+        <p className="text-gray-400">Select a file to view its analysis</p>
       </div>
     );
   }
@@ -68,7 +113,7 @@ export default function SummaryViewer({
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
-        <p className="text-gray-400">Analyzing table data...</p>
+        <p className="text-gray-400">Analyzing {isImage ? "image" : "table"} data...</p>
       </div>
     );
   }
