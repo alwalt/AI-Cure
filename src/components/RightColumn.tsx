@@ -92,6 +92,8 @@ export default function RightColumn({
           <SummaryViewer 
             sessionId={sessionId || ""}
             csvFilename={previewCsv || ""}
+            file={previewFile?.file}
+            fileName={previewFile?.name || ""}
           />
         </div>
       )}

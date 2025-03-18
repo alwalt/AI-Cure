@@ -87,12 +87,43 @@ export default function FileUploader({
       const ext = file.name.split(".").pop()?.toLowerCase();
       return ext === "xlsx" || ext === "xls" || ext === "csv";
     });
+    
 
     // Add non-Excel files directly to uploadedFiles
     const nonExcelFiles = files.filter((file) => {
       const ext = file.name.split(".").pop()?.toLowerCase();
       return ext !== "xlsx" && ext !== "xls" && ext !== "csv";
     });
+
+    // Separate image files
+    const imageFiles = nonExcelFiles.filter(file => 
+      file.type.startsWith('image/') || ["png", "jpg", "jpeg"].some(ext => 
+        file.name.toLowerCase().endsWith(`.${ext}`)
+      )
+    );
+
+    // Upload image files
+    for (const file of imageFiles) {
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append("file", file);
+        
+        const response = await axios.post(
+          "http://localhost:8000/api/upload_file",
+          imageFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            }
+          }
+        );
+        setSessionId(response.data.session_id);
+        onSessionUpdate?.(response.data.session_id)
+      } catch (error) {
+        console.error(`Error uploading image ${file.name}:`, error);
+      }
+    }
+    
 
     // Create UploadedFile objects for non-Excel files
     const newNonExcelUploadedFiles = nonExcelFiles.map((file) => ({
