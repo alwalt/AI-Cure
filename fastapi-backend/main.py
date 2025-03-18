@@ -69,12 +69,17 @@ class ChatHistory(BaseModel):
 # API Routes
 ###############################################################################
 @app.post("/api/upload_file")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
+    """
+    Upload a file and return a session id.
+    """
+    print(f"Upload request received: {file.filename}")
+    print(f"File content type: {file.content_type}")
     try:
         session_id = uuid.uuid4().hex
         logging.info(f"Starting upload for session: {session_id}")
         
-        if file.content_type == "application/xlsx" or file.content_type == "application/xls":
+        if file_type == "excel":
             file_ext = file.filename.split(".")[-1]
             
 
@@ -92,7 +97,7 @@ async def upload_file(file: UploadFile = File(...)):
             
             response_data = {
                 "session_id": session_id,
-                "tables": [{"csv_filename": csv_name, "display_name": csv_name} for _, csv_name in table_info],
+                "tables": [{"csv_filename": csv_name, "display_name": file.filename} for _, csv_name in table_info],
             }
         elif file.content_type == "application/pdf":
             file_ext = "pdf"

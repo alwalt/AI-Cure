@@ -78,7 +78,7 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
                   Select {table.display_name}
                 </label>
                 <div>
-                  <p className="text-gray-700 text-sm">{table.display_name}</p>
+                  <p className="text-gray-700 text-sm">{table.csv_filename}</p>
                   <p className="text-xs text-gray-500">{table.display_name}</p>
                 </div>
               </div>

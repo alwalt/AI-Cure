@@ -107,6 +107,7 @@ export default function FileUploader({
       try {
         const imageFormData = new FormData();
         imageFormData.append("file", file);
+        imageFormData.append("file_type", "image");
         
         const response = await axios.post(
           "http://localhost:8000/api/upload_file",
@@ -145,10 +146,11 @@ export default function FileUploader({
         // Add each Excel file
         for (const file of excelFiles) {
           formData.append("file", file);
+          formData.append("file_type", "excel");
         }
 
         const response = await axios.post<UploadResponse>(
-          "http://localhost:8000/api/upload_excel",
+          "http://localhost:8000/api/upload_file",
           formData,
           {
             headers: {
