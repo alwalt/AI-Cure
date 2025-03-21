@@ -1,8 +1,22 @@
 /* Override default chatbot positioning */
 .react-chatbot-kit-chat-container {
-  position: static !important; /* Remove absolute positioning */
+  display: flex !important;
   width: 100% !important; /* Make it fill the parent */
   height: 100% !important; /* Force full height */
-  display: flex; /* Ensure it expands properly */
-  flex-direction: column;
+  box-sizing: border-box;
+  flex-direction: column; /* makes it take up full width */
+  overflow: hidden;
+}
+
+.react-chatbot-kit-chat-input-container {
+  flex-grow: 1;
+  width: 100% !important; /* Ensures input container fits within parent */
+  box-sizing: border-box; /* Ensures padding doesn't add extra width */
+}
+
+.react-chatbot-kit-chat-btn-send {
+  flex-shrink: 0;
+  width: 50px; /* Adjust if needed */
+  min-width: 50px;
+  text-align: center;
 }
