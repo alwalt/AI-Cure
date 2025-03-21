@@ -1,0 +1,8 @@
+/* Override default chatbot positioning */
+.react-chatbot-kit-chat-container {
+  position: static !important; /* Remove absolute positioning */
+  width: 100% !important; /* Make it fill the parent */
+  height: 100% !important; /* Force full height */
+  display: flex; /* Ensure it expands properly */
+  flex-direction: column;
+}

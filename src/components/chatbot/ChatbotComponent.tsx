@@ -8,7 +8,7 @@ import ActionProvider from "./ActionProvider";
 
 export default function ChatbotComponent() {
   return (
-    <div className="fixed bottom-4 right-4 w-80 border border-gray-300 rounded-lg shadow-lg bg-white">
+    <div className="w-full h-full flex">
       <Chatbot
         config={config}
         messageParser={MessageParser}
