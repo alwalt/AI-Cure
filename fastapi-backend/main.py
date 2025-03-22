@@ -276,10 +276,19 @@ async def create_chatbot(
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.
     """
-    if session_id not in SESSIONS:
-        raise HTTPException(status_code=404, detail="Session not found")
+    # if session_id not in SESSIONS:
+    #     raise HTTPException(status_code=404, detail="Session not found")
     
-    vectorstore = SESSIONS[session_id]["vectorstore"]
+    # vectorstore = SESSIONS[session_id]["vectorstore"]
+    if session_id not in SESSIONS:
+        SESSIONS[session_id] = {"vectorstore": None, "chain": None}  # Initialize session
+
+    vectorstore = SESSIONS[session_id].get("vectorstore")
+
+    if vectorstore is None:
+        raise HTTPException(status_code=400, detail="Vectorstore not initialized for this session")
+
+
     
     # Create LLM
     llm = ChatOllama(model=model_name, temperature=0)

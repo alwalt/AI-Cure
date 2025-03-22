@@ -1,30 +1,17 @@
+import { useChatbotStore } from "@/store/useChatbotStore";
+
 class ActionProvider {
-  createChatBotMessage: any;
-  setState: any;
+  sessionId: string;
+  addMessage: (message: { sender: string; text: string }) => void;
 
-  constructor(createChatBotMessage: any, setStateFunc: any) {
-    this.createChatBotMessage = createChatBotMessage;
-    this.setState = setStateFunc;
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+    this.addMessage = useChatbotStore.getState().addMessage; // Store function reference
   }
 
-  handleHello() {
-    const message = this.createChatBotMessage("Hi there! How can I help?");
-    this.updateChatbotState(message);
-  }
-
-  handleUnknown() {
-    const message = this.createChatBotMessage(
-      "I'm not sure how to respond to that."
-    );
-    this.updateChatbotState(message);
-  }
-
-  updateChatbotState(message: any) {
-    this.setState((prev: any) => ({
-      ...prev,
-      messages: [...prev.messages, message],
-    }));
-  }
+  handleMessage = (message: string) => {
+    this.addMessage({ sender: "user", text: message });
+  };
 }
 
 export default ActionProvider;
