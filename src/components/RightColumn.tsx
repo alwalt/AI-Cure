@@ -76,7 +76,7 @@ export default function RightColumn({
   };
 
   return (
-    <div className="border-red-500 border-2 bg-primaryBlack flex flex-col items-start w-full">
+    <div className="bg-primaryBlack border-l-2 border-gray-700 p-2 flex flex-col items-start w-full">
       <button onClick={toggleRightColumn} className="text-white rounded">
         {isRightColumnVisible ? (
           <ChevronDoubleRightIcon className="h-8 w-8" />
@@ -89,7 +89,7 @@ export default function RightColumn({
         <div className="p-2">
           <TablePreviewer />
           {renderFilePreview()}
-          <SummaryViewer 
+          <SummaryViewer
             sessionId={sessionId || ""}
             csvFilename={previewCsv || ""}
             file={previewFile?.file}
