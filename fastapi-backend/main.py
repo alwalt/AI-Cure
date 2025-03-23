@@ -10,7 +10,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -213,18 +213,19 @@ def export_subset(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
-    embedding_model: str = Form(...),
-    documents: str = Form(...)  # JSON string of documents
+    embedding_model: str = Body(...),
+    documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
+    print("!!!! DOCS " , documents)
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
     docs = [Document(page_content=doc["page_content"], metadata=doc["metadata"]) for doc in docs_data]
     
     # Create embeddings
-    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    embeddings = HuggingFaceEmbeddings(model_name=embedding_model, model_kwargs={'trust_remote_code': True})
     
     # Create text splitter
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)

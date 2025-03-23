@@ -31,6 +31,24 @@ export default function ChatbotComponent() {
           .catch((err) => console.error("Error creating chatbot:", err));
       }, 0); // Delay to ensure sessionId updates
     }
+    const fetchSession = async () => {
+      const requestBody = { sessionId: "session_pfno60db2" }; // Check what you're sending
+      console.log("Sending request:", requestBody);
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/create_chatbot/session_pfno60db2",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Response received:", data);
+    };
+
+    fetchSession();
   }, [sessionId, setSessionId]);
 
   return (
