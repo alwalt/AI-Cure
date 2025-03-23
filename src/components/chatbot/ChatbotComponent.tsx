@@ -37,8 +37,8 @@ export default function ChatbotComponent() {
     <div className="w-full h-full flex flex-col overflow-hidden">
       <Chatbot
         config={config}
-        messageParser={(props: any) => new MessageParser(props, sessionId)}
-        actionProvider={(props: any) => new ActionProvider(sessionId)}
+        messageParser={MessageParser}
+        actionProvider={ActionProvider}
       />
     </div>
   );
