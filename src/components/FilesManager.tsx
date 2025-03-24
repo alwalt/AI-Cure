@@ -39,7 +39,7 @@ export default function FilesManager() {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
-            onSessionUpdate={setSessionId}
+            // onSessionUpdate={setSessionId}
             onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />

@@ -14,7 +14,7 @@ interface TableListProps {
 
 export default function TableList({ tables, onTableSelect }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
-  const sessionId = useSessionFileStore((state) => state.sessionId);
+  // const sessionId = useSessionFileStore((state) => state.sessionId);
   const handlePreview = useSessionFileStore((state) => state.handlePreview);
 
   const handleTableSelect = (table: Table) => {
@@ -88,7 +88,7 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
                 <button
                   className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={() =>
-                    handlePreview(table.csv_filename, sessionId || "")
+                    handlePreview(table.csv_filename)
                   }
                 >
                   Preview

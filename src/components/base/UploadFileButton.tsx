@@ -13,21 +13,21 @@ import { Table, UploadedFile, UploadFileButtonProps } from "@/types/files";
 
 export default function UploadFileButton({
   onTablesUpdate,
-  onSessionUpdate,
+  // onSessionUpdate,
   onFilesUpdate,
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const setSessionId = useSessionFileStore((state) => state.setSessionId);
+  // const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
     onTablesUpdate(tables);
     setIsOpen(false);
   };
 
-  const handleSessionUpdate = (newSessionId: string) => {
-    setSessionId(newSessionId);
-    onSessionUpdate(newSessionId);
-  };
+  // const handleSessionUpdate = (newSessionId: string) => {
+  //   setSessionId(newSessionId);
+  //   onSessionUpdate(newSessionId);
+  // };
 
   const handleFilesUpdate = (files: UploadedFile[]) => {
     onFilesUpdate(files);
@@ -74,7 +74,7 @@ export default function UploadFileButton({
                 <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <FileUploader
                     onTablesUpdate={handleTablesUpdate}
-                    onSessionUpdate={handleSessionUpdate}
+                    // onSessionUpdate={handleSessionUpdate}
                     onFilesUpdate={handleFilesUpdate}
                   />
                   <button
