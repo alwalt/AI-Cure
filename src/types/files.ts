@@ -3,7 +3,7 @@ export interface UploadedFile {
   type: string;
   dateCreated: string;
   size: number;
-  file: File;
+  file?: File;
   selected?: boolean;
 }
 

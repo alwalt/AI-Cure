@@ -120,6 +120,43 @@ async def lifespan(app: FastAPI):
 ###############################################################################
 # API Routes
 ###############################################################################
+@app.get("/api/get_file/{filename}")
+async def get_file(filename: str, request: Request):
+    session_id = request.state.session_id
+    file_path = os.path.join(USER_DIRS, session_id, filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(file_path)
+
+@app.get("/api/get_session_files")
+async def get_files(request: Request):
+    session_id = request.state.session_id
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    
+    if not os.path.exists(UPLOAD_DIR):
+        return JSONResponse(content={"files": []})
+    
+    try:
+        files = []
+        for filename in os.listdir(UPLOAD_DIR):
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            file_ext = filename.split(".")[-1]
+            if os.path.isfile(file_path):
+                files.append({
+                    "name": filename,
+                    "type": file_ext,
+                    "dateCreated": os.path.getctime(file_path),
+                    "size": os.path.getsize(file_path),
+                })
+        
+        return JSONResponse(content={"files": files})
+
+    except Exception as e:
+        logging.error(f"Error during retrieval: {str(e)}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    
 @app.post("/api/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
     """
@@ -171,7 +208,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
                 "file_name": file_name
             }
         elif file.content_type == "image/jpeg" or file.content_type == "image/png":
-            file_ext = "jpg"
+            file_ext = file.filename.split(".")[-1]
             file_name = file.filename
             unique_name = f"{session_id}_{file_name}.{file_ext}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)

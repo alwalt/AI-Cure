@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "./base/FolderPlusButton";
@@ -6,11 +6,41 @@ import PlayButton from "./base/PlayButton";
 import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
+import axios from "axios";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const setSessionId = useSessionFileStore((state) => state.setSessionId);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // for gathering current session files
+  useEffect(() => {
+    const fetchSessionFiles = async () => {
+      try {
+        const response = await axios.get<{ files: UploadedFile[] }>(
+          "http://localhost:8000/api/get_session_files",
+          { withCredentials: true }
+        );
+        
+        if (response.data.files) {
+          handleFilesUpdate(response.data.files.map(file => ({
+            name: file.name,
+            type: file.type,
+            dateCreated: file.dateCreated,
+            size: file.size,
+          })));
+        }
+      } catch (err) {
+        setError("Failed to load session files");
+        console.error("Error fetching session files:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessionFiles();
+  }, []);
 
   const [currentPreviewFile, setCurrentPreviewFile] =
     useState<UploadedFile | null>(null);
@@ -46,11 +76,15 @@ export default function FilesManager() {
           <PlayButton />
         </div>
       </div>
-      <UploadedFiles
-        files={uploadedFiles}
-        currentPreviewFile={currentPreviewFile}
-      />
-      <TableList tables={uploadedTables} />
+      {!loading && !error && (
+        <>
+          <UploadedFiles
+            files={uploadedFiles}
+            currentPreviewFile={currentPreviewFile}
+          />
+          <TableList tables={uploadedTables} />
+        </>
+      )}
     </div>
   );
 }

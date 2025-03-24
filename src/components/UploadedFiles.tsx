@@ -2,6 +2,7 @@
 import { UploadedFile } from "@/types/files";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { UploadedFilesProps } from "@/types/files";
+import axios from "axios";
 
 export default function UploadedFiles({
   files,
@@ -16,6 +17,33 @@ export default function UploadedFiles({
     (state) => state.handleFilePreview
   );
 
+  const previewFile = async (file: UploadedFile) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/get_file/${file.name}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const blob = await response.blob();
+      const fileType = blob.type;
+      // convert mime type to file type
+      const newFileType = fileType.split('/').pop() || "";
+      console.log(newFileType);
+      const fileObj = new File([blob], file.name, { type: fileType });
+
+      handleFilePreview({
+        ...file,
+        type: newFileType,
+        file: fileObj,
+      });
+
+    } catch (error) {
+      console.error("Error previewing file:", error);
+    }
+  };
+
   const handleFileSelect = (file: UploadedFile) => {
     setSelectedFiles((prevFiles) => {
       const isSelected = prevFiles.some((f) => f.name === file.name);
@@ -26,7 +54,7 @@ export default function UploadedFiles({
   };
 
   const canPreview = (fileType: string) => {
-    return ["pdf", "png", "jpg", "jpeg"].includes(fileType.toLowerCase());
+    return ["pdf", "png", "jpg", "jpeg", "xlsx", "xls", "csv"].includes(fileType.toLowerCase());
   };
 
   if (!files.length) {
@@ -97,7 +125,7 @@ export default function UploadedFiles({
                 <td className="p-2">
                   {canPreview(file.type) && (
                     <button
-                      onClick={() => handleFilePreview(file)}
+                      onClick={() => previewFile(file)}
                       className={`px-2 py-1 ${
                         currentPreviewFile?.name === file.name
                           ? "bg-green-500"
