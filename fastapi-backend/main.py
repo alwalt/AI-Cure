@@ -318,7 +318,7 @@ async def create_chatbot(
     llm=llm, 
     retriever=retriever, 
     return_source_documents=True,
-    combine_docs_chain_kwargs={"prompt": qa_prompt},# Pass llm_chain instead of combine_docs_chain_kwargs
+    combine_docs_chain_kwargs={"prompt": qa_prompt},
     verbose=True)
 
     
@@ -331,7 +331,7 @@ async def create_chatbot(
 @app.post("/api/get_chat_response/{session_id}")
 async def get_chat_response(
     session_id: str,
-    query: str = Form(...)
+    query: str = Body(..., embed=True)
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
