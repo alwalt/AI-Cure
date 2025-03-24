@@ -29,7 +29,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
 
@@ -213,6 +213,7 @@ def export_subset(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
+    # Changed Form(...) to Body(...), and lst to str
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
@@ -271,8 +272,8 @@ async def create_documents_from_images(
 @app.post("/api/create_chatbot/{session_id}")
 async def create_chatbot(
     session_id: str,
-    model_name: str = Form(...),
-    chat_prompt: str = Form(...),
+    model_name: str = Body(...),
+    chat_prompt: str = Body(...),
 ):
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.
@@ -295,19 +296,31 @@ async def create_chatbot(
     llm = ChatOllama(model=model_name, temperature=0)
     
     # Create prompt template
-    qa_prompt = PromptTemplate.from_template(template=chat_prompt)
-    
+    # qa_prompt = PromptTemplate.from_template(template=chat_prompt)
+    qa_prompt = PromptTemplate(
+    input_variables=["context", "question"],  # Ensure "context" is included
+    template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:")
+
+    llm_chain = LLMChain(llm=llm, prompt=qa_prompt)
+
     # Create retriever
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
     
     # Create chain
+    # chain = ConversationalRetrievalChain.from_llm(
+    #     llm=llm, 
+    #     retriever=retriever, 
+    #     return_source_documents=True,
+    #     combine_docs_chain_kwargs={"prompt": qa_prompt}, 
+    #     verbose=True
+    # )
     chain = ConversationalRetrievalChain.from_llm(
-        llm=llm, 
-        retriever=retriever, 
-        return_source_documents=True,
-        combine_docs_chain_kwargs={"prompt": qa_prompt}, 
-        verbose=True
-    )
+    llm=llm, 
+    retriever=retriever, 
+    return_source_documents=True,
+    combine_docs_chain_kwargs={"prompt": qa_prompt},# Pass llm_chain instead of combine_docs_chain_kwargs
+    verbose=True)
+
     
     # Store chain in session
     SESSIONS[session_id]["chain"] = chain
