@@ -77,6 +77,32 @@ const fetchImageAnalysis = async ({
   return response.data;
 };
 
+const fetchPDFAnalysis = async ({
+  queryKey,
+}: {
+  queryKey: any[];
+}): Promise<AnalysisResponse> => {
+  const [_key, sessionId, fileName] = queryKey;
+  const formData = new FormData();
+  formData.append("session_id", sessionId);
+  formData.append("pdf_file_name", fileName);
+  // Use default model (llava)
+  console.log(formData);
+  console.log(sessionId);
+  console.log(fileName);
+  const response = await axios.post(
+    "http://localhost:8000/api/analyze_pdf",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};
+
 export default function SummaryViewer({
   sessionId,
   csvFilename,
@@ -89,18 +115,23 @@ export default function SummaryViewer({
       file.name.toLowerCase().endsWith(`.${ext}`)
     )
   );
+  const isPDF = file && file.type.startsWith('application/pdf');
   console.log(file);
+  console.log(file?.type);
+  console.log(isPDF);
   // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
     queryKey: isImage 
       ? ["imageAnalysis", sessionId, fileName] 
+      : isPDF
+      ? ["pdfAnalysis", sessionId, fileName]
       : ["tableAnalysis", sessionId, csvFilename],
-    queryFn: isImage ? fetchImageAnalysis : fetchTableAnalysis,
-    enabled: !!sessionId && (isImage ? !!file : !!csvFilename),
+    queryFn: isImage ? fetchImageAnalysis : isPDF ? fetchPDFAnalysis : fetchTableAnalysis,
+    enabled: !!sessionId && (isImage ? !!file : isPDF ? !!file : !!csvFilename),
     refetchOnWindowFocus: false,
   });
 
-  if (!csvFilename && !isImage) {
+  if (!csvFilename && !isImage && !isPDF) {
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
@@ -113,7 +144,7 @@ export default function SummaryViewer({
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
-        <p className="text-gray-400">Analyzing {isImage ? "image" : "table"} data...</p>
+        <p className="text-gray-400">Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data...</p>
       </div>
     );
   }
@@ -123,7 +154,7 @@ export default function SummaryViewer({
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-red-500">
-          Error analyzing table: {error?.toString()}
+          Error analyzing {isImage ? "image" : isPDF ? "pdf" : "table"}: {error?.toString()}
         </p>
       </div>
     );
@@ -164,7 +195,7 @@ export default function SummaryViewer({
       <div>
         <h3 className="text-lg font-semibold mb-2">Keywords</h3>
         <div className="flex flex-wrap gap-2">
-          {data?.keywords?.map((keyword, index) => (
+          {data?.keywords?.map((keyword: string, index: number) => (
             <div
               key={index}
               className="bg-gray-700 text-white px-3 py-1 rounded-full text-sm flex items-center"

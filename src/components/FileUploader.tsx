@@ -82,52 +82,51 @@ export default function FileUploader({
     setIsUploading(true);
     setUploadStatus("Uploading files...");
 
-    // Separate Excel/CSV files from other types
-    const excelFiles = files.filter((file) => {
-      const ext = file.name.split(".").pop()?.toLowerCase();
-      return ext === "xlsx" || ext === "xls" || ext === "csv";
-    });
-    
 
-    // Add non-Excel files directly to uploadedFiles
-    const nonExcelFiles = files.filter((file) => {
-      const ext = file.name.split(".").pop()?.toLowerCase();
-      return ext !== "xlsx" && ext !== "xls" && ext !== "csv";
-    });
-
-    // Separate image files
-    const imageFiles = nonExcelFiles.filter(file => 
-      file.type.startsWith('image/') || ["png", "jpg", "jpeg"].some(ext => 
-        file.name.toLowerCase().endsWith(`.${ext}`)
-      )
-    );
-
-    // Upload image files
-    for (const file of imageFiles) {
+    // Upload all files to the endpoint
+    for (const file of files) {
       try {
-        const imageFormData = new FormData();
-        imageFormData.append("file", file);
-        imageFormData.append("file_type", "image");
-        
-        const response = await axios.post(
+        const formData = new FormData();
+        const fileType = getFileType(file.name);
+        formData.append("file", file)
+        formData.append("file_type", fileType)
+        if (sessionId === null) {
+          formData.append("session_id", sessionId);
+        }
+
+        const response = await axios.post<UploadResponse>(
           "http://localhost:8000/api/upload_file",
-          imageFormData,
+          formData,
           {
             headers: {
-              "Content-Type": "multipart/form-data",
-            }
+            "Content-Type": "multipart/form-data",
+            },
+            timeout: 30000,
           }
         );
+        // print out the response data decoded
+        console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
+        console.log(`Session ID: ${response.data.session_id}`);
+        
+      
         setSessionId(response.data.session_id);
-        onSessionUpdate?.(response.data.session_id)
+        onSessionUpdate?.(response.data.session_id);
+        console.log(`Session ID: ${response.data.session_id}`);
+        
+        if (fileType == "excel" || fileType == "xlsx") {
+          if (response.data.tables.length > 0) {
+            setTables(response.data.tables);
+            onTablesUpdate?.(response.data.tables);
+          }
+        }
+        console.log(`Response: ${response.data}`);
+        console.log(`Session ID: ${sessionId}`);
       } catch (error) {
-        console.error(`Error uploading image ${file.name}:`, error);
+        console.error(`Error uploading file ${file.name}:`, error);
       }
     }
     
-
-    // Create UploadedFile objects for non-Excel files
-    const newNonExcelUploadedFiles = nonExcelFiles.map((file) => ({
+    const uploadedFiles = files.map((file) => ({
       name: file.name,
       type: getFileType(file.name),
       dateCreated: new Date().toLocaleDateString(),
@@ -136,73 +135,13 @@ export default function FileUploader({
       selected: false,
     }));
 
-    // Add non-Excel files to state
-    setUploadedFiles((prev) => [...prev, ...newNonExcelUploadedFiles]);
+    setUploadedFiles((prev) => [...prev, ...uploadedFiles]);
+    onFilesUpdate?.(uploadedFiles);
 
-    // Only process Excel files with the API
-    if (excelFiles.length > 0) {
-      try {
-        const formData = new FormData();
-        // Add each Excel file
-        for (const file of excelFiles) {
-          formData.append("file", file);
-          formData.append("file_type", "excel");
-        }
-
-        const response = await axios.post<UploadResponse>(
-          "http://localhost:8000/api/upload_file",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            timeout: 30000,
-          }
-        );
-
-        setSessionId(response.data.session_id);
-        setTables(response.data.tables);
-        onTablesUpdate?.(response.data.tables);
-        onSessionUpdate?.(response.data.session_id);
-
-        // Create UploadedFile objects for Excel files
-        const newExcelUploadedFiles = excelFiles.map((file) => ({
-          name: file.name,
-          type: getFileType(file.name),
-          dateCreated: new Date().toLocaleDateString(),
-          size: file.size,
-          file: file,
-          selected: false,
-        }));
-
-        // Combine all uploaded files
-        const allNewFiles = [
-          ...newExcelUploadedFiles,
-          ...newNonExcelUploadedFiles,
-        ];
-        setUploadedFiles((prev) => [...prev, ...allNewFiles]);
-        onFilesUpdate?.(allNewFiles);
-
-        setUploadStatus("Files uploaded successfully!");
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          setUploadStatus(
-            `Upload failed: ${error.response?.data?.error || error.message}`
-          );
-        } else {
-          setUploadStatus("Upload failed: Unknown error occurred");
-        }
-        console.error("Upload error:", error);
-      }
-    } else {
-      // Only non-Excel files were uploaded
-      onFilesUpdate?.(newNonExcelUploadedFiles);
-      setUploadStatus("Files added successfully!");
-    }
-
+    setUploadStatus("Files uploaded successfully!");
     setIsUploading(false);
   };
-
+    
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
     setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));

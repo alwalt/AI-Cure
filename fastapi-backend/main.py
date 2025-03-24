@@ -69,17 +69,21 @@ class ChatHistory(BaseModel):
 # API Routes
 ###############################################################################
 @app.post("/api/upload_file")
-async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
+async def upload_file(file: UploadFile = File(...), file_type: str = Form(...), session_id: str = Form(uuid.uuid4().hex)):
     """
-    Upload a file and return a session id.
+    Upload a file and return a session id. Unless sessionid is present.
     """
     print(f"Upload request received: {file.filename}")
     print(f"File content type: {file.content_type}")
+    print(f"PASEED FILE TYPE: {file_type}")
+    if session_id is not None:
+        print(f"Session ID: {session_id}")
     try:
-        session_id = uuid.uuid4().hex
+        # if session_id is not None or session_id == "":
+        #     session_id = uuid.uuid4().hex
         logging.info(f"Starting upload for session: {session_id}")
-        
-        if file_type == "excel":
+
+        if file_type == "excel" or file_type == "xlsx":
             file_ext = file.filename.split(".")[-1]
             
 
@@ -387,24 +391,62 @@ async def analyze_image(
 
 # PDF Analyzer
 @app.post("/api/analyze_pdf")
-def analyze_pdf(pdf_file: UploadFile = File(...),):
+def analyze_pdf(
+    pdf_file_name: str = Form(...),
+    model: str = Form("llava"),
+    session_id: str = Form(...),
+    ):
     """
     Analyze a PDF and return a json object with a summary.
     """
-    # We'll use PyMuPDF to load the PDF
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    # logged received file
+    print(f"received: {pdf_file_name}")
+    # Get pdf file
+    pdf_path = os.path.join(UPLOAD_DIR, f"{session_id}_{pdf_file_name}.pdf")
+    with open(pdf_path, "rb") as pdf_file:        
+        # We'll use PyMuPDF to load the PDF
+        def format_docs(docs):
+            return "\n\n".join(doc.page_content for doc in docs)
 
-    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        tmp_file.write(pdf_file.getvalue())
-        tmp_file_path = tmp_file.name
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(pdf_file.read())
+            tmp_file_path = tmp_file.name
 
-    loader = PyMuPDFLoader(file_path=tmp_file_path)
-    data = loader.load()
+        loader = PyMuPDFLoader(file_path=tmp_file_path)
+        data = loader.load()
     
-    return JSONResponse(content={
-        "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
-    })
+    # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
+    print(data[0].page_content)
+    # Call model to get summary in json format
+    prompt = "Summerize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
+    res = ollama.chat(
+        model=model,
+        messages=[
+            {
+                "role":"user",
+                "content": prompt,
+            }
+        ]
+    )
+    json_output = {}
+    res_text = res['message']['content']
+    print(res_text)
+
+    try: 
+        clean_text = res_text.replace("```json", "").replace("```", "").strip()
+        json_output = json.loads(clean_text)
+    except json.decoder.JSONDecodeError:
+        return "json:error"
+    
+    # Normalize the keys
+    normalized_output = {
+        "summary": json_output.get("Summary") or json_output.get("summary", ""),
+        "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
+    }
+    return JSONResponse(content=normalized_output)
+    # return JSONResponse(content={
+    #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
+    # })
 
 @app.post("/api/analyze_table")
 def analyze_table(
