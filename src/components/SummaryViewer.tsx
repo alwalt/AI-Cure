@@ -5,7 +5,7 @@ import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 
 interface SummaryViewerProps {
-  sessionId: string;
+  // sessionId: string;
   csvFilename: string | undefined;
   file: File | undefined;
   fileName: string | undefined;
@@ -22,14 +22,14 @@ const fetchTableAnalysis = async ({
 }: {
   queryKey: any[];
 }): Promise<AnalysisResponse> => {
-  const [_key, sessionId, csvFilename] = queryKey;
+  const [_key, csvFilename] = queryKey;
 
-  if (!sessionId || !csvFilename) {
+  if (!csvFilename) {
     return { summary: "", keywords: [] };
   }
 
   const formData = new FormData();
-  formData.append("session_id", sessionId);
+  // formData.append("session_id", sessionId);
   formData.append("csv_name", csvFilename);
   // Use default model (llama3)
 
@@ -40,6 +40,7 @@ const fetchTableAnalysis = async ({
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      withCredentials: true,
     }
   );
 
@@ -51,18 +52,16 @@ const fetchImageAnalysis = async ({
 }: {
   queryKey: any[];
 }): Promise<AnalysisResponse> => {
-  const [_key, sessionId, fileName] = queryKey;
+  const [_key, fileName] = queryKey;
 
-  if (!sessionId || !fileName) {
+  if (!fileName) {
     return { summary: "", keywords: [] };
   }
 
   const formData = new FormData();
-  formData.append("session_id", sessionId);
   formData.append("file_name", fileName);
   // Use default model (llama3)
   console.log(formData);
-  console.log(sessionId);
   console.log(fileName);
   const response = await axios.post(
     "http://localhost:8000/api/analyze_image",
@@ -71,6 +70,7 @@ const fetchImageAnalysis = async ({
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      withCredentials: true,
     }
   );
 
@@ -82,13 +82,11 @@ const fetchPDFAnalysis = async ({
 }: {
   queryKey: any[];
 }): Promise<AnalysisResponse> => {
-  const [_key, sessionId, fileName] = queryKey;
+  const [_key, fileName] = queryKey;
   const formData = new FormData();
-  formData.append("session_id", sessionId);
   formData.append("pdf_file_name", fileName);
   // Use default model (llava)
   console.log(formData);
-  console.log(sessionId);
   console.log(fileName);
   const response = await axios.post(
     "http://localhost:8000/api/analyze_pdf",
@@ -97,6 +95,7 @@ const fetchPDFAnalysis = async ({
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      withCredentials: true,
     }
   );
 
@@ -104,7 +103,7 @@ const fetchPDFAnalysis = async ({
 };
 
 export default function SummaryViewer({
-  sessionId,
+  // sessionId,
   csvFilename,
   file,
   fileName,
@@ -122,12 +121,12 @@ export default function SummaryViewer({
   // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
     queryKey: isImage 
-      ? ["imageAnalysis", sessionId, fileName] 
+      ? ["imageAnalysis", fileName] 
       : isPDF
-      ? ["pdfAnalysis", sessionId, fileName]
-      : ["tableAnalysis", sessionId, csvFilename],
+      ? ["pdfAnalysis", fileName]
+      : ["tableAnalysis", csvFilename],
     queryFn: isImage ? fetchImageAnalysis : isPDF ? fetchPDFAnalysis : fetchTableAnalysis,
-    enabled: !!sessionId && (isImage ? !!file : isPDF ? !!file : !!csvFilename),
+    enabled: (isImage ? !!file : isPDF ? !!file : !!csvFilename),
     refetchOnWindowFocus: false,
   });
 

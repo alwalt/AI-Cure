@@ -90,7 +90,7 @@ export default function RightColumn({
           <TablePreviewer />
           {renderFilePreview()}
           <SummaryViewer 
-            sessionId={sessionId || ""}
+            // sessionId={sessionId || ""}
             csvFilename={previewCsv || ""}
             file={previewFile?.file}
             fileName={previewFile?.name || ""}

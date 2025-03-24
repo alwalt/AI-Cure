@@ -17,7 +17,7 @@ export default function FileUploader({
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [sessionId, setSessionId] = useState<string>("");
+  // const [sessionId, setSessionId] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [tables, setTables] = useState<Table[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -88,11 +88,8 @@ export default function FileUploader({
       try {
         const formData = new FormData();
         const fileType = getFileType(file.name);
-        formData.append("file", file)
-        formData.append("file_type", fileType)
-        if (sessionId === null) {
-          formData.append("session_id", sessionId);
-        }
+        formData.append("file", file);
+        formData.append("file_type", fileType);
 
         const response = await axios.post<UploadResponse>(
           "http://localhost:8000/api/upload_file",
@@ -102,16 +99,17 @@ export default function FileUploader({
             "Content-Type": "multipart/form-data",
             },
             timeout: 30000,
+            withCredentials: true,
           }
         );
         // print out the response data decoded
-        console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
-        console.log(`Session ID: ${response.data.session_id}`);
+        // console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
+        // console.log(`Session ID: ${response.data.session_id}`);
         
       
-        setSessionId(response.data.session_id);
-        onSessionUpdate?.(response.data.session_id);
-        console.log(`Session ID: ${response.data.session_id}`);
+        // setSessionId(response.data.session_id);
+        // onSessionUpdate?.(response.data.session_id);
+        // console.log(`Session ID: ${response.data.session_id}`);
         
         if (fileType == "excel" || fileType == "xlsx") {
           if (response.data.tables.length > 0) {
@@ -120,7 +118,7 @@ export default function FileUploader({
           }
         }
         console.log(`Response: ${response.data}`);
-        console.log(`Session ID: ${sessionId}`);
+        // console.log(`Session ID: ${sessionId}`);
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
       }

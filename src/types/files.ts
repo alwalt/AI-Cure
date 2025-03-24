@@ -3,7 +3,7 @@ export interface UploadedFile {
   type: string;
   dateCreated: string;
   size: number;
-  file: File;
+  file?: File;
   selected?: boolean;
 }
 
@@ -19,7 +19,7 @@ export interface UploadResponse {
 
 export interface UploadFileButtonProps {
   onTablesUpdate: (tables: Table[]) => void;
-  onSessionUpdate: (sessionId: string) => void;
+  // onSessionUpdate: (sessionId: string) => void;
   onFilesUpdate: (files: UploadedFile[]) => void;
 }
 
