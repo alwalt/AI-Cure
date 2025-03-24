@@ -273,7 +273,7 @@ async def create_documents_from_images(
 async def create_chatbot(
     session_id: str,
     model_name: str = Body(...),
-    chat_prompt: str = Body(...),
+    chat_prompt: str = Body(...), #it looks like its unused but it is
 ):
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.

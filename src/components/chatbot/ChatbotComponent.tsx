@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Chatbot from "react-chatbot-kit";
 import "react-chatbot-kit/build/main.css"; // This applies the default styles (we will override with Tailwind later)
 import "./chatbot.css";
@@ -10,46 +10,104 @@ import { useChatbotStore } from "@/store/useChatbotStore";
 
 export default function ChatbotComponent() {
   const { sessionId, setSessionId } = useChatbotStore();
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!sessionId) {
-      const newSessionId = `session_${Math.random().toString(36).substr(2, 9)}`;
-      setSessionId(newSessionId);
-
-      // Ensure fetch happens after Zustand state update
-      setTimeout(() => {
-        fetch(`http://127.0.0.1:8000/api/create_chatbot/${newSessionId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            model_name: "llama3",
-            chat_prompt: "You are a helpful assistant.",
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => console.log("Chatbot session created:", data))
-          .catch((err) => console.error("Error creating chatbot:", err));
-      }, 0); // Delay to ensure sessionId updates
-    }
-    const fetchSession = async () => {
-      const requestBody = { sessionId: "session_pfno60db2" }; // Check what you're sending
-      console.log("Sending request:", requestBody);
-
+  // Function to fetch session ID from create_vectorstore
+  const fetchSessionId = async (): Promise<string | null> => {
+    try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/create_chatbot/session_pfno60db2",
+        "http://127.0.0.1:8000/api/create_vectorstore",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            embedding_model: "nomic-ai/nomic-embed-text-v1.5",
+            documents: JSON.stringify([
+              {
+                page_content: "This is a test document.",
+                metadata: {},
+              },
+            ]),
+          }),
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`Failed to create vectorstore: ${response.statusText}`);
+      }
+
       const data = await response.json();
-      console.log("Response received:", data);
+      console.log("Vectorstore session created:", data);
+
+      if (data.session_id) {
+        return data.session_id;
+      } else {
+        throw new Error("session_id missing from vectorstore response");
+      }
+    } catch (error) {
+      console.error("Error fetching session_id:", error);
+      return null;
+    }
+  };
+
+  // Function to create chatbot session using fetched session ID
+  const createChatbotSession = async (sessionId: string) => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/create_chatbot/${sessionId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model_name: "llama3.2:1b",
+            chat_prompt: "You are a helpful assistant.",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to create chatbot session: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Chatbot session reponse:", data);
+
+      if (data.session_id) {
+        setSessionId(data.session_id);
+      } else {
+        console.error("Unexpected chatbot session response:", data);
+        throw new Error("session_id missing from chatbot response");
+      }
+    } catch (error) {
+      console.error("Error creating chatbot:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const initializeChatbot = async () => {
+      if (!sessionId) {
+        const newSessionId = await fetchSessionId();
+        if (newSessionId) {
+          setSessionId(newSessionId);
+          await createChatbotSession(newSessionId);
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
     };
 
-    fetchSession();
+    initializeChatbot();
   }, [sessionId, setSessionId]);
+
+  if (loading) {
+    return <div>Loading chatbot...</div>;
+  }
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
