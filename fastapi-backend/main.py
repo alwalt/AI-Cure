@@ -81,46 +81,16 @@ class ChatHistory(BaseModel):
     history: List = []
 
 # Middleware
-# @app.middleware("http")
-# async def session_manager(request: Request, call_next):
-#     session_id = request.cookies.get("user_session")
-#     if session_id and not re.match(r"^[a-f0-9]{32}$", session_id):
-#         # Invalid format, generate new
-#         session_id = None
-#     if session_id and not os.path.exists(f"{USER_DIRS}/{session_id}"):
-#         # Directory missing, treat as new session
-#         session_id = None
-#     # New user
-#     if not session_id or session_id not in ACTIVE_SESSIONS:
-#         session_id = uuid.uuid4().hex
-#         os.makedirs(f"{USER_DIRS}/{session_id}", exist_ok=True)
-#     request.state.session_id = session_id
-#     ACTIVE_SESSIONS[session_id] = time.time()
-#     response = await call_next(request)
-
-#     # Debugging: Log the final response
-#     body = [section async for section in response.body_iterator]
-#     response.body_iterator = iter(body)
-#     response_body = b"".join(body).decode()
-#     print("Final response body:", response_body)  # Log this
-
-
-#     response.set_cookie(
-#         "user_session", 
-#         session_id, 
-#         max_age=SESSION_TIMEOUT,
-#         httponly=True,
-#         secure=True,
-#         samesite="Lax"
-#     )
-#     return response
 @app.middleware("http")
 async def session_manager(request: Request, call_next):
     session_id = request.cookies.get("user_session")
     if session_id and not re.match(r"^[a-f0-9]{32}$", session_id):
+        # Invalid format, generate new
         session_id = None
     if session_id and not os.path.exists(f"{USER_DIRS}/{session_id}"):
+        # Directory missing, treat as new session
         session_id = None
+     # New user
     if not session_id or session_id not in ACTIVE_SESSIONS:
         session_id = uuid.uuid4().hex
         os.makedirs(f"{USER_DIRS}/{session_id}", exist_ok=True)
@@ -128,19 +98,11 @@ async def session_manager(request: Request, call_next):
     ACTIVE_SESSIONS[session_id] = time.time()
     
     response = await call_next(request)
-    
-    # Read response body safely
-    async def read_body():
-        body = b"".join([chunk async for chunk in response.body_iterator])
-        return body
-
-    response_body = await read_body()
-    print("Final response body:", response_body.decode())
 
     # Restore the response for FastAPI
     from starlette.responses import Response
     new_response = Response(
-        content=response_body,
+        content=b"".join([chunk async for chunk in response.body_iterator]),
         status_code=response.status_code,
         headers=dict(response.headers),
         media_type=response.media_type,
@@ -362,14 +324,13 @@ def export_subset(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
-    # Changed Form(...) to Body(...), and lst to str
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
-    print("!!!! DOCS " , documents)
+
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
     docs = [Document(page_content=doc["page_content"], metadata=doc["metadata"]) for doc in docs_data]
@@ -383,7 +344,6 @@ async def generate_vectors(
     
     # Create vector store
     session_id = uuid.uuid4().hex
-    # logging.debug(f"Generated session_id: {session_id}") # for debugging, delete when working
     save_directory = f"download_files/chroma_db/{session_id}"
     os.makedirs(save_directory, exist_ok=True)
     
@@ -428,10 +388,6 @@ async def create_chatbot(
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.
     """
-    # if session_id not in SESSIONS:
-    #     raise HTTPException(status_code=404, detail="Session not found")
-    
-    # vectorstore = SESSIONS[session_id]["vectorstore"]
     if session_id not in SESSIONS:
         SESSIONS[session_id] = {"vectorstore": None, "chain": None}  # Initialize session
 
@@ -439,14 +395,11 @@ async def create_chatbot(
 
     if vectorstore is None:
         raise HTTPException(status_code=400, detail="Vectorstore not initialized for this session")
-
-
     
     # Create LLM
     llm = ChatOllama(model=model_name, temperature=0)
     
     # Create prompt template
-    # qa_prompt = PromptTemplate.from_template(template=chat_prompt)
     qa_prompt = PromptTemplate(
     input_variables=["context", "question"],  # Ensure "context" is included
     template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:")
@@ -457,13 +410,6 @@ async def create_chatbot(
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
     
     # Create chain
-    # chain = ConversationalRetrievalChain.from_llm(
-    #     llm=llm, 
-    #     retriever=retriever, 
-    #     return_source_documents=True,
-    #     combine_docs_chain_kwargs={"prompt": qa_prompt}, 
-    #     verbose=True
-    # )
     chain = ConversationalRetrievalChain.from_llm(
     llm=llm, 
     retriever=retriever, 

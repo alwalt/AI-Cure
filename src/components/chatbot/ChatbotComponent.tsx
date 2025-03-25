@@ -37,7 +37,6 @@ export default function ChatbotComponent() {
       }
 
       const data = await response.json();
-      console.log("Vectorstore session created:", data);
 
       if (data.session_id) {
         return data.session_id;
@@ -72,7 +71,6 @@ export default function ChatbotComponent() {
       }
 
       const data = await response.json();
-      console.log("Chatbot session response:", data);
 
       if (data.status === "success") {
         setSessionId(sessionId);
