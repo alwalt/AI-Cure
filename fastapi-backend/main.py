@@ -1,6 +1,8 @@
 # main.py
+import asyncio
 import json
 import os
+import time
 import uuid
 import shutil
 from typing import Dict, List, Optional
@@ -10,9 +12,11 @@ import re
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from contextlib import asynccontextmanager
+
 
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
 
@@ -51,11 +55,19 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
-UPLOAD_DIR = "uploaded_files"
+# Add to config
+SESSION_TIMEOUT = 86400  # 24 hours in seconds
+USER_DIRS = "user_uploads"
+
+# Session tracking dict
+ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
+
+# UPLOAD_DIR = "uploaded_files"
 OUTPUT_DIR = "output_tables"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # { session_id -> [ (csv_file, name), ... ] }
@@ -65,25 +77,110 @@ SESSIONS = {}
 class ChatHistory(BaseModel):
     history: List = []
 
+# Middleware
+@app.middleware("http")
+async def session_manager(request: Request, call_next):
+    session_id = request.cookies.get("user_session")
+    if session_id and not re.match(r"^[a-f0-9]{32}$", session_id):
+        # Invalid format, generate new
+        session_id = None
+    if session_id and not os.path.exists(f"{USER_DIRS}/{session_id}"):
+        # Directory missing, treat as new session
+        session_id = None
+    # New user
+    if not session_id or session_id not in ACTIVE_SESSIONS:
+        session_id = uuid.uuid4().hex
+        os.makedirs(f"{USER_DIRS}/{session_id}", exist_ok=True)
+    request.state.session_id = session_id
+    ACTIVE_SESSIONS[session_id] = time.time()
+    response = await call_next(request)
+    response.set_cookie(
+        "user_session", 
+        session_id, 
+        max_age=SESSION_TIMEOUT,
+        httponly=True,
+        secure=True,
+        samesite="Lax"
+    )
+    return response
+
+async def cleanup_job():
+    while True:
+        await asyncio.sleep(3600)  # Run hourly
+        now = time.time()
+        for session_id, last_active in list(ACTIVE_SESSIONS.items()):
+            if now - last_active > SESSION_TIMEOUT:
+                shutil.rmtree(f"{USER_DIRS}/{session_id}", ignore_errors=True)
+                del ACTIVE_SESSIONS[session_id]
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+   asyncio.create_task(cleanup_job())
+
 ###############################################################################
 # API Routes
 ###############################################################################
+@app.get("/api/get_file/{filename}")
+async def get_file(filename: str, request: Request):
+    session_id = request.state.session_id
+    file_path = os.path.join(USER_DIRS, session_id, filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(file_path)
+
+@app.get("/api/get_session_files")
+async def get_files(request: Request):
+    session_id = request.state.session_id
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    
+    if not os.path.exists(UPLOAD_DIR):
+        return JSONResponse(content={"files": []})
+    
+    try:
+        files = []
+        for filename in os.listdir(UPLOAD_DIR):
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            file_ext = filename.split(".")[-1]
+            if os.path.isfile(file_path):
+                files.append({
+                    "name": filename,
+                    "type": file_ext,
+                    "dateCreated": os.path.getctime(file_path),
+                    "size": os.path.getsize(file_path),
+                })
+        
+        return JSONResponse(content={"files": files})
+
+    except Exception as e:
+        logging.error(f"Error during retrieval: {str(e)}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    
 @app.post("/api/upload_file")
-async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
+async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
     """
-    Upload a file and return a session id.
+    Upload a file and return a session id. Unless sessionid is present.
     """
     print(f"Upload request received: {file.filename}")
     print(f"File content type: {file.content_type}")
+    print(f"PASEED FILE TYPE: {file_type}")
+    session_id = request.state.session_id
+    print(f"Session ID: {session_id}")
+    if session_id is not None:
+        print(f"Session ID: {session_id}")
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    
     try:
-        session_id = uuid.uuid4().hex
+        # if session_id is not None or session_id == "":
+        #     session_id = uuid.uuid4().hex
         logging.info(f"Starting upload for session: {session_id}")
-        
-        if file_type == "excel":
+
+        if file_type == "excel" or file_type == "xlsx":
             file_ext = file.filename.split(".")[-1]
             
 
-            unique_name = f"{session_id}.{file_ext}"
+            unique_name = f"{session_id}_{file.filename}.{file_ext}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
         
             with open(file_path, "wb") as buffer:
@@ -96,7 +193,6 @@ async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
             SESSION_TABLES[session_id] = table_info
             
             response_data = {
-                "session_id": session_id,
                 "tables": [{"csv_filename": csv_name, "display_name": file.filename} for _, csv_name in table_info],
             }
         elif file.content_type == "application/pdf":
@@ -109,11 +205,10 @@ async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
                 shutil.copyfileobj(file.file, buffer)
             
             response_data = {
-                "session_id": session_id,
                 "file_name": file_name
             }
         elif file.content_type == "image/jpeg" or file.content_type == "image/png":
-            file_ext = "jpg"
+            file_ext = file.filename.split(".")[-1]
             file_name = file.filename
             unique_name = f"{session_id}_{file_name}.{file_ext}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
@@ -122,7 +217,6 @@ async def upload_file(file: UploadFile = File(...), file_type: str = Form(...)):
                 shutil.copyfileobj(file.file, buffer)
 
             response_data = {
-                "session_id": session_id,
                 "file_name": file_name
             }
         else:
@@ -150,10 +244,11 @@ def list_tables(session_id: str):
     return JSONResponse(content={"tables": data})
 
 @app.get("/api/preview_table")
-def preview_table(session_id: str, csv_filename: str):
+def preview_table(request: Request, csv_filename: str):
     """
     Return a small preview of the CSV (first 5 rows, for example).
     """
+    session_id = request.state.session_id
     logging.info(f"Preview request received for session: {session_id}, file: {csv_filename}")
     
     # locate the path
@@ -353,14 +448,18 @@ async def get_chat_response(
 # Image Analyzer
 @app.post("/api/analyze_image")
 async def analyze_image(
+    request: Request,
     model: str = Form("llava"),
-    session_id: str = Form(...),
     file_name: str = Form(...),
 ):
     """
     Analyze an image and return a json object with a summary.
     """
+    session_id = request.state.session_id
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+
     print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
+
     # get the image from the session
     image_path = os.path.join(UPLOAD_DIR, f"{session_id}_{file_name}.jpg")
     with open(image_path, "rb") as image_file:
@@ -410,28 +509,69 @@ async def analyze_image(
 
 # PDF Analyzer
 @app.post("/api/analyze_pdf")
-def analyze_pdf(pdf_file: UploadFile = File(...),):
+def analyze_pdf(
+    request: Request,
+    pdf_file_name: str = Form(...),
+    model: str = Form("llava"),
+    ):
     """
     Analyze a PDF and return a json object with a summary.
     """
-    # We'll use PyMuPDF to load the PDF
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    # logged received file
+    print(f"received: {pdf_file_name}")
+    session_id = request.state.session_id
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
 
-    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        tmp_file.write(pdf_file.getvalue())
-        tmp_file_path = tmp_file.name
+    # Get pdf file
+    pdf_path = os.path.join(UPLOAD_DIR, f"{session_id}_{pdf_file_name}.pdf")
+    with open(pdf_path, "rb") as pdf_file:        
+        # We'll use PyMuPDF to load the PDF
+        def format_docs(docs):
+            return "\n\n".join(doc.page_content for doc in docs)
 
-    loader = PyMuPDFLoader(file_path=tmp_file_path)
-    data = loader.load()
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(pdf_file.read())
+            tmp_file_path = tmp_file.name
+
+        loader = PyMuPDFLoader(file_path=tmp_file_path)
+        data = loader.load()
     
-    return JSONResponse(content={
-        "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
-    })
+    # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
+    print(data[0].page_content)
+    # Call model to get summary in json format
+    prompt = "Summerize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
+    res = ollama.chat(
+        model=model,
+        messages=[
+            {
+                "role":"user",
+                "content": prompt,
+            }
+        ]
+    )
+    json_output = {}
+    res_text = res['message']['content']
+    print(res_text)
+
+    try: 
+        clean_text = res_text.replace("```json", "").replace("```", "").strip()
+        json_output = json.loads(clean_text)
+    except json.decoder.JSONDecodeError:
+        return "json:error"
+    
+    # Normalize the keys
+    normalized_output = {
+        "summary": json_output.get("Summary") or json_output.get("summary", ""),
+        "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
+    }
+    return JSONResponse(content=normalized_output)
+    # return JSONResponse(content={
+    #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
+    # })
 
 @app.post("/api/analyze_table")
 def analyze_table(
-    session_id: str = Form(...),
+    request: Request,
     csv_name: str = Form(...),
     model: str = Form("llama3.1"),
 ):
@@ -439,6 +579,7 @@ def analyze_table(
     Analyze a table and provide a summary and keywords.
     """
     # Get the table from the session
+    session_id = request.state.session_id
     table_info = SESSION_TABLES.get(session_id, [])
     match = [p for (p, n) in table_info if n == csv_name]
     if not match:
@@ -487,4 +628,4 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan)

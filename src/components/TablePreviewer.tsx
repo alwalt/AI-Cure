@@ -22,14 +22,20 @@ const fetchTablePreview = async ({
 }: {
   queryKey: any[];
 }): Promise<PreviewResponse> => {
-  const [_key, sessionId, previewCsv] = queryKey;
+  const [_key, previewCsv] = queryKey;
   // Build query parameters for the API call.
   const params = new URLSearchParams({
-    session_id: sessionId,
+    // session_id: sessionId,
     csv_filename: previewCsv || "", // Use previewCsv from Zustand
   });
   const response = await fetch(
-    `http://localhost:8000/api/preview_table?${params.toString()}`
+    `http://localhost:8000/api/preview_table?${params.toString()}`,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      credentials: "include",
+    }
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -39,11 +45,11 @@ const fetchTablePreview = async ({
 
 export default function TablePreviewer() {
   // Access sessionId and previewCsv from Zustand store
-  const sessionId = useSessionFileStore((state) => state.sessionId);
+  // const sessionId = useSessionFileStore((state) => state.sessionId);
   const previewCsv = useSessionFileStore((state) => state.previewCsv);
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ["tablePreview", sessionId, previewCsv], // Use previewCsv here
+    queryKey: ["tablePreview", previewCsv], // Use previewCsv here
     queryFn: fetchTablePreview,
     enabled: !!previewCsv, // Only fetch if previewCsv is available
   });

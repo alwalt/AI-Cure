@@ -12,7 +12,7 @@ interface SessionFileStoreState {
   setSelectedFiles: (
     files: UploadedFile[] | ((prev: UploadedFile[]) => UploadedFile[])
   ) => void; // ✅ Add this
-  handlePreview: (csvFilename: string, currentSessionId: string) => void;
+  handlePreview: (csvFilename: string) => void;
   handleFilePreview: (file: UploadedFile | null) => void;
 }
 
@@ -31,10 +31,9 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
         typeof files === "function" ? files(state.selectedFiles) : files,
     })), // ✅ Allow function updates
 
-  handlePreview: (csvFilename, currentSessionId) => {
+  handlePreview: (csvFilename) => {
     set({
       previewCsv: csvFilename,
-      sessionId: currentSessionId,
       previewFile: null,
     });
   },
