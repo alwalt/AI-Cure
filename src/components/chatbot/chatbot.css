@@ -23,6 +23,17 @@
 .react-chatbot-kit-user-chat-message {
   background-color: #2d2d2d;
   color: white;
+  max-width: 75%; /* Adjust the value as needed */
+  word-wrap: break-word; /* Allow long words to break and prevent overflow */
+  margin-left: left !important;
+  margin-right: 0 !important;
+}
+
+/* Align bot's speech bubble to the left */
+.react-chatbot-kit-chat-bot-message-container {
+  margin-left: 0 !important; /* Ensure the left margin is removed */
+  margin-right: auto !important; /* Push the bot's bubble to the left */
+  text-align: left; /* Ensure the text inside is left-aligned */
 }
 
 .react-chatbot-kit-user-chat-message-arrow {
