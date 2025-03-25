@@ -72,13 +72,13 @@ export default function ChatbotComponent() {
       }
 
       const data = await response.json();
-      console.log("Chatbot session reponse:", data);
+      console.log("Chatbot session response:", data);
 
-      if (data.session_id) {
-        setSessionId(data.session_id);
+      if (data.status === "success") {
+        setSessionId(sessionId);
       } else {
         console.error("Unexpected chatbot session response:", data);
-        throw new Error("session_id missing from chatbot response");
+        throw new Error("Chatbot session creation failed");
       }
     } catch (error) {
       console.error("Error creating chatbot:", error);
@@ -92,7 +92,6 @@ export default function ChatbotComponent() {
       if (!sessionId) {
         const newSessionId = await fetchSessionId();
         if (newSessionId) {
-          setSessionId(newSessionId);
           await createChatbotSession(newSessionId);
         } else {
           setLoading(false);
@@ -106,7 +105,11 @@ export default function ChatbotComponent() {
   }, [sessionId, setSessionId]);
 
   if (loading) {
-    return <div>Loading chatbot...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        Loading chatbot...
+      </div>
+    );
   }
 
   return (
