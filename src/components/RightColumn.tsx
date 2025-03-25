@@ -47,10 +47,10 @@ export default function RightColumn({
     } else if (type === "png" || type === "jpg" || type === "jpeg") {
       return (
         <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
-          <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">
+          <h3 className="p-2 bg-gray-100 text-gray-800 font-medium border-b">
             {name}
           </h3>
-          <div className="p-4 flex items-center justify-center bg-gray-50 flex-1">
+          <div className="p-2 flex items-center justify-center bg-gray-50 flex-1">
             <img
               src={objectUrl}
               alt={name}
@@ -63,10 +63,10 @@ export default function RightColumn({
 
     return (
       <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
-        <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">
+        <h3 className="bg-gray-100 text-gray-800 font-medium border-b">
           {name}
         </h3>
-        <div className="p-4 flex items-center justify-center bg-gray-50 flex-1">
+        <div className="p-2 flex items-center justify-center bg-gray-50 flex-1">
           <p className="text-gray-500">
             Preview not available for this file type
           </p>
@@ -76,7 +76,7 @@ export default function RightColumn({
   };
 
   return (
-    <div className="border-red-500 border-2 bg-primaryBlack flex flex-col items-start w-full">
+    <div className="bg-primaryBlack border-l-2 border-gray-700 p-2 flex flex-col items-start w-full">
       <button onClick={toggleRightColumn} className="text-white rounded">
         {isRightColumnVisible ? (
           <ChevronDoubleRightIcon className="h-8 w-8" />
@@ -89,7 +89,7 @@ export default function RightColumn({
         <div className="p-2">
           <TablePreviewer />
           {renderFilePreview()}
-          <SummaryViewer 
+          <SummaryViewer
             // sessionId={sessionId || ""}
             csvFilename={previewCsv || ""}
             file={previewFile?.file}

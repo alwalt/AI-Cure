@@ -1,7 +1,9 @@
+import ChatbotComponent from "@/components/chatbot/ChatbotComponent";
+
 export default function MiddleBottomColumn() {
-	return (
-		<div className="border-sky-50 border-2 bg-primaryBlack p-4 h-full">
-			<p>Middle Bottom Column</p>
-		</div>
-	);
+  return (
+    <div className="bg-primaryBlack p-2 h-full w-full overflow-hidden flex">
+      <ChatbotComponent />
+    </div>
+  );
 }
