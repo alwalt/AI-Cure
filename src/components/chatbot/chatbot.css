@@ -1,7 +1,4 @@
 /* Override default chatbot positioning */
-.react-chatbot-kit-chat-message-container {
-  background-color: #393834 !important;
-}
 
 .react-chatbot-kit-chat-input {
   background-color: #393834 !important;
@@ -36,9 +33,14 @@
 .react-chatbot-kit-chat-container {
   display: flex !important;
   width: 100% !important; /* ! - Make it fill the parent */
+  max-width: 100%;
   box-sizing: border-box;
   flex-direction: column; /* ! -  makes it take up full width */
   /* overflow: hidden; */
+}
+
+.react-chatbot-kit-chat-message-container {
+  background-color: #393834 !important;
 }
 
 /* Align bot's speech bubble to the left */
@@ -53,14 +55,19 @@
   background-color: #2d2d2d;
   color: white;
   flex-grow: 0 !important;
-  /* width: auto; */
+  width: 100%;
+  max-width: 75%;
+  word-wrap: break-word; /* Ensures long words wrap */
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .react-chatbot-kit-chat-bot-message {
-  display: flex !important;
+  display: flex;
   justify-content: flex-start !important;
   margin-left: 0;
-  margin-right: auto;
+  margin-right: 0;
   text-align: left;
-  /* width: auto; */
+  max-width: 75%;
+  width: 100%;
 }

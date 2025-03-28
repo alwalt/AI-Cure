@@ -11,20 +11,22 @@ export default function AicureToolFull() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/4">
+      <div className="min-w-[300px]">
         <LeftColumn />
       </div>
-
-      <div className="flex flex-col h-screen flex-grow">
+      {/* flex-grow has to be here to allow right col to collapse */}
+      <div className="flex flex-col h-screen flex-grow min-w-[100px]">
         <div className="h-3/4">
           <MiddleTopColumn />
         </div>
-        <div className="flex-grow">
+        <div className="">
           <MiddleBottomColumn />
         </div>
       </div>
 
-      <div className={`${showRight ? "w-1/4" : "w-10"} flex h-full`}>
+      <div
+        className={`${showRight ? "min-w-[300px]" : "w-[36px]"} flex h-full`}
+      >
         <RightColumn
           toggleRightColumn={toggleRightColumn}
           isRightColumnVisible={showRight}
