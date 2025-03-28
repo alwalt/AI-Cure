@@ -109,9 +109,9 @@ export default function ChatbotComponent() {
       </div>
     );
   }
-
+  // max-w-full overflow-hidden, on their own didn't help
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full flex flex-col flex-grow-0 basis-auto">
       <Chatbot
         config={config}
         messageParser={MessageParser}
