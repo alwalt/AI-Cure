@@ -76,7 +76,7 @@ export default function RightColumn({
   };
 
   return (
-    <div className="bg-primaryBlack border-l-2 border-gray-700 p-2 flex flex-col items-start w-full">
+    <div className="bg-primaryBlack border-l-2 border-gray-700 pt-2 flex flex-col items-start w-full">
       <button onClick={toggleRightColumn} className="text-white rounded">
         {isRightColumnVisible ? (
           <ChevronDoubleRightIcon className="h-8 w-8" />

@@ -34,8 +34,10 @@ export interface RightColumnProps {
 }
 
 export interface SummaryViewerProps {
-  sessionId: string;
+  // sessionId: string;
   csvFilename: string | undefined;
+  file: File | undefined;
+  fileName: string | undefined;
 }
 
 export interface AnalysisResponse {
