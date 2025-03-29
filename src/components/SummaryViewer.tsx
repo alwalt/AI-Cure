@@ -4,19 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 
-interface SummaryViewerProps {
-  // sessionId: string;
-  csvFilename: string | undefined;
-  file: File | undefined;
-  fileName: string | undefined;
-}
-
-interface AnalysisResponse {
-  summary: string;
-  keywords: string[];
-  error?: string;
-}
-
 const fetchTableAnalysis = async ({
   queryKey,
 }: {
@@ -108,25 +95,29 @@ export default function SummaryViewer({
   file,
   fileName,
 }: SummaryViewerProps) {
-  const isImage = file && (
-    file.type.startsWith('image/') || 
-    ["png", "jpg", "jpeg", "gif"].some(ext => 
-      file.name.toLowerCase().endsWith(`.${ext}`)
-    )
-  );
-  const isPDF = file && file.type.startsWith('application/pdf');
+  const isImage =
+    file &&
+    (file.type.startsWith("image/") ||
+      ["png", "jpg", "jpeg", "gif"].some((ext) =>
+        file.name.toLowerCase().endsWith(`.${ext}`)
+      ));
+  const isPDF = file && file.type.startsWith("application/pdf");
   console.log(file);
   console.log(file?.type);
   console.log(isPDF);
   // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: isImage 
-      ? ["imageAnalysis", fileName] 
+    queryKey: isImage
+      ? ["imageAnalysis", fileName]
       : isPDF
       ? ["pdfAnalysis", fileName]
       : ["tableAnalysis", csvFilename],
-    queryFn: isImage ? fetchImageAnalysis : isPDF ? fetchPDFAnalysis : fetchTableAnalysis,
-    enabled: (isImage ? !!file : isPDF ? !!file : !!csvFilename),
+    queryFn: isImage
+      ? fetchImageAnalysis
+      : isPDF
+      ? fetchPDFAnalysis
+      : fetchTableAnalysis,
+    enabled: isImage ? !!file : isPDF ? !!file : !!csvFilename,
     refetchOnWindowFocus: false,
   });
 
@@ -143,7 +134,9 @@ export default function SummaryViewer({
     return (
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
-        <p className="text-gray-400">Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data...</p>
+        <p className="text-gray-400">
+          Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data...
+        </p>
       </div>
     );
   }
@@ -153,7 +146,8 @@ export default function SummaryViewer({
       <div className="p-4 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-red-500">
-          Error analyzing {isImage ? "image" : isPDF ? "pdf" : "table"}: {error?.toString()}
+          Error analyzing {isImage ? "image" : isPDF ? "pdf" : "table"}:{" "}
+          {error?.toString()}
         </p>
       </div>
     );
