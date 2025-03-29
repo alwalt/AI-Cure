@@ -10,7 +10,7 @@ export default function AicureToolFull() {
   const toggleRightColumn = () => setShowRight((prev) => !prev);
 
   return (
-    <div className="flex h-screen col-span-3">
+    <div className="flex h-screen grid-cols-3">
       <div className="min-w-[300px] max-w-[300px]">
         <LeftColumn />
       </div>
