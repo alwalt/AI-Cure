@@ -10,12 +10,12 @@ export default function AicureToolFull() {
   const toggleRightColumn = () => setShowRight((prev) => !prev);
 
   return (
-    <div className="flex h-screen">
-      <div className="min-w-[300px]">
+    <div className="flex h-screen col-span-3">
+      <div className="min-w-[300px] max-w-[300px]">
         <LeftColumn />
       </div>
       {/* flex-grow has to be here to allow right col to collapse */}
-      <div className="flex flex-col h-screen flex-grow min-w-[100px]">
+      <div className="flex flex-col h-screen grow min-w-[300px]">
         <div className="h-3/4">
           <MiddleTopColumn />
         </div>

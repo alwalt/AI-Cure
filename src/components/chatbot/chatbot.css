@@ -6,7 +6,7 @@
 
 .react-chatbot-kit-chat-input::placeholder {
   color: white !important;
-  opacity: 1; /* Ensures visibility */
+  opacity: 1;
 }
 
 .react-chatbot-kit-chat-header {
@@ -16,48 +16,43 @@
 }
 
 .react-chatbot-kit-user-chat-message-arrow {
-  width: 10px; /* Adjust size */
-  height: 10px; /* Adjust size */
+  width: 10px;
+  height: 10px;
   border-color: #2d2d2d;
   transform: rotate(45deg) translateX(-1px) translateY(5px);
 }
 
 .react-chatbot-kit-chat-btn-send {
   flex-shrink: 0;
-  width: 50px; /* Adjust if needed */
+  width: 50px;
   min-width: 50px;
   text-align: center;
   border-top: 1px solid white;
 }
 
 .react-chatbot-kit-chat-container {
-  display: flex !important;
-  width: 100% !important; /* ! - Make it fill the parent */
+  width: 100% !important;
   max-width: 100%;
   box-sizing: border-box;
-  flex-direction: column; /* ! -  makes it take up full width */
-  /* overflow: hidden; */
+  flex-direction: column;
 }
 
 .react-chatbot-kit-chat-message-container {
   background-color: #393834 !important;
 }
 
-/* Align bot's speech bubble to the left */
 .react-chatbot-kit-chat-bot-message-container {
   display: flex !important;
   justify-content: flex-start !important;
-  margin-left: 0 !important; /* Ensure the left margin is removed */
-  margin-right: auto !important; /* Push the bot's bubble to the left */
+  margin-left: 0 !important;
+  margin-right: auto !important;
 }
 
 .react-chatbot-kit-user-chat-message {
   background-color: #2d2d2d;
   color: white;
-  flex-grow: 0 !important;
   width: 100%;
   max-width: 75%;
-  word-wrap: break-word; /* Ensures long words wrap */
   margin-left: 0;
   margin-right: 0;
 }
