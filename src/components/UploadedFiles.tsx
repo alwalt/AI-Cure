@@ -60,7 +60,7 @@ export default function UploadedFiles({
 
   if (!files.length) {
     return (
-      <div className="p-2 bg-gray-100 rounded text-gray-500 text-center">
+      <div className="p-2 bg-unSelectedBlack rounded text-primaryWhite text-center">
         No files uploaded yet.
       </div>
     );
@@ -72,9 +72,9 @@ export default function UploadedFiles({
         Uploaded Files
       </h3>
 
-      <div className="max-h-[300px] overflow-y-auto bg-primaryWhite rounded">
+      <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded">
         <table className="w-full">
-          <thead className="bg-gray-100 text-gray-700 text-sm">
+          <thead className="bg-unselectedBlack text-primaryWhite text-sm">
             <tr>
               <th className="p-2 text-left w-12"></th>
               <th className="p-2 text-left">Name</th>
@@ -88,7 +88,7 @@ export default function UploadedFiles({
             {files.map((file) => (
               <tr
                 key={file.name}
-                className={`cursor-pointer hover:bg-gray-100
+                className={`cursor-pointer hover:bg-selectedBlack
                   ${
                     selectedFiles.some((f) => f.name === file.name)
                       ? "bg-blue-100"
@@ -106,21 +106,21 @@ export default function UploadedFiles({
                     checked={selectedFiles.some((f) => f.name === file.name)}
                     onChange={() => handleFileSelect(file)}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    className="h-4 w-4 text-blue-600 bg-unSelectedBlack rounded border-gray-300 focus:ring-blue-500"
                   />
                 </td>
                 <td className="p-2 flex items-center gap-2">
                   {getFileIcon(file.type)}
-                  <span className="text-gray-700 text-sm">{file.name}</span>
+                  <span className="text-primaryWhite text-sm">{file.name}</span>
                 </td>
                 <td className="p-2">
                   <div className="flex items-center">
                     <div className="h-3 w-3 rounded-full bg-green-400 mr-2"></div>
-                    <span className="text-sm text-gray-600">Ready</span>
+                    <span className="text-sm text-primiaryWhite">Ready</span>
                   </div>
                 </td>
-                <td className="p-2 text-sm text-gray-600">{file.type}</td>
-                <td className="p-2 text-sm text-gray-600">
+                <td className="p-2 text-sm text-primiaryWhite">{file.type}</td>
+                <td className="p-2 text-sm text-primiaryWhite">
                   {file.dateCreated}
                 </td>
                 <td className="p-2">
