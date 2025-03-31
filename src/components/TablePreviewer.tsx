@@ -16,6 +16,14 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useSessionFileStore } from "../store/useSessionFileStore"; // Import the store
 import { PreviewResponse } from "@/types/files";
+import resolveConfig from "tailwindcss/resolveConfig";
+import tailwindConfig from "@config";
+
+const fullConfig = resolveConfig(tailwindConfig);
+const greyColor = fullConfig.theme.colors.grey;
+const primaryBlack = fullConfig.theme.colors.primaryBlack;
+const primaryWhite = fullConfig.theme.colors.primaryWhite;
+const unSelectedBlack = fullConfig.theme.colors.unSelectedBlack;
 
 const fetchTablePreview = async ({
   queryKey,
@@ -59,7 +67,14 @@ export default function TablePreviewer() {
   }
 
   return (
-    <Card sx={{ mt: 3 }}>
+    <Card
+      sx={{
+        mt: 3,
+        bgcolor: unSelectedBlack,
+        color: primaryWhite,
+        border: `1px solid ${greyColor}`,
+      }}
+    >
       <CardContent>
         {isLoading ? (
           <CircularProgress />
@@ -70,12 +85,21 @@ export default function TablePreviewer() {
             <Typography variant="h6" gutterBottom>
               Table Preview: {previewCsv}
             </Typography>
-            <TableContainer component={Paper}>
+            <TableContainer
+              component={Paper}
+              sx={{
+                border: `1px solid ${greyColor}`,
+                bgcolor: primaryBlack,
+                color: primaryWhite,
+              }}
+            >
               <Table size="small">
                 <TableHead>
                   <TableRow>
                     {data.columns.map((col, index) => (
-                      <TableCell key={index}>{col}</TableCell>
+                      <TableCell key={index} sx={{ color: primaryWhite }}>
+                        {col}
+                      </TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
@@ -83,7 +107,9 @@ export default function TablePreviewer() {
                   {data.preview.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       {data.columns.map((col, colIndex) => (
-                        <TableCell key={colIndex}>{row[col]}</TableCell>
+                        <TableCell key={colIndex} sx={{ color: primaryWhite }}>
+                          {row[col]}
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))}

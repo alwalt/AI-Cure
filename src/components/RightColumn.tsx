@@ -37,7 +37,7 @@ export default function RightColumn({
 
     if (type === "pdf") {
       return (
-        <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
+        <div className="h-full w-full bg-panelBlack rounded-lg overflow-hidden flex flex-col">
           <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">
             {name}
           </h3>
@@ -46,8 +46,8 @@ export default function RightColumn({
       );
     } else if (type === "png" || type === "jpg" || type === "jpeg") {
       return (
-        <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
-          <h3 className="p-2 bg-gray-100 text-gray-800 font-medium border-b">
+        <div className="h-full w-full bg-panelBlack rounded-lg overflow-hidden flex flex-col">
+          <h3 className="p-2 bg-gray-100 text-primaryWhite font-medium border-b">
             {name}
           </h3>
           <div className="p-2 flex items-center justify-center bg-gray-50 flex-1">
@@ -62,12 +62,12 @@ export default function RightColumn({
     }
 
     return (
-      <div className="h-full w-full bg-white rounded-lg overflow-hidden flex flex-col">
-        <h3 className="bg-gray-100 text-gray-800 font-medium border-b">
+      <div className="h-full w-full bg-selectedBlack border-grey border rounded-lg overflow-hidden flex flex-col mb-2">
+        <h3 className="bg-selectedBlack text-primaryWhite font-medium border-b pl-2">
           {name}
         </h3>
-        <div className="p-2 flex items-center justify-center bg-gray-50 flex-1">
-          <p className="text-gray-500">
+        <div className="p-2 flex items-center justify-center bg-selectedBlack flex-1">
+          <p className="text-primaryWhite">
             Preview not available for this file type
           </p>
         </div>

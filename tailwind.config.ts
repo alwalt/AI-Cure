@@ -17,7 +17,7 @@ export default {
         redBorder: "#b05447",
         panelBlack: "#121212",
         selectedBlack: "#212121",
-        unselectedBlack: "#000000",
+        unSelectedBlack: "#000000",
       },
     },
   },
