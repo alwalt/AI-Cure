@@ -29,7 +29,7 @@ export default function UploadedFiles({
       const blob = await response.blob();
       const fileType = blob.type;
       // convert mime type to file type
-      const newFileType = fileType.split('/').pop() || "";
+      const newFileType = fileType.split("/").pop() || "";
       console.log(newFileType);
       const fileObj = new File([blob], file.name, { type: fileType });
 
@@ -38,7 +38,6 @@ export default function UploadedFiles({
         type: newFileType,
         file: fileObj,
       });
-
     } catch (error) {
       console.error("Error previewing file:", error);
     }
@@ -54,7 +53,9 @@ export default function UploadedFiles({
   };
 
   const canPreview = (fileType: string) => {
-    return ["pdf", "png", "jpg", "jpeg", "xlsx", "xls", "csv"].includes(fileType.toLowerCase());
+    return ["pdf", "png", "jpg", "jpeg", "xlsx", "xls", "csv"].includes(
+      fileType.toLowerCase()
+    );
   };
 
   if (!files.length) {
@@ -66,8 +67,8 @@ export default function UploadedFiles({
   }
 
   return (
-    <div className="bg-gray-200 rounded p-2">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+    <div className="bg-panelBlack border-grey border rounded p-2">
+      <h3 className="text-lg font-semibold text-primaryWhite mb-2">
         Uploaded Files
       </h3>
 
