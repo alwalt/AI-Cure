@@ -104,14 +104,14 @@ export default function ChatbotComponent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full bg-primaryBlack">
         Loading chatbot...
       </div>
     );
   }
   // max-w-full overflow-hidden, on their own didn't help
   return (
-    <div className=" flex flex-col flex-grow-0">
+    <div className="flex flex-col flex-grow-0">
       <Chatbot
         config={config}
         messageParser={MessageParser}
