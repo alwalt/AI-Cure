@@ -34,7 +34,8 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
   if (!tables.length) {
     return (
       <div className="p-2 bg-panelBlack rounded text-primaryWhite text-center">
-        No tables available. Please upload a file first.
+        <p>No tables available.</p>
+        <p>Please upload a file first.</p>
       </div>
     );
   }
