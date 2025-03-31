@@ -82,7 +82,6 @@ export default function FileUploader({
     setIsUploading(true);
     setUploadStatus("Uploading files...");
 
-
     // Upload all files to the endpoint
     for (const file of files) {
       try {
@@ -96,7 +95,7 @@ export default function FileUploader({
           formData,
           {
             headers: {
-            "Content-Type": "multipart/form-data",
+              "Content-Type": "multipart/form-data",
             },
             timeout: 30000,
             withCredentials: true,
@@ -105,12 +104,11 @@ export default function FileUploader({
         // print out the response data decoded
         // console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
         // console.log(`Session ID: ${response.data.session_id}`);
-        
-      
+
         // setSessionId(response.data.session_id);
         // onSessionUpdate?.(response.data.session_id);
         // console.log(`Session ID: ${response.data.session_id}`);
-        
+
         if (fileType == "excel" || fileType == "xlsx") {
           if (response.data.tables.length > 0) {
             setTables(response.data.tables);
@@ -123,7 +121,7 @@ export default function FileUploader({
         console.error(`Error uploading file ${file.name}:`, error);
       }
     }
-    
+
     const uploadedFiles = files.map((file) => ({
       name: file.name,
       type: getFileType(file.name),
@@ -139,7 +137,7 @@ export default function FileUploader({
     setUploadStatus("Files uploaded successfully!");
     setIsUploading(false);
   };
-    
+
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
     setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));
@@ -147,10 +145,10 @@ export default function FileUploader({
   };
 
   return (
-    <section className="p-4 bg-gray-200 rounded-lg">
+    <section className="p-4 bg-selectedBlack rounded-lg">
       <div
         className={`relative p-8 ${
-          dragActive ? "bg-gray-300" : "bg-gray-100"
+          dragActive ? "bg-gray-300" : "bg-unSelectedBlack"
         } border-2 border-dashed border-gray-400 rounded-lg text-center transition-colors`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -167,7 +165,7 @@ export default function FileUploader({
         />
 
         <div className="space-y-4">
-          <div className="text-gray-700 font-medium">
+          <div className="text-primaryWhite font-medium">
             <p>Drag and drop your files here, or</p>
             <button
               onClick={() => inputRef.current?.click()}
@@ -184,18 +182,18 @@ export default function FileUploader({
 
           {files.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              <h3 className="text-lg font-semibold text-primaryWhite mb-2">
                 Selected Files:
               </h3>
               <div className="space-y-2">
                 {files.map((file, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between bg-white p-3 rounded-md shadow-sm"
+                    className="flex items-center justify-between bg-selectedBlack text-primaryWhite p-3 rounded-md shadow-sm border-grey border"
                   >
                     <div className="flex items-center space-x-2">
-                      <span className="text-gray-700">{file.name}</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-primaryWhite">{file.name}</span>
+                      <span className="text-sm text-primaryWhite">
                         ({(file.size / 1024 / 1024).toFixed(2)} MB)
                       </span>
                     </div>
