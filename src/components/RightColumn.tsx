@@ -86,7 +86,7 @@ export default function RightColumn({
       </button>
 
       {isRightColumnVisible && (
-        <div className="p-2">
+        <div className="p-2 w-full">
           <TablePreviewer />
           {renderFilePreview()}
           <SummaryViewer

@@ -123,7 +123,7 @@ export default function SummaryViewer({
 
   if (!csvFilename && !isImage && !isPDF) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg text-white">
+      <div className="p-2 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-gray-400">Select a file to view its analysis</p>
       </div>
@@ -132,7 +132,7 @@ export default function SummaryViewer({
 
   if (isLoading) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg text-white">
+      <div className="p-2 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-gray-400">
           Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data...
@@ -143,7 +143,7 @@ export default function SummaryViewer({
 
   if (isError) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg text-white">
+      <div className="p-2 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-red-500">
           Error analyzing {isImage ? "image" : isPDF ? "pdf" : "table"}:{" "}
@@ -155,7 +155,7 @@ export default function SummaryViewer({
 
   if (data?.error) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg text-white">
+      <div className="p-2 bg-gray-800 rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-red-500">Error: {data.error}</p>
       </div>
@@ -163,7 +163,7 @@ export default function SummaryViewer({
   }
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg text-white w-[400px] overflow-x-auto">
+    <div className="p-2 bg-gray-800 rounded-lg text-white w-[400px] overflow-x-auto">
       <h2 className="text-xl font-bold mb-4">Analysis</h2>
 
       {/* Summary Section */}
