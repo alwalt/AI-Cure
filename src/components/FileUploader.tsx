@@ -192,7 +192,9 @@ export default function FileUploader({
                     className="flex items-center justify-between bg-selectedBlack text-primaryWhite p-3 rounded-md shadow-sm border-grey border"
                   >
                     <div className="flex items-center space-x-2">
-                      <span className="text-primaryWhite">{file.name}</span>
+                      <span className="text-primaryWhite max-w-[180px] overflow-x-auto whitespace-nowrap">
+                        {file.name}
+                      </span>
                       <span className="text-sm text-primaryWhite">
                         ({(file.size / 1024 / 1024).toFixed(2)} MB)
                       </span>
