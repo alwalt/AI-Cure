@@ -91,7 +91,7 @@ export default function UploadedFiles({
                 className={`cursor-pointer hover:bg-selectedBlack
                   ${
                     selectedFiles.some((f) => f.name === file.name)
-                      ? "bg-blue-100"
+                      ? "bg-selectedBlack"
                       : ""
                   }
                   ${
@@ -146,8 +146,8 @@ export default function UploadedFiles({
       </div>
 
       {selectedFiles.length > 0 && (
-        <div className="mt-2 p-2 bg-blue-50 rounded border-primaryBlue border">
-          <p className="text-sm text-primaryBlue">
+        <div className="mt-2 p-2 rounded border-grey border bg-unSelectedBlack">
+          <p className="text-sm text-primaryWhite bg-unSelectedBlack">
             {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}{" "}
             selected
           </p>
