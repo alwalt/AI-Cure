@@ -106,7 +106,7 @@ export default function UploadedFiles({
                     checked={selectedFiles.some((f) => f.name === file.name)}
                     onChange={() => handleFileSelect(file)}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 text-blue-600 bg-unSelectedBlack rounded border-gray-300 focus:ring-blue-500"
+                    className="h-4 w-4 appearance-none text-blue-600 bg-unSelectedBlack rounded border-brightGrey border focus:ring-blue-500"
                   />
                 </td>
                 <td className="p-2 flex items-center gap-2">

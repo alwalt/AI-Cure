@@ -13,6 +13,7 @@ export default {
         primaryBlack: "#1d1b19",
         primaryBlue: "#0b3d91",
         grey: "#393834",
+        brightGrey: "#ececec",
         redFill: "#952f2d",
         redBorder: "#b05447",
         panelBlack: "#121212",
