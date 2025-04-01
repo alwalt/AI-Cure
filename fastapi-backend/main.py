@@ -40,8 +40,11 @@ from langchain.prompts import PromptTemplate
 # for debuging
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
 logging.basicConfig(level=logging.INFO)
+
+
+import torch
+torch.mps.empty_cache()
 ###############################################################################
 # Global configuration & in-memory store
 ###############################################################################
@@ -100,24 +103,28 @@ async def session_manager(request: Request, call_next):
     response = await call_next(request)
 
     # Restore the response for FastAPI
-    from starlette.responses import Response
-    new_response = Response(
-        content=b"".join([chunk async for chunk in response.body_iterator]),
-        status_code=response.status_code,
-        headers=dict(response.headers),
-        media_type=response.media_type,
-    )
+    # from starlette.responses import Response
+    # new_response = Response(
+    #     content=b"".join([chunk async for chunk in response.body_iterator]),
+    #     status_code=response.status_code,
+    #     headers=dict(response.headers),
+    #     media_type=response.media_type,
+    # )
     
-    new_response.set_cookie(
-        "user_session",
-        session_id,
+    # new_response.set_cookie(
+    #     "user_session",
+    #     session_id,
+    response.set_cookie(
+        "user_session", 
+        session_id, 
         max_age=SESSION_TIMEOUT,
         httponly=True,
         secure=True,
         samesite="Lax"
     )
 
-    return new_response
+    # return new_response
+    return response
 
 
 async def cleanup_job():
