@@ -20,15 +20,20 @@ class ActionProvider {
     // Save user message in the store
     addMessage({ sender: "user", text: message });
 
+    console.log({ sender: "user", text: message });
+
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/get_chat_response/${sessionId}`,
+        `http://127.0.0.1:8000/api/get_chat_response`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: message }),
+          credentials: "include",
         }
       );
+
+      console.log("RES!!", response);
 
       if (!response.ok) {
         throw new Error(

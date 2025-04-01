@@ -55,10 +55,12 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
@@ -102,18 +104,6 @@ async def session_manager(request: Request, call_next):
     
     response = await call_next(request)
 
-    # Restore the response for FastAPI
-    # from starlette.responses import Response
-    # new_response = Response(
-    #     content=b"".join([chunk async for chunk in response.body_iterator]),
-    #     status_code=response.status_code,
-    #     headers=dict(response.headers),
-    #     media_type=response.media_type,
-    # )
-    
-    # new_response.set_cookie(
-    #     "user_session",
-    #     session_id,
     response.set_cookie(
         "user_session", 
         session_id, 
@@ -123,7 +113,6 @@ async def session_manager(request: Request, call_next):
         samesite="Lax"
     )
 
-    # return new_response
     return response
 
 
@@ -331,12 +320,14 @@ def export_subset(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
+    request: Request,
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
+    session_id = request.state.session_id
 
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
@@ -350,7 +341,6 @@ async def generate_vectors(
     split_docs = text_splitter.split_documents(docs)
     
     # Create vector store
-    session_id = uuid.uuid4().hex
     save_directory = f"download_files/chroma_db/{session_id}"
     os.makedirs(save_directory, exist_ok=True)
     
@@ -363,6 +353,8 @@ async def generate_vectors(
     # Store in session
     SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
     
+    print("Active$$$", SESSIONS[session_id])
+    print("$$$Session id", session_id)
     return JSONResponse(content={"session_id": session_id})
 
 # Create Documents from Images 
@@ -386,18 +378,22 @@ async def create_documents_from_images(
     return JSONResponse(content={"documents": data})
 
 # Generate Chatbot 
-@app.post("/api/create_chatbot/{session_id}")
+@app.post("/api/create_chatbot")
 async def create_chatbot(
-    session_id: str,
+    request: Request,
     model_name: str = Body(...),
     chat_prompt: str = Body(...), #it looks like its unused but it is
 ):
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.
     """
+    session_id = request.state.session_id
+
     if session_id not in SESSIONS:
         SESSIONS[session_id] = {"vectorstore": None, "chain": None}  # Initialize session
 
+    print("PY!!!", SESSIONS[session_id], SESSIONS)
+    print("$$$ session id", session_id)
     vectorstore = SESSIONS[session_id].get("vectorstore")
 
     if vectorstore is None:
@@ -431,14 +427,17 @@ async def create_chatbot(
     return JSONResponse(content={"status": "success"})
 
 # Get Chat Response 
-@app.post("/api/get_chat_response/{session_id}")
+@app.post("/api/get_chat_response")
 async def get_chat_response(
-    session_id: str,
+    # session_id: str,
+    request: Request,
     query: str = Body(..., embed=True)
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
     """
+    session_id = request.state.session_id
+
     if session_id not in SESSIONS:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -451,7 +450,8 @@ async def get_chat_response(
     result = chain({"question": query, "chat_history": history})
     SESSIONS[session_id]["history"] = history + [(query, result["answer"])]
     
-    return JSONResponse(content={"answer": result["answer"]})
+    # return JSONResponse(content={"answer": result["answer"]})
+    return JSONResponse({"answer": "hi"})
 
 # Image Analyzer
 @app.post("/api/analyze_image")
@@ -581,7 +581,7 @@ def analyze_pdf(
 def analyze_table(
     request: Request,
     csv_name: str = Form(...),
-    model: str = Form("llama3.1"),
+    model: str = Form("llama3.2:1b"),
 ):
     """
     Analyze a table and provide a summary and keywords.

@@ -23,12 +23,10 @@ export default function ChatbotComponent() {
           body: JSON.stringify({
             embedding_model: "nomic-ai/nomic-embed-text-v1.5",
             documents: JSON.stringify([
-              {
-                page_content: "This is a test document.",
-                metadata: {},
-              },
+              { page_content: "This is a test document.", metadata: {} },
             ]),
           }),
+          credentials: "include",
         }
       );
 
@@ -38,6 +36,10 @@ export default function ChatbotComponent() {
 
       const data = await response.json();
 
+      console.log(
+        "$$$ Fetch vector store response session_id: ",
+        data.session_id
+      );
       if (data.session_id) {
         return data.session_id;
       } else {
@@ -50,20 +52,19 @@ export default function ChatbotComponent() {
   };
 
   // Function to create chatbot session using fetched session ID
-  const createChatbotSession = async (sessionId: string) => {
+  const createChatbotSession = async () => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/create_chatbot/${sessionId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model_name: "llama3.2:1b",
-            chat_prompt: "You are a helpful assistant.",
-          }),
-        }
-      );
+      const response = await fetch(`http://127.0.0.1:8000/api/create_chatbot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model_name: "llama3.2:1b",
+          chat_prompt: "You are a helpful assistant.",
+        }),
+        credentials: "include",
+      });
 
+      console.log("$$$ Create chatbot res:", response);
       if (!response.ok) {
         throw new Error(
           `Failed to create chatbot session: ${response.statusText}`
@@ -86,21 +87,9 @@ export default function ChatbotComponent() {
   };
 
   useEffect(() => {
-    const initializeChatbot = async () => {
-      if (!sessionId) {
-        const newSessionId = await fetchSessionId();
-        if (newSessionId) {
-          await createChatbotSession(newSessionId);
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-
-    initializeChatbot();
-  }, [sessionId, setSessionId]);
+    fetchSessionId();
+    createChatbotSession();
+  }, []);
 
   if (loading) {
     return (
