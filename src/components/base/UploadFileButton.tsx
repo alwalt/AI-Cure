@@ -57,7 +57,7 @@ export default function UploadFileButton({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black bg-opacity-70" />
           </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -71,15 +71,14 @@ export default function UploadFileButton({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-grey border border-primaryWhite p-6 text-left align-middle shadow-xl transition-all">
                   <FileUploader
                     onTablesUpdate={handleTablesUpdate}
-                    // onSessionUpdate={handleSessionUpdate}
                     onFilesUpdate={handleFilesUpdate}
                   />
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+                    className="flex justify-center items-center border border-primaryWhite mt-4 px-4 py-2 hover:bg-red-600 bg-redFill hover:redBorder transition-colors duration-300 text-white rounded"
                   >
                     Close
                   </button>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 interface Table {
   csv_filename: string;
@@ -14,7 +14,6 @@ interface TableListProps {
 
 export default function TableList({ tables, onTableSelect }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
-  // const sessionId = useSessionFileStore((state) => state.sessionId);
   const handlePreview = useSessionFileStore((state) => state.handlePreview);
 
   const handleTableSelect = (table: Table) => {
@@ -33,38 +32,37 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
 
   if (!tables.length) {
     return (
-      <div className="p-2 bg-gray-100 rounded text-gray-500 text-center">
-        No tables available. Please upload a file first.
+      <div className="p-2 bg-panelBlack rounded text-primaryWhite text-center">
+        <p>No tables available.</p>
+        <p>Please upload a file first.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-200 rounded p-2">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+    <div className="bg-panelBlack border-grey border rounded p-2">
+      <h3 className="text-lg font-semibold text-primaryWhite bg-panelBlack mb-2">
         Available Tables
       </h3>
-
-      {/* Scrollable container */}
-      <div className="max-h-[400px] overflow-y-auto bg-primaryWhite rounded">
+      <div className="max-h-[400px] overflow-y-auto bg-unSelectedBlack rounded">
         <div>
           {tables.map((table, idx) => (
             <div
               key={table.csv_filename}
               className={`
                 flex items-stretch justify-between w-full
-                p-2 cursor-pointer
+                p-2 cursor-pointer 
                 ${
                   selectedTables.some(
                     (t) => t.csv_filename === table.csv_filename
                   )
-                    ? "bg-blue-100"
-                    : "bg-primaryWhite hover:bg-gray-100 hover:rounded-none border border-transparent transition-colors"
+                    ? "bg-selectedBlack text-primaryWhite"
+                    : "bg-unSelectedBlack hover:bg-selectedBlack hover:rounded-none border border-transparent transition-colors"
                 }
               `}
               onClick={() => handleTableSelect(table)}
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 bg-unSelectedBlack">
                 <input
                   type="checkbox"
                   checked={selectedTables.some(
@@ -72,29 +70,32 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
                   )}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => handleTableSelect(table)}
-                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  className="h-4 w-4 appearance-none checked:appearance-auto text-blue-600 bg-unSelectedBlack rounded border-brightGrey border focus:ring-blue-500"
                 />
+
                 <label htmlFor={`table-checkbox-${idx}`} className="sr-only">
                   Select {table.display_name}
                 </label>
                 <div>
-                  <p className="text-gray-700 text-sm">{table.csv_filename}</p>
-                  <p className="text-xs text-gray-500">{table.display_name}</p>
+                  <p className="text-primaryWhite text-sm">
+                    {table.csv_filename}
+                  </p>
+                  <p className="text-xs text-primaryWhite">
+                    {table.display_name}
+                  </p>
                 </div>
               </div>
 
               {/* Preview/Actions buttons */}
               <div className="flex flex-col items-center text-right">
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
-                  onClick={() =>
-                    handlePreview(table.csv_filename)
-                  }
+                  className="px-3 py-1 text-sm text-primaryWhite hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
+                  onClick={() => handlePreview(table.csv_filename)}
                 >
                   Preview
                 </button>
                 <button
-                  className="px-3 py-1 text-sm text-primaryBlue hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
+                  className="px-3 py-1 text-sm text-primaryWhite hover:bg-redFill hover:text-primaryWhite rounded duration-300 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Add download functionality
@@ -109,10 +110,9 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
         </div>
       </div>
 
-      {/* Selection summary */}
       {selectedTables.length > 0 && (
-        <div className=" mt-2 p-2 bg-blue-50 rounded border-primaryBlue border">
-          <p className="text-sm text-primaryBlue">
+        <div className=" mt-2 p-2 bg-blue-50 rounded bg-selectedBlack border-primaryWhite border">
+          <p className="text-sm bg-selectedBlack">
             {selectedTables.length} table
             {selectedTables.length !== 1 ? "s" : ""} selected
           </p>
