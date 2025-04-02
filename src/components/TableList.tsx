@@ -73,8 +73,9 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
                   )}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => handleTableSelect(table)}
-                  className="h-4 w-4 text-primaryWhite bg-unSelectedBlack rounded border-gray-300 focus:ring-blue-500"
+                  className="h-4 w-4 appearance-none checked:appearance-auto text-blue-600 bg-unSelectedBlack rounded border-brightGrey border focus:ring-blue-500"
                 />
+
                 <label htmlFor={`table-checkbox-${idx}`} className="sr-only">
                   Select {table.display_name}
                 </label>
