@@ -1,7 +1,10 @@
+import SkipLink from "./SkipLink";
+
 export default function MainNavigation() {
-	return (
-		<div className="top-0">
-			<p>{/*Main Naviagation goes here*/}</p>
-		</div>
-	);
+  return (
+    <header className="top-0">
+      <SkipLink targetId="main-content">Skip to main content</SkipLink>
+      <nav>{/*Main Navigation goes here*/}</nav>
+    </header>
+  );
 }
