@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 interface Table {
   csv_filename: string;
@@ -14,7 +14,6 @@ interface TableListProps {
 
 export default function TableList({ tables, onTableSelect }: TableListProps) {
   const [selectedTables, setSelectedTables] = useState<Table[]>([]);
-  // const sessionId = useSessionFileStore((state) => state.sessionId);
   const handlePreview = useSessionFileStore((state) => state.handlePreview);
 
   const handleTableSelect = (table: Table) => {
@@ -45,8 +44,6 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
       <h3 className="text-lg font-semibold text-primaryWhite bg-panelBlack mb-2">
         Available Tables
       </h3>
-
-      {/* Scrollable container */}
       <div className="max-h-[400px] overflow-y-auto bg-unSelectedBlack rounded">
         <div>
           {tables.map((table, idx) => (
@@ -113,7 +110,6 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
         </div>
       </div>
 
-      {/* Selection summary */}
       {selectedTables.length > 0 && (
         <div className=" mt-2 p-2 bg-blue-50 rounded bg-selectedBlack border-primaryWhite border">
           <p className="text-sm bg-selectedBlack">
