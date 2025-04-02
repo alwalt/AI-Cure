@@ -77,13 +77,24 @@ export default function RightColumn({
 
   return (
     <div className="bg-primaryBlack border-l-2 border-gray-700 pt-2 flex flex-col items-start w-full">
-      <button onClick={toggleRightColumn} className="text-white rounded">
-        {isRightColumnVisible ? (
-          <ChevronDoubleRightIcon className="h-8 w-8" />
-        ) : (
-          <ChevronDoubleLeftIcon className="h-8 w-8" />
-        )}
-      </button>
+      <div className="relative group">
+        <button onClick={toggleRightColumn} className="text-white rounded">
+          {isRightColumnVisible ? (
+            <ChevronDoubleRightIcon className="h-8 w-8" />
+          ) : (
+            <ChevronDoubleLeftIcon className="h-8 w-8" />
+          )}
+        </button>
+        {/* Tooltip */}
+        <span
+          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 
+      ${
+        isRightColumnVisible ? "left-1/2 -translate-x-1/2" : "left-0 ml-[-30px]"
+      }`}
+        >
+          {isRightColumnVisible ? "Collapse" : "Expand"}
+        </span>
+      </div>
 
       {isRightColumnVisible && (
         <div className="p-2 w-full">
