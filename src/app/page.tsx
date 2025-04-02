@@ -6,7 +6,9 @@ export default function Home() {
   return (
     <div>
       <MainNavigation />
-      <AicureToolFull />
+      <main id="main-content">
+        <AicureToolFull />
+      </main>
       <Footer />
     </div>
   );
