@@ -17,7 +17,7 @@ export default function InvestigationComponent() {
                 Description note
               </td>
               <td className="border border-brightGrey px-2 py-2">
-                Sample title
+                Description title
               </td>
             </tr>
             <tr>
