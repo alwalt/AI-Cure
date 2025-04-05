@@ -61,3 +61,11 @@ export interface FileUploaderProps {
   onSessionUpdate?: (sessionId: string) => void;
   onFilesUpdate?: (files: UploadedFile[]) => void;
 }
+
+export interface ButtonProps {
+  targetId: string;
+  buttonDescription: string;
+  onClick?: () => void;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // This accepts any Heroicon
+  iconClassName?: string; // Optional extra styles
+}
