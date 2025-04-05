@@ -28,15 +28,14 @@ export default function UploadFileButton({
 
   return (
     <div className="flex items-center justify-center relative group">
-      <button onClick={() => setIsOpen(true)} className="text-white rounded">
-        <Button
-          targetId="ArrowUpTrayIcon"
-          buttonDescription="Upload Files"
-          Icon={ArrowUpTrayIcon}
-          iconClassName="h-6 w-6"
-          spanClassName="mt-2"
-        />
-      </button>
+      <Button
+        targetId="ArrowUpTrayIcon"
+        buttonDescription="Upload Files"
+        Icon={ArrowUpTrayIcon}
+        iconClassName="h-6 w-6"
+        spanClassName="mt-2"
+        onClick={() => setIsOpen(true)}
+      />
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog
