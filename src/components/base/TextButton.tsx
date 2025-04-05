@@ -2,17 +2,32 @@ import { TextButtonProps } from "@/types/files";
 
 export default function TextButton({
   label,
+  buttonDescription = "",
   onClick,
   isActive,
+  buttonClassName = "",
+  spanClassName = "",
 }: TextButtonProps) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 rounded transition-colors duration-200 ${
-        isActive ? "bg-blue-600 text-white" : "bg-gray-200"
-      }`}
-    >
-      {label}
-    </button>
+    <div className="relative group flex flex-col items-center">
+      <button
+        onClick={onClick}
+        className={`px-2 text-sm rounded-none border-none outline-none focus:outline-none 
+        ${
+          isActive
+            ? "font-bold text-primaryWhite"
+            : "font-normal text-brightGrey"
+        } 
+        ${buttonClassName}`}
+      >
+        {label}
+      </button>
+
+      <span
+        className={`absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 ${spanClassName}`}
+      >
+        {buttonDescription}
+      </span>
+    </div>
   );
 }

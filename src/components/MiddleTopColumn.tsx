@@ -23,19 +23,23 @@ export default function MiddleTopColumn() {
       <h2 className="sticky top-0 font-bold text-xl p-2 capitalize">
         Scientific data curation
       </h2>
-      {/* Tab Buttons */}
-      <div className="flex space-x-4 mb-4">
-        <TextButton
-          label="Investigation tab"
-          isActive={activeTab === "investigation"}
-          onClick={() => setActiveTab("investigation")}
-        />
+      <div className="border-b border-grey mb-8">
+        {/* Tab Buttons */}
+        <div className="flex space-x-4 mb-4">
+          <TextButton
+            label="Investigation"
+            buttonDescription="Investigation tab"
+            isActive={activeTab === "investigation"}
+            onClick={() => setActiveTab("investigation")}
+          />
 
-        <TextButton
-          label="Study tab"
-          isActive={activeTab === "study"}
-          onClick={() => setActiveTab("study")}
-        />
+          <TextButton
+            label="Study"
+            buttonDescription="Study tab"
+            isActive={activeTab === "study"}
+            onClick={() => setActiveTab("study")}
+          />
+        </div>
       </div>
 
       {/* Table Content */}

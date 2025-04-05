@@ -73,6 +73,9 @@ export interface ButtonProps {
 
 export interface TextButtonProps {
   label: string;
+  buttonDescription: string;
   onClick: () => void;
   isActive: boolean;
+  buttonClassName?: string;
+  spanClassName?: string;
 }
