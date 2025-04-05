@@ -8,27 +8,19 @@ import {
 } from "@headlessui/react";
 import FileUploader from "@/components/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
-import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { Table, UploadedFile, UploadFileButtonProps } from "@/types/files";
 import Button from "@/components/base/Button";
 
 export default function UploadFileButton({
   onTablesUpdate,
-  // onSessionUpdate,
   onFilesUpdate,
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // const setSessionId = useSessionFileStore((state) => state.setSessionId);
 
   const handleTablesUpdate = (tables: Table[]) => {
     onTablesUpdate(tables);
     setIsOpen(false);
   };
-
-  // const handleSessionUpdate = (newSessionId: string) => {
-  //   setSessionId(newSessionId);
-  //   onSessionUpdate(newSessionId);
-  // };
 
   const handleFilesUpdate = (files: UploadedFile[]) => {
     onFilesUpdate(files);
