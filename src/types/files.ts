@@ -70,3 +70,9 @@ export interface ButtonProps {
   iconClassName?: string; // Optional extra styles
   spanClassName?: string;
 }
+
+export interface TextButtonProps {
+  label: string;
+  onClick: () => void;
+  isActive: boolean;
+}

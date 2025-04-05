@@ -2,6 +2,7 @@
 import { useState } from "react";
 import InvestigationComponent from "./middleTopCol/InvestigationComponent";
 import StudyComponent from "./middleTopCol/StudyComponent";
+import TextButton from "./base/TextButton";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("investigation");
@@ -24,24 +25,17 @@ export default function MiddleTopColumn() {
       </h2>
       {/* Tab Buttons */}
       <div className="flex space-x-4 mb-4">
-        <button
-          className={`px-4 py-2 rounded ${
-            activeTab === "investigation"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200"
-          }`}
+        <TextButton
+          label="Investigation tab"
+          isActive={activeTab === "investigation"}
           onClick={() => setActiveTab("investigation")}
-        >
-          Investigation
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            activeTab === "study" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
+        />
+
+        <TextButton
+          label="Study tab"
+          isActive={activeTab === "study"}
           onClick={() => setActiveTab("study")}
-        >
-          Study
-        </button>
+        />
       </div>
 
       {/* Table Content */}
