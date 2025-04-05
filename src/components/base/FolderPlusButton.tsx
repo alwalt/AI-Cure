@@ -12,7 +12,7 @@ export default function FolderPlusButton() {
       targetId="FolderPlusButton"
       buttonDescription="Add folder"
       Icon={FolderPlusIcon}
-      iconClassName="p-1"
+      iconClassName="h-8 w-8 p-1"
       onClick={handleClick}
     />
   );

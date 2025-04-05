@@ -68,4 +68,5 @@ export interface ButtonProps {
   onClick?: () => void;
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // This accepts any Heroicon
   iconClassName?: string; // Optional extra styles
+  spanClassName?: string;
 }

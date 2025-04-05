@@ -11,7 +11,7 @@ export default function PlayButton() {
       targetId="PlayButton"
       buttonDescription="Play"
       Icon={PlayIcon}
-      iconClassName=""
+      iconClassName="h-8 w-8"
       onClick={handleClick}
     />
   );
