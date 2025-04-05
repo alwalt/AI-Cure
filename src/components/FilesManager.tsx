@@ -13,7 +13,7 @@ export default function FilesManager() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // for gathering current session files
   useEffect(() => {
     const fetchSessionFiles = async () => {
@@ -22,14 +22,16 @@ export default function FilesManager() {
           "http://localhost:8000/api/get_session_files",
           { withCredentials: true }
         );
-        
+
         if (response.data.files) {
-          handleFilesUpdate(response.data.files.map(file => ({
-            name: file.name,
-            type: file.type,
-            dateCreated: file.dateCreated,
-            size: file.size,
-          })));
+          handleFilesUpdate(
+            response.data.files.map((file) => ({
+              name: file.name,
+              type: file.type,
+              dateCreated: file.dateCreated,
+              size: file.size,
+            }))
+          );
         }
       } catch (err) {
         setError("Failed to load session files");
