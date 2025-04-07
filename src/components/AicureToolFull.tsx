@@ -4,10 +4,14 @@ import LeftColumn from "./LeftColumn";
 import RightColumn from "./RightColumn";
 import MiddleTopColumn from "./MiddleTopColumn";
 import MiddleBottomColumn from "./MiddleBottomColumn";
+import { useIsRightVisible } from "@/store/useIsRightVisible";
 
 export default function AicureToolFull() {
-  const [showRight, setShowRight] = useState(true);
-  const toggleRightColumn = () => setShowRight((prev) => !prev);
+  // const [showRight, setShowRight] = useState(true);
+  // const toggleRightColumn = () => setShowRight((prev) => !prev);
+  const isRightColumnVisible = useIsRightVisible(
+    (state) => state.isRightColumnVisible
+  );
 
   return (
     <div className="flex h-screen grid-cols-3 bg-primaryBlack">
@@ -25,12 +29,11 @@ export default function AicureToolFull() {
       </div>
 
       <div
-        className={`${showRight ? "min-w-[300px]" : "w-[36px]"} flex h-full`}
+        className={`${
+          isRightColumnVisible ? "min-w-[300px]" : "w-[36px]"
+        } flex h-full`}
       >
-        <RightColumn
-          toggleRightColumn={toggleRightColumn}
-          isRightColumnVisible={showRight}
-        />
+        <RightColumn />
       </div>
     </div>
   );
