@@ -45,6 +45,7 @@ const fetchTablePreview = async ({
       credentials: "include",
     }
   );
+
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -61,7 +62,7 @@ export default function TablePreviewer() {
     queryFn: fetchTablePreview,
     enabled: !!previewCsv, // Only fetch if previewCsv is available
   });
-
+  console.log("Preview button clicked????? in TablePreviewer func");
   if (!previewCsv) {
     return null;
   }

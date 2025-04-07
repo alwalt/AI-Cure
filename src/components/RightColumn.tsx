@@ -5,17 +5,22 @@ import {
 import TablePreviewer from "./TablePreviewer";
 import { useState, useEffect } from "react";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-import { RightColumnProps } from "@/types/files";
+// import { RightColumnProps } from "@/types/files";
 import SummaryViewer from "./SummaryViewer";
+import { useIsRightVisible } from "@/store/useIsRightVisible";
 
-export default function RightColumn({
-  toggleRightColumn,
-  isRightColumnVisible,
-}: RightColumnProps) {
+export default function RightColumn() {
   const previewFile = useSessionFileStore((state) => state.previewFile);
   const sessionId = useSessionFileStore((state) => state.sessionId);
   const previewCsv = useSessionFileStore((state) => state.previewCsv);
   const [objectUrl, setObjectUrl] = useState<string>("");
+
+  const isRightColumnVisible = useIsRightVisible(
+    (state) => state.isRightColumnVisible
+  );
+  const toggleRightColumn = useIsRightVisible(
+    (state) => state.toggleRightColumn
+  );
 
   // Create object URL when previewFile changes
   useEffect(() => {
@@ -101,7 +106,6 @@ export default function RightColumn({
           <TablePreviewer />
           {renderFilePreview()}
           <SummaryViewer
-            // sessionId={sessionId || ""}
             csvFilename={previewCsv || ""}
             file={previewFile?.file}
             fileName={previewFile?.name || ""}
