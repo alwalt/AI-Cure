@@ -166,6 +166,16 @@ async def get_files(request: Request):
                     "dateCreated": os.path.getctime(file_path),
                     "size": os.path.getsize(file_path),
                 })
+
+            if file_ext == "excel" or file_ext == "xlsx":
+                table_info = segment_and_export_tables(file_path, session_id)
+                
+                # Store the table info in the SESSION_TABLES dictionary in main.py
+                SESSION_TABLES[session_id] = table_info
+                
+                # response_data = {
+                #     "tables": [{"csv_filename": csv_name, "display_name": filename} for _, csv_name in table_info],
+                # }
         
         return JSONResponse(content={"files": files})
 
@@ -196,7 +206,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
             file_ext = file.filename.split(".")[-1]
             
 
-            unique_name = f"{session_id}_{file.filename}.{file_ext}"
+            unique_name = f"{file.filename}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
         
             with open(file_path, "wb") as buffer:
@@ -214,7 +224,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
         elif file.content_type == "application/pdf":
             file_ext = "pdf"
             file_name = file.filename
-            unique_name = f"{session_id}_{file_name}.{file_ext}"
+            unique_name = f"{file_name}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
             
             with open(file_path, "wb") as buffer:
@@ -226,7 +236,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
         elif file.content_type == "image/jpeg" or file.content_type == "image/png":
             file_ext = file.filename.split(".")[-1]
             file_name = file.filename
-            unique_name = f"{session_id}_{file_name}"
+            unique_name = f"{file_name}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
             
             with open(file_path, "wb") as buffer:
@@ -462,7 +472,7 @@ async def analyze_image(
     print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
 
     # get the image from the session
-    image_path = os.path.join(UPLOAD_DIR, f"{session_id}_{file_name}")
+    image_path = os.path.join(UPLOAD_DIR, f"{file_name}")
     with open(image_path, "rb") as image_file:
         contents = image_file.read()
 
@@ -494,7 +504,7 @@ async def analyze_image(
             except json.decoder.JSONDecodeError:
                 json_output['Error'] = res_text
         else:
-            json_output['Error'] = res_text
+            json_output['Error'] = res_text 
 
     # Normalize the keys
     normalized_output = {
@@ -524,7 +534,7 @@ def analyze_pdf(
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
 
     # Get pdf file
-    pdf_path = os.path.join(UPLOAD_DIR, f"{session_id}_{pdf_file_name}.pdf")
+    pdf_path = os.path.join(UPLOAD_DIR, f"{pdf_file_name}")
     with open(pdf_path, "rb") as pdf_file:        
         # We'll use PyMuPDF to load the PDF
         def format_docs(docs):
