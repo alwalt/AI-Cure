@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
+import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+
 
 const fetchTableAnalysis = async ({
   queryKey,
@@ -121,6 +124,27 @@ export default function SummaryViewer({
     refetchOnWindowFocus: false,
   });
 
+  const handleDownload = () => {
+    console.log("CLICKED")
+    // COnver data to JSON String
+    const jsonData = JSON.stringify(data, null, 2);
+    // create blob (file object)
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    // Temp url for the file
+    const url = window.URL.createObjectURL(blob);
+    // Hidden link element
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${new Date().toISOString()}_file_analysis.json`;
+    
+    // Trigger download of object
+    document.body.appendChild(link);
+    link.click();
+    // clean up the download url
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
   if (!csvFilename && !isImage && !isPDF) {
     return (
       <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white">
@@ -175,14 +199,22 @@ export default function SummaryViewer({
       </div>
 
       {/* Output Section (JSON-like display) */}
-      <div className="mb-6">
+      <div className="mb-6 relative">
+      <button
+          onClick={handleDownload}
+          className="absolute top-2 right-2 p-1 hover:bg-gray-800 rounded-md"
+          aria-label="Download JSON"
+        >
+          <ArrowDownTrayIcon className="h-4 w-4 text-gray-400" />
+        </button>
         <h3 className="text-lg font-semibold mb-2">Output</h3>
-        <div className="bg-gray-900 p-3 rounded-md overflow-auto max-h-40">
+        <div className="bg-gray-900 p-3 rounded-md overflow-auto max-h-40 relative">
           <pre className="text-gray-300 text-sm">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
       </div>
+      
 
       {/* Keywords Section */}
       <div>

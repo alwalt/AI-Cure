@@ -64,6 +64,7 @@ app.add_middleware(
 # Add to config
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 USER_DIRS = "user_uploads"
+JSON_DIRS = "cached_jsons"
 
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
@@ -468,7 +469,15 @@ async def analyze_image(
     """
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
+    os.makedirs(CACHED_DIR, exist_ok=True)
+    json_path = os.path.join(CACHED_DIR, f"{file_name}.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            loaded_output = json.load(f)
 
+        return JSONResponse(content=loaded_output)
+    
     print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
 
     # get the image from the session
@@ -512,8 +521,17 @@ async def analyze_image(
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
 
+
     if "Error" in json_output or "error" in json_output:
         normalized_output["error"] = json_output.get("Error") or json_output.get("error")
+    else:
+        print("THISSSSS WORKS")
+        # Save normalized output to cached json file
+        try: 
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error saving file: {str(e)}")
 
     return JSONResponse(content=normalized_output)
 
