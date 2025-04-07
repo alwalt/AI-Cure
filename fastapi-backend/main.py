@@ -140,7 +140,7 @@ async def lifespan(app: FastAPI):
 async def get_file(filename: str, request: Request):
     session_id = request.state.session_id
     file_path = os.path.join(USER_DIRS, session_id, filename)
-
+    print(file_path)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     
@@ -226,7 +226,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
         elif file.content_type == "image/jpeg" or file.content_type == "image/png":
             file_ext = file.filename.split(".")[-1]
             file_name = file.filename
-            unique_name = f"{session_id}_{file_name}.{file_ext}"
+            unique_name = f"{session_id}_{file_name}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
             
             with open(file_path, "wb") as buffer:
@@ -397,7 +397,7 @@ async def create_chatbot(
         raise HTTPException(status_code=400, detail="Vectorstore not initialized for this session")
     
     # Create LLM
-    llm = ChatOllama(model=model_name, temperature=0)
+    llm = ChatOllama(model="llama3.1", temperature=0)
     
     # Create prompt template
     qa_prompt = PromptTemplate(
@@ -462,7 +462,7 @@ async def analyze_image(
     print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
 
     # get the image from the session
-    image_path = os.path.join(UPLOAD_DIR, f"{session_id}_{file_name}.jpg")
+    image_path = os.path.join(UPLOAD_DIR, f"{session_id}_{file_name}")
     with open(image_path, "rb") as image_file:
         contents = image_file.read()
 

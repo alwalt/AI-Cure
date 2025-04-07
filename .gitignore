@@ -44,3 +44,4 @@ next-env.d.ts
 util/__pycache__/
 
 fastapi-backend/user_uploads/
+
