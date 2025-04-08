@@ -5,7 +5,6 @@ import {
 import TablePreviewer from "./TablePreviewer";
 import { useState, useEffect } from "react";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-// import { RightColumnProps } from "@/types/files";
 import SummaryViewer from "./SummaryViewer";
 import { useIsRightVisible } from "@/store/useIsRightVisible";
 
@@ -43,7 +42,7 @@ export default function RightColumn() {
     if (type === "pdf") {
       return (
         <div className="h-full w-full bg-panelBlack rounded-lg overflow-hidden flex flex-col">
-          <h3 className="p-3 bg-gray-100 text-gray-800 font-medium border-b">
+          <h3 className="p-3 bg-selectedBlack text-primaryWhite font-medium border-b">
             {name}
           </h3>
           <iframe src={objectUrl} className="w-full flex-1" title={name} />
@@ -52,10 +51,10 @@ export default function RightColumn() {
     } else if (type === "png" || type === "jpg" || type === "jpeg") {
       return (
         <div className="h-full w-full bg-panelBlack rounded-lg overflow-hidden flex flex-col">
-          <h3 className="p-2 bg-gray-100 text-primaryWhite font-medium border-b">
+          <h3 className="p-2 bg-selectedBlack text-primaryWhite font-medium border-b">
             {name}
           </h3>
-          <div className="p-2 flex items-center justify-center bg-gray-50 flex-1">
+          <div className="p-2 flex items-center justify-center bg-selectedBlack flex-1">
             <img
               src={objectUrl}
               alt={name}
@@ -83,7 +82,10 @@ export default function RightColumn() {
   return (
     <div className="bg-primaryBlack border-l-2 border-gray-700 pt-2 flex flex-col items-start w-full">
       <div className="relative group">
-        <button onClick={toggleRightColumn} className="text-white rounded">
+        <button
+          onClick={toggleRightColumn}
+          className="text-primaryWhite rounded"
+        >
           {isRightColumnVisible ? (
             <ChevronDoubleRightIcon className="h-8 w-8" />
           ) : (
@@ -92,7 +94,7 @@ export default function RightColumn() {
         </button>
         {/* Tooltip */}
         <span
-          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 
+          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-primaryWhite opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 
       ${
         isRightColumnVisible ? "left-1/2 -translate-x-1/2" : "left-0 ml-[-30px]"
       }`}
