@@ -1,3 +1,5 @@
+import AiGenerateButton from "@/components/base/AiGenerateButton";
+
 export default function InvestigationComponent() {
   return (
     <div className="overflow-x-auto">
@@ -12,7 +14,9 @@ export default function InvestigationComponent() {
           </thead>
           <tbody>
             <tr>
-              <td className="border border-brightGrey px-2 py-2">Alpha</td>
+              <td className="border border-brightGrey px-2 py-2">
+                <AiGenerateButton />
+              </td>
               <td className="border border-brightGrey px-2 py-2">
                 Description note
               </td>
@@ -21,7 +25,9 @@ export default function InvestigationComponent() {
               </td>
             </tr>
             <tr>
-              <td className="border border-brightGrey px-2 py-2">Beta</td>
+              <td className="border border-brightGrey px-2 py-2">
+                <AiGenerateButton />
+              </td>
               <td className="border border-brightGrey px-2 py-2">
                 Description text
               </td>
