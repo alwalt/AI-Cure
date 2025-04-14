@@ -1,1 +1,0 @@
-tmp_file.write(pdf_file.getvalue()) 
