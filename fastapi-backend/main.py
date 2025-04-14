@@ -525,7 +525,6 @@ async def analyze_image(
     if "Error" in json_output or "error" in json_output:
         normalized_output["error"] = json_output.get("Error") or json_output.get("error")
     else:
-        print("THISSSSS WORKS")
         # Save normalized output to cached json file
         try: 
             with open(json_path, 'w', encoding='utf-8') as f:
@@ -550,7 +549,15 @@ def analyze_pdf(
     print(f"received: {pdf_file_name}")
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-
+    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
+    os.makedirs(CACHED_DIR, exist_ok=True)
+    json_path = os.path.join(CACHED_DIR, f"{pdf_file_name}.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            loaded_output = json.load(f)
+        
+        return JSONResponse(content=loaded_output)
+    
     # Get pdf file
     pdf_path = os.path.join(UPLOAD_DIR, f"{pdf_file_name}")
     with open(pdf_path, "rb") as pdf_file:        
@@ -593,6 +600,16 @@ def analyze_pdf(
         "summary": json_output.get("Summary") or json_output.get("summary", ""),
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
+
+    if "Error" in json_output or "error" in json_output:
+        normalized_output["error"] = json_output.get("Error") or json_output.get("error")
+    else:
+        try:
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error saving file: {str(e)}")
+            
     return JSONResponse(content=normalized_output)
     # return JSONResponse(content={
     #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
