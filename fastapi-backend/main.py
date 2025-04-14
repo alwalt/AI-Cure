@@ -537,7 +537,7 @@ async def analyze_image(
 
 # PDF Analyzer
 @app.post("/api/analyze_pdf")
-def analyze_pdf(
+async def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
     model: str = Form("llava"),
@@ -609,7 +609,7 @@ def analyze_pdf(
                 json.dump(normalized_output, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"Error saving file: {str(e)}")
-            
+
     return JSONResponse(content=normalized_output)
     # return JSONResponse(content={
     #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
@@ -674,4 +674,4 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan)
+    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
