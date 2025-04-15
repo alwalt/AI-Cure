@@ -52,6 +52,8 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -185,7 +187,7 @@ async def get_files(request: Request):
     
 @app.post("/api/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
-    """
+    """ 
     Upload a file and return a session id. Unless sessionid is present.
     """
     print(f"Upload request received: {file.filename}")
