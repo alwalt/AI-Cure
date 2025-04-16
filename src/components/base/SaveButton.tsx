@@ -12,8 +12,8 @@ export default function SaveButton() {
 
   return (
     <Button
-      targetId="PlayButton"
-      buttonDescription="Play"
+      targetId="SaveButton"
+      buttonDescription="Save"
       Icon={ArrowDownTrayIcon}
       iconClassName="h-8 w-8"
       onClick={handleClick}

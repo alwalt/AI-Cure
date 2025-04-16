@@ -58,7 +58,7 @@ export default function ChatbotComponent() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model_name: "llama3.2:1b",
+            model_name: "llama3.1",
             chat_prompt: "You are a helpful assistant.",
           }),
         }

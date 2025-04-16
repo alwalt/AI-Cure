@@ -19,7 +19,7 @@ export default function MiddleTopColumn() {
   };
 
   return (
-    <div className="relative bg-primaryBlack p-2 h-full overflow-y-auto">
+    <div className="relative bg-primaryBlack p-2 h-full max-h-full overflow-y-auto">
       <h2 className="sticky top-0 font-bold text-xl p-2 capitalize">
         Scientific data curation
       </h2>
@@ -43,7 +43,7 @@ export default function MiddleTopColumn() {
       </div>
 
       {/* Table Content */}
-      <div className="rounded">{renderContent()}</div>
+      <div className="rounded w-full overflow-x-auto">{renderContent()}</div>
     </div>
   );
 }

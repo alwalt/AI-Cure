@@ -1,3 +1,4 @@
+import AiGenerateButton from "@/components/base/AiGenerateButton";
 export default function StudyComponent() {
   return (
     <div className="overflow-x-auto">
@@ -12,14 +13,18 @@ export default function StudyComponent() {
           </thead>
           <tbody>
             <tr>
-              <td className="border border-brightGrey px-2 py-2">Alpha</td>
+              <td className="border border-brightGrey px-2 py-2">
+                <AiGenerateButton />
+              </td>
               <td className="border border-brightGrey px-2 py-2">Study note</td>
               <td className="border border-brightGrey px-2 py-2">
                 Study title
               </td>
             </tr>
             <tr>
-              <td className="border border-brightGrey px-2 py-2">Beta</td>
+              <td className="border border-brightGrey px-2 py-2">
+                <AiGenerateButton />
+              </td>
               <td className="border border-brightGrey px-2 py-2">Study text</td>
               <td className="border border-brightGrey px-2 py-2">
                 Study entry

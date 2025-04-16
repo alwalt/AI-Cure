@@ -52,6 +52,8 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -186,7 +188,7 @@ async def get_files(request: Request):
     
 @app.post("/api/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
-    """
+    """ 
     Upload a file and return a session id. Unless sessionid is present.
     """
     print(f"Upload request received: {file.filename}")
@@ -461,7 +463,7 @@ async def get_chat_response(
 @app.post("/api/analyze_image")
 async def analyze_image(
     request: Request,
-    model: str = Form("llava"),
+    model: str = Form("llama3.1"),
     file_name: str = Form(...),
 ):
     """
@@ -540,7 +542,7 @@ async def analyze_image(
 async def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
-    model: str = Form("llava"),
+    model: str = Form("llama3.1"),
     ):
     """
     Analyze a PDF and return a json object with a summary.
