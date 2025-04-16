@@ -462,7 +462,7 @@ async def get_chat_response(
 @app.post("/api/analyze_image")
 async def analyze_image(
     request: Request,
-    model: str = Form("llava"),
+    model: str = Form("llama3.1"),
     file_name: str = Form(...),
 ):
     """
@@ -525,7 +525,7 @@ async def analyze_image(
 def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
-    model: str = Form("llava"),
+    model: str = Form("llama3.1"),
     ):
     """
     Analyze a PDF and return a json object with a summary.
