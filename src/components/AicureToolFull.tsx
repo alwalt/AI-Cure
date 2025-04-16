@@ -30,7 +30,7 @@ export default function AicureToolFull() {
 
       <div
         className={`${
-          isRightColumnVisible ? "min-w-[300px]" : "w-[36px]"
+          isRightColumnVisible ? "min-w-[300px] max-w-[400px]" : "w-[36px]"
         } flex h-full`}
       >
         <RightColumn />

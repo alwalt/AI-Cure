@@ -89,7 +89,7 @@ export default function TablePreviewer() {
             <TableContainer
               component={Paper}
               sx={{
-                maxHeight: 300, // or 40vh, adjust as needed
+                maxHeight: "40vh", // or 40vh, adjust as needed
                 overflowY: "auto",
                 border: `1px solid ${greyColor}`,
                 bgcolor: primaryBlack,

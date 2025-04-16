@@ -105,13 +105,19 @@ export default function RightColumn() {
 
       {isRightColumnVisible && (
         <div className="p-2 w-full flex flex-col gap-2 overflow-hidden">
-          <TablePreviewer />
-          {renderFilePreview()}
-          <SummaryViewer
-            csvFilename={previewCsv || ""}
-            file={previewFile?.file}
-            fileName={previewFile?.name || ""}
-          />
+          <div className="overflow-auto max-h-[40vh]">
+            <TablePreviewer />
+          </div>
+          <div className="overflow-auto max-h-[40vh]">
+            {renderFilePreview()}
+          </div>
+          <div className="overflow-auto max-h-[60vh]">
+            <SummaryViewer
+              csvFilename={previewCsv || ""}
+              file={previewFile?.file}
+              fileName={previewFile?.name || ""}
+            />
+          </div>
         </div>
       )}
     </div>
