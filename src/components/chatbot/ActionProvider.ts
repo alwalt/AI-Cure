@@ -37,7 +37,11 @@ class ActionProvider {
       }
 
       const data = await response.json();
-
+      console.log(
+        "$$$$$ ACTION PROVIDER DATA and data.answer &&&&&",
+        data,
+        data.answer
+      );
       if (data.answer) {
         const botMessage = this.createChatBotMessage(data.answer);
         this.setState((prevState: any) => ({

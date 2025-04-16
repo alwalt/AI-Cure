@@ -104,7 +104,7 @@ export default function RightColumn() {
       </div>
 
       {isRightColumnVisible && (
-        <div className="p-2 w-full">
+        <div className="p-2 w-full flex flex-col gap-2 overflow-hidden">
           <TablePreviewer />
           {renderFilePreview()}
           <SummaryViewer
