@@ -79,3 +79,10 @@ export interface TextButtonProps {
   buttonClassName?: string;
   spanClassName?: string;
 }
+
+export interface FilePreviewerProps {
+  file: File | undefined;
+  type: string | undefined;
+  name: string;
+  objectUrl: string;
+}
