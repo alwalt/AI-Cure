@@ -6,7 +6,6 @@ import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
-
 const fetchTableAnalysis = async ({
   queryKey,
 }: {
@@ -125,25 +124,25 @@ export default function SummaryViewer({
   });
 
   const handleDownload = () => {
-    console.log("CLICKED")
+    console.log("CLICKED");
     // COnver data to JSON String
     const jsonData = JSON.stringify(data, null, 2);
     // create blob (file object)
-    const blob = new Blob([jsonData], { type: 'application/json' });
+    const blob = new Blob([jsonData], { type: "application/json" });
     // Temp url for the file
     const url = window.URL.createObjectURL(blob);
     // Hidden link element
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `${new Date().toISOString()}_file_analysis.json`;
-    
+
     // Trigger download of object
     document.body.appendChild(link);
     link.click();
     // clean up the download url
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-  }
+  };
 
   if (!csvFilename && !isImage && !isPDF) {
     return (
@@ -187,7 +186,7 @@ export default function SummaryViewer({
   }
 
   return (
-    <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white w-[400px] overflow-x-auto">
+    <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white max-w-[400px] overflow-x-auto">
       <h2 className="text-xl font-bold mb-4">Analysis</h2>
 
       {/* Summary Section */}
@@ -200,7 +199,7 @@ export default function SummaryViewer({
 
       {/* Output Section (JSON-like display) */}
       <div className="mb-6 relative">
-      <button
+        <button
           onClick={handleDownload}
           className="absolute top-2 right-2 p-1 hover:bg-gray-800 rounded-md"
           aria-label="Download JSON"
@@ -209,12 +208,11 @@ export default function SummaryViewer({
         </button>
         <h3 className="text-lg font-semibold mb-2">Output</h3>
         <div className="bg-gray-900 p-3 rounded-md overflow-auto max-h-40 relative">
-          <pre className="text-gray-300 text-sm">
+          <pre className="text-gray-300 text-sm whitespace-pre-wrap break-words">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
       </div>
-      
 
       {/* Keywords Section */}
       <div>
