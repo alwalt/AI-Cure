@@ -1,4 +1,5 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { BookmarkIcon } from "@heroicons/react/24/outline";
+
 import Button from "@/components/base/Button";
 
 // type SaveButtonProps = {
@@ -14,8 +15,8 @@ export default function SaveButton() {
     <Button
       targetId="SaveButton"
       buttonDescription="Save"
-      Icon={ArrowDownTrayIcon}
-      iconClassName="h-8 w-8"
+      Icon={BookmarkIcon}
+      iconClassName="h-7 w-7"
       onClick={handleClick}
     />
   );
