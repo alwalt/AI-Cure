@@ -32,7 +32,7 @@ export default function InvestigationComponent() {
         <CollapsibleSection title="Title">
           <EditableTextArea
             value={title} // Set the current state value as the textarea value
-            onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
+            onChange={(newTitle) => setTitle(newTitle)} // Update the state on user input
             placeholder="Enter Title here..."
             rows={3} // Set dynamic rows for the description section
           />
