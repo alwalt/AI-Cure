@@ -13,31 +13,9 @@ export default function PlayButton() {
       Icon={PlayIcon}
       iconClassName="h-8 w-8"
       onClick={handleClick}
+      aria-label="Generate vector store" // Accessible label for screen readers
+      role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
+      className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
     />
   );
 }
-
-// type PlayButtonProps = {
-//   onClick?: () => void;
-// };
-
-// export default function PlayButton({ onClick }: PlayButtonProps) {
-//   const handleClick = () => {
-//     alert("Play clicked! (Placeholder alert)");
-//     if (onClick) onClick();
-//   };
-
-// return (
-//   <div className="relative group">
-//     {/* Button */}
-//     <button onClick={handleClick} className="flex">
-//       <PlayIcon className="h-8 w-8 stroke-primaryWhite stroke-1 text-primaryBlack hover:stroke-redFill transition-colors duration-300" />
-//     </button>
-
-//     {/* Tooltip (appears on hover) */}
-//     <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1">
-//       Play
-//     </span>
-//   </div>
-// );
-// }

@@ -71,6 +71,9 @@ export interface ButtonProps {
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // This accepts any Heroicon
   iconClassName?: string; // Optional extra styles
   spanClassName?: string;
+  role?: string; // Add role prop (optional)
+  "aria-label"?: string; // Optional aria-label for accessibility
+  className: string;
 }
 
 export interface TextButtonProps {

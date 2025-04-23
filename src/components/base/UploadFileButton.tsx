@@ -30,11 +30,14 @@ export default function UploadFileButton({
     <div className="flex items-center justify-center relative group">
       <Button
         targetId="ArrowUpTrayIcon"
-        buttonDescription="Upload Files"
+        buttonDescription="Upload files"
         Icon={ArrowUpTrayIcon}
         iconClassName="h-6 w-6"
         spanClassName="mt-2"
         onClick={() => setIsOpen(true)}
+        aria-label="Upload files button" // Accessible label for screen readers
+        role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
+        className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
       />
 
       <Transition appear show={isOpen} as={Fragment}>

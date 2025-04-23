@@ -20,6 +20,7 @@ export default {
         selectedBlack: "#212121",
         unSelectedBlack: "#000000",
         selectedBlue: "#2a79ff",
+        buttonBg: "#C9C9C9",
       },
     },
   },
