@@ -29,21 +29,21 @@ export default function InvestigationComponent() {
   return (
     <div className="w-full overflow-auto">
       <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
-        <CollapsibleSection title="Description">
-          <EditableTextArea
-            value={description} // Set the current state value as the textarea value
-            onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
-            placeholder="Enter description here..."
-            rows={20} // Set dynamic rows for the description section
-          />
-        </CollapsibleSection>
-
         <CollapsibleSection title="Title">
           <EditableTextArea
             value={title} // Set the current state value as the textarea value
             onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
             placeholder="Enter Title here..."
             rows={3} // Set dynamic rows for the description section
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Description">
+          <EditableTextArea
+            value={description} // Set the current state value as the textarea value
+            onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
+            placeholder="Enter description here..."
+            rows={20} // Set dynamic rows for the description section
           />
         </CollapsibleSection>
       </div>

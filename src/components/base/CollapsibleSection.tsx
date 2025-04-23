@@ -1,5 +1,5 @@
 import { useState, ReactNode } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid"; // Ensure Heroicons is installed for these icons
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
 
@@ -16,7 +16,7 @@ export default function CollapsibleSection({
     <div className="w-full bg-grey p-2">
       <button
         onClick={toggleSection}
-        className="flex justify-between items-center w-full bg-blue-500 text-white p-3 rounded-md"
+        className="flex justify-between items-center w-full bg-primaryBlue text-primaryWhite p-3 rounded-md hover:bg-selectedBlue hover:font-bold transition-colors duration-300"
       >
         <div className="flex items-center gap-2">
           <span>{title}</span>

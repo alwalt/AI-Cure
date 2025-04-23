@@ -19,6 +19,7 @@ export default {
         panelBlack: "#121212",
         selectedBlack: "#212121",
         unSelectedBlack: "#000000",
+        selectedBlue: "#2a79ff",
       },
     },
   },
