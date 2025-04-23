@@ -93,3 +93,10 @@ export interface CollapsibleSectionProps {
   title: string;
   children: ReactNode;
 }
+
+export interface EditableTextAreaProps {
+  value: string;
+  onChange: (newValue: string) => void;
+  placeholder?: string;
+  rows?: number;
+}
