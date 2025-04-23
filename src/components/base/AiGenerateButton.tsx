@@ -10,7 +10,7 @@ export default function AiGenerateButton() {
       targetId="FolderPlusButton"
       buttonDescription="AI generate"
       Icon={SparklesIcon}
-      iconClassName="h-8 w-8 p-1"
+      iconClassName="h-8 w-8 p-1 border border-primaryWhite rounded-lg hover:border-redFill"
       onClick={handleClick}
     />
   );

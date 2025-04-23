@@ -1,47 +1,47 @@
+import { useState } from "react";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid"; // Ensure Heroicons is installed for these icons
+import CollapsibleSection from "@/components/base/CollapsibleSection";
 
 export default function InvestigationComponent() {
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isTitleOpen, setIsTitleOpen] = useState(false);
+
+  // Toggles the description visibility
+  const toggleDescription = () => setIsDescriptionOpen(!isDescriptionOpen);
+
+  // Toggles the title visibility
+  const toggleTitle = () => setIsTitleOpen(!isTitleOpen);
+
   return (
     <div className="w-full overflow-auto">
       <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
-        <table className="w-full bg-grey">
-          <thead>
-            <tr>
-              <th className="border border-brightGrey px-2 py"></th>
-              <th className="border border-brightGrey px-2 py">Column name</th>
-              <th className="border border-brightGrey px-2 py">Column Value</th>
-              <th className="border border-brightGrey px-2 py">
-                LLM Generation
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-brightGrey px-2 py-2">
-                <AiGenerateButton />
-              </td>
-              <td className="border border-brightGrey px-2 py-2">
-                Description
-              </td>
-              <td className="border border-brightGrey px-2 py-2">
-                Superconducting Magnetic Energy Storage (SMES) stores electrical
-                energy in the form of a magnetic field using a superconducting
-                coil, offering high efficiency and fast response times.
-              </td>
-              <td className="border border-brightGrey px-2 py-2">
-                LLM Generation goes here
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-brightGrey px-2 py-2">
-                <AiGenerateButton />
-              </td>
-              <td className="border border-brightGrey px-2 py-2">Title</td>
-              <td className="border border-brightGrey px-2 py-2">Test entry</td>
-              <td className="border border-brightGrey px-2 py-2">Test entry</td>
-            </tr>
-          </tbody>
-        </table>
+        <CollapsibleSection title="Description">
+          <p>Super conduting magnents.</p>
+        </CollapsibleSection>
+
+        {/* Title Banner */}
+        <button
+          onClick={toggleTitle}
+          className="flex justify-between items-center w-full bg-green-500 text-white p-3 rounded-md mt-2"
+        >
+          <div className="flex items-center gap-2">
+            <span>Title</span>
+          </div>
+          {isTitleOpen ? (
+            <ChevronUpIcon className="w-5 h-5" />
+          ) : (
+            <ChevronDownIcon className="w-5 h-5" />
+          )}
+        </button>
+
+        {/* Title Content */}
+        {isTitleOpen && (
+          <div className="p-4">
+            <AiGenerateButton />
+            <p>Test entry</p>
+          </div>
+        )}
       </div>
     </div>
   );

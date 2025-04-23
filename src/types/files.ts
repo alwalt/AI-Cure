@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface UploadedFile {
   name: string;
   type: string;
@@ -85,4 +87,9 @@ export interface FilePreviewerProps {
   type: string | undefined;
   name: string;
   objectUrl: string;
+}
+
+export interface CollapsibleSectionProps {
+  title: string;
+  children: ReactNode;
 }
