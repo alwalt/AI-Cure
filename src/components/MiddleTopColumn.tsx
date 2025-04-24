@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import PDFExtractor from "./middleTopCol/PDFExtractor";
+import PDFExtractor from "./middleTopCol/PDFExtractorComponent";
 import StudyComponent from "./middleTopCol/StudyComponent";
 import TextButton from "./base/TextButton";
 
