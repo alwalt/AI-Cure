@@ -22,7 +22,7 @@ export default function Button({
 
       {/* Tooltip */}
       <span
-        className={`absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 ${spanClassName}`}
+        className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 z-10 ${spanClassName}`}
       >
         {buttonDescription}
       </span>

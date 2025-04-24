@@ -33,7 +33,7 @@ export default function UploadFileButton({
         buttonDescription="Upload files"
         Icon={ArrowUpTrayIcon}
         iconClassName="h-6 w-6"
-        spanClassName="mt-2"
+        spanClassName="mt-2 left-1/2 -translate-x-1/2"
         onClick={() => setIsOpen(true)}
         aria-label="Upload files button" // Accessible label for screen readers
         role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
