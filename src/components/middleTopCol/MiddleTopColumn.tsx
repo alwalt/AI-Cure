@@ -5,7 +5,7 @@ import StudyComponent from "./StudyComponent";
 import TextButton from "../base/TextButton";
 
 export default function MiddleTopColumn() {
-  const [activeTab, setActiveTab] = useState("pdfextractor");
+  const [activeTab, setActiveTab] = useState("study");
 
   const renderContent = () => {
     switch (activeTab) {
@@ -19,25 +19,27 @@ export default function MiddleTopColumn() {
   };
 
   return (
-    <div className="relative bg-primaryBlack p-2 h-full max-h-full overflow-y-auto">
-      <h2 className="sticky top-0 font-bold text-xl p-2 capitalize">
-        Scientific data curation
-      </h2>
-      <div className="border-b border-grey mb-8">
-        {/* Tab Buttons */}
-        <div className="flex space-x-4 mb-4">
-          <TextButton
-            label="Study"
-            buttonDescription="Study tab"
-            isActive={activeTab === "study"}
-            onClick={() => setActiveTab("study")}
-          />
-          <TextButton
-            label="PDF Extractor"
-            buttonDescription="PDF Extractor tab"
-            isActive={activeTab === "pdfextractor"}
-            onClick={() => setActiveTab("pdfextractor")}
-          />
+    <div className="relative bg-primaryBlack mt-2 h-full max-h-full overflow-y-auto">
+      <div className="sticky top-0 z-10 bg-primaryBlack">
+        <h2 className="font-bold text-xl p-2 capitalize">
+          Scientific data curation
+        </h2>
+        <div className="border-b border-grey mb-8">
+          {/* Tab Buttons */}
+          <div className="flex space-x-4 mb-4">
+            <TextButton
+              label="Study"
+              buttonDescription="Study tab"
+              isActive={activeTab === "study"}
+              onClick={() => setActiveTab("study")}
+            />
+            <TextButton
+              label="PDF Extractor"
+              buttonDescription="PDF Extractor tab"
+              isActive={activeTab === "pdfextractor"}
+              onClick={() => setActiveTab("pdfextractor")}
+            />
+          </div>
         </div>
       </div>
 

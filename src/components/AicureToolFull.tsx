@@ -18,10 +18,10 @@ export default function AicureToolFull() {
       </div>
       {/* flex-grow has to be here to allow right col to collapse */}
       <div className="flex flex-col h-screen grow min-w-[300px]">
-        <div className="h-3/4">
+        <div className="h-1/2">
           <MiddleTopColumn />
         </div>
-        <div className="">
+        <div className="flex-1 pb-2">
           <MiddleBottomColumn />
         </div>
       </div>
