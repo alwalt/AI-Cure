@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
 import EditableTextArea from "../base/EditableTextArea";
 
-export default function InvestigationComponent() {
+export default function PDFExtractor() {
   const [description, setDescription] = useState<string>("");
   const [title, setTitle] = useState<string>("");
 

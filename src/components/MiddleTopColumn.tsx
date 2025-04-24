@@ -1,16 +1,16 @@
 "use client";
 import { useState } from "react";
-import InvestigationComponent from "./middleTopCol/InvestigationComponent";
+import PDFExtractor from "./middleTopCol/PDFExtractor";
 import StudyComponent from "./middleTopCol/StudyComponent";
 import TextButton from "./base/TextButton";
 
 export default function MiddleTopColumn() {
-  const [activeTab, setActiveTab] = useState("investigation");
+  const [activeTab, setActiveTab] = useState("pdfextractor");
 
   const renderContent = () => {
     switch (activeTab) {
-      case "investigation":
-        return <InvestigationComponent />;
+      case "pdfextractor":
+        return <PDFExtractor />;
       case "study":
         return <StudyComponent />;
       default:
@@ -27,17 +27,16 @@ export default function MiddleTopColumn() {
         {/* Tab Buttons */}
         <div className="flex space-x-4 mb-4">
           <TextButton
-            label="Investigation"
-            buttonDescription="Investigation tab"
-            isActive={activeTab === "investigation"}
-            onClick={() => setActiveTab("investigation")}
-          />
-
-          <TextButton
             label="Study"
             buttonDescription="Study tab"
             isActive={activeTab === "study"}
             onClick={() => setActiveTab("study")}
+          />
+          <TextButton
+            label="PDF Extractor"
+            buttonDescription="PDF Extractor tab"
+            isActive={activeTab === "pdfextractor"}
+            onClick={() => setActiveTab("pdfextractor")}
           />
         </div>
       </div>
