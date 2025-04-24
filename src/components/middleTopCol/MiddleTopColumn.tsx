@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import PDFExtractor from "./middleTopCol/PDFExtractorComponent";
-import StudyComponent from "./middleTopCol/StudyComponent";
-import TextButton from "./base/TextButton";
+import PDFExtractor from "./PDFExtractorComponent";
+import StudyComponent from "./StudyComponent";
+import TextButton from "../base/TextButton";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("pdfextractor");
