@@ -67,7 +67,7 @@ export interface FileUploaderProps {
 export interface ButtonProps {
   targetId: string;
   buttonDescription: string;
-  onClick?: () => void;
+  onClick?: () => Promise<void> | void; // Allow onClick to return a Promise or nothing
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // This accepts any Heroicon
   iconClassName?: string; // Optional extra styles
   spanClassName?: string;
@@ -79,7 +79,7 @@ export interface ButtonProps {
 export interface TextButtonProps {
   label: string;
   buttonDescription: string;
-  onClick: () => void;
+  onClick?: void;
   isActive: boolean;
   buttonClassName?: string;
   spanClassName?: string;
@@ -94,6 +94,7 @@ export interface FilePreviewerProps {
 
 export interface CollapsibleSectionProps {
   title: string;
+  fetchFunction: () => Promise<string>;
   children: ReactNode;
 }
 

@@ -2,12 +2,15 @@ import { useState, ReactNode } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
+import useAiGenerateFetch from "./useAiGenerateFetch";
 
 export default function CollapsibleSection({
   title,
+  fetchFunction,
   children,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [data, fetchData] = useAiGenerateFetch(fetchFunction);
 
   // Toggles the section visibility
   const toggleSection = () => setIsOpen(!isOpen);
@@ -43,7 +46,7 @@ export default function CollapsibleSection({
       {/* Content */}
       {isOpen && (
         <div id={`section-content-${title}`} className="p-4">
-          <AiGenerateButton />
+          <AiGenerateButton onClick={fetchData} />
           {children}
         </div>
       )}

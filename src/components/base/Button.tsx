@@ -7,14 +7,22 @@ export default function Button({
   Icon,
   iconClassName = "",
   spanClassName = "",
+  role = "button", // Default role if not provided
+  "aria-label": ariaLabel,
+  className,
 }: ButtonProps) {
-  const handleClick = () => {
-    if (onClick) onClick();
+  const handleClick = async () => {
+    if (onClick) await onClick();
   };
 
   return (
     <div className="relative group">
-      <button onClick={handleClick} className="flex">
+      <button
+        onClick={handleClick}
+        className="flex"
+        aria-label={ariaLabel}
+        role={role}
+      >
         <Icon
           className={`stroke-primaryWhite stroke-1 text-primaryBlack hover:stroke-redFill transition-colors duration-300 ${iconClassName}`}
         />
