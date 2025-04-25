@@ -24,7 +24,7 @@ export default function MiddleTopColumn() {
         <h2 className="font-bold text-xl p-2 capitalize">
           Scientific data curation
         </h2>
-        <div className="border-b border-grey mb-2">
+        <div className="border-b border-grey mb-2 pl-2">
           {/* Tab Buttons */}
           <div className="flex space-x-4 mb-4">
             <TextButton
