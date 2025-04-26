@@ -3,6 +3,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
 import useAiGenerateFetch from "./useAiGenerateFetch";
+import { sectionIcons } from "../../../util/sectionIcons";
 
 export default function CollapsibleSection({
   title,
@@ -11,6 +12,7 @@ export default function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [data, fetchData] = useAiGenerateFetch(fetchFunction);
+  const Icon = sectionIcons[title]; // Dynamically get the correct icon
 
   // Toggles the section visibility
   const toggleSection = () => setIsOpen(!isOpen);
@@ -34,6 +36,8 @@ export default function CollapsibleSection({
         className="flex justify-between items-center w-full bg-primaryBlue text-primaryWhite p-3 rounded-md hover:bg-selectedBlue hover:font-bold transition-colors duration-300"
       >
         <div className="flex items-center gap-2">
+          {Icon && <Icon className="h-6 w-6" />}{" "}
+          {/* Conditionally render if an icon exists */}
           <span>{title}</span>
         </div>
         {isOpen ? (
