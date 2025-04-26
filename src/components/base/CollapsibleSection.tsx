@@ -4,6 +4,7 @@ import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
 import useAiGenerateFetch from "./useAiGenerateFetch";
 import { sectionIcons } from "../../../util/sectionIcons";
+import { DocumentIcon } from "@heroicons/react/24/outline";
 
 export default function CollapsibleSection({
   title,
@@ -12,7 +13,7 @@ export default function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [data, fetchData] = useAiGenerateFetch(fetchFunction);
-  const Icon = sectionIcons[title]; // Dynamically get the correct icon
+  const Icon = sectionIcons[title] || DocumentIcon; // Dynamically get the correct icon | backup icon if not in Dict
 
   // Toggles the section visibility
   const toggleSection = () => setIsOpen(!isOpen);
