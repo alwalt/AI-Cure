@@ -37,8 +37,13 @@ export default function CollapsibleSection({
         className="flex justify-between items-center w-full bg-primaryBlue text-primaryWhite p-3 rounded-md hover:bg-selectedBlue hover:font-bold transition-colors duration-300"
       >
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-6 w-6" />}{" "}
-          {/* Conditionally render if an icon exists */}
+          {Icon && (
+            <Icon
+              className={`h-6 w-6 transition-transform duration-300 ease-in-out ${
+                isOpen ? "stroke-2" : ""
+              }`}
+            />
+          )}
           <span>{title}</span>
         </div>
         {isOpen ? (
