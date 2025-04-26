@@ -1,10 +1,5 @@
 import { BookmarkIcon } from "@heroicons/react/24/outline";
-
 import Button from "@/components/base/Button";
-
-// type SaveButtonProps = {
-//   onClick?: () => void;
-// };
 
 export default function SaveButton() {
   const handleClick = () => {
