@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 
 
-from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
+from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe, get_magic_wand_suggestions
 
 from pydantic import BaseModel
 import base64
@@ -575,6 +575,7 @@ def analyze_pdf(
         "summary": json_output.get("Summary") or json_output.get("summary", ""),
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
+    normalized_output.update(get_magic_wand_suggestions(data[0].page_content, model))
     return JSONResponse(content=normalized_output)
     # return JSONResponse(content={
     #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
@@ -632,7 +633,8 @@ def analyze_table(
                 json_output = json.loads(res_text)
             except json.decoder.JSONDecodeError:
                 json_output['Error'] = res_text
-            
+        
+        json_output.update(get_magic_wand_suggestions(table_df.to_string(), model))
         return JSONResponse(content=json_output)
     except Exception as e:
         logging.error(f"Error analyzing table: {str(e)}")
