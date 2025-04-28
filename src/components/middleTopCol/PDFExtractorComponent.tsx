@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
 import EditableTextArea from "../base/EditableTextArea";
+import createFetchFunction from "../../../util/createFetchFunction";
 
 export default function PDFExtractor() {
   const [description, setDescription] = useState<string>("");
@@ -29,7 +30,10 @@ export default function PDFExtractor() {
   return (
     <div className="w-full overflow-auto">
       <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
-        <CollapsibleSection title="Title">
+        <CollapsibleSection
+          title="Title"
+          fetchFunction={createFetchFunction("Title")}
+        >
           <EditableTextArea
             value={title} // Set the current state value as the textarea value
             onChange={(newTitle) => setTitle(newTitle)} // Update the state on user input
@@ -38,7 +42,10 @@ export default function PDFExtractor() {
           />
         </CollapsibleSection>
 
-        <CollapsibleSection title="Description">
+        <CollapsibleSection
+          title="Description"
+          fetchFunction={createFetchFunction("Description")}
+        >
           <EditableTextArea
             value={description} // Set the current state value as the textarea value
             onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
