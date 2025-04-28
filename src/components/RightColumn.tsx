@@ -50,7 +50,7 @@ export default function RightColumn() {
         </button>
         {/* Tooltip */}
         <span
-          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-primaryWhite opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 
+          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-primaryWhite opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 z-20
       ${
         isRightColumnVisible ? "left-1/2 -translate-x-1/2" : "left-0 ml-[-30px]"
       }`}
