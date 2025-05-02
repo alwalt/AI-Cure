@@ -577,7 +577,7 @@ async def analyze_pdf(
     # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
     print(data[0].page_content)
     # Call model to get summary in json format
-    prompt = "Summerize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
+    prompt = "Summarize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
     res = ollama.chat(
         model=model,
         messages=[

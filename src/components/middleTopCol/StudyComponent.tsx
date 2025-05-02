@@ -12,8 +12,8 @@ export default function StudyComponent() {
     <div className="w-full overflow-auto">
       <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
         <CollapsibleSection
-          title="Description"
-          fetchFunction={createFetchFunction("Description")}
+          title="description"
+          fetchFunction={createFetchFunction("description")}
         >
           <EditableTextArea
             value={description} // Set the current state value as the textarea value
@@ -24,55 +24,55 @@ export default function StudyComponent() {
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Studies"
-          fetchFunction={createFetchFunction("Studies")}
+          title="studies"
+          fetchFunction={createFetchFunction("studies")}
         >
           <EditableTextArea
             value={studies} // Set the current state value as the textarea value
             onChange={(newStudies) => setStudies(newStudies)} // Update the state on user input
-            placeholder="Enter Studies here..."
+            placeholder="Enter studies here..."
             rows={3} // Set dynamic rows for the description section
           />
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Payloads"
-          fetchFunction={createFetchFunction("Payloads")}
+          title="payloads"
+          fetchFunction={createFetchFunction("payloads")}
         >
           <></>
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Subjects/Biospecimens"
-          fetchFunction={createFetchFunction("Subjects/Biospecimens")}
+          title="subjects/biospecimens"
+          fetchFunction={createFetchFunction("subjects/biospecimens")}
         >
           <></>
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Hardware"
-          fetchFunction={createFetchFunction("Hardware")}
+          title="hardware"
+          fetchFunction={createFetchFunction("hardware")}
         >
           <></>
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Publications"
-          fetchFunction={createFetchFunction("Publications")}
+          title="publications"
+          fetchFunction={createFetchFunction("publications")}
         >
           <></>
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Files"
-          fetchFunction={createFetchFunction("Files")}
+          title="files"
+          fetchFunction={createFetchFunction("files")}
         >
           <></>
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Version history"
-          fetchFunction={createFetchFunction("Version history")}
+          title="version history"
+          fetchFunction={createFetchFunction("version history")}
         >
           <></>
         </CollapsibleSection>
