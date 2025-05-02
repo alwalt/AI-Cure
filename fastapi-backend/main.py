@@ -675,5 +675,7 @@ def analyze_table(
         logging.error(f"Error analyzing table: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
+# Magic Wand / Sparkles Description tables route
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
