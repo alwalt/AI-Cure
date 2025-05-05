@@ -4,28 +4,47 @@ class MessageParser {
 
   constructor(actionProvider: any) {
     this.actionProvider = actionProvider;
-    this.isSearchMode = false;
+    this.isSearchMode = true;
     // Expose this parser instance globally for search button
     (window as any).messageParserInstance = this;
+    console.log('MessageParser constructor called, parser exposed as window.messageParserInstance');
   }
 
   parse(message: string) {
+    console.log('Current parser instance:', this);
+    console.log('Stored search mode:', this.isSearchMode);
     if (message.trim()) {
-      // Check if search mode is active by looking at the input element
-      const inputElement = document.querySelector('.react-chatbot-kit-chat-input') as HTMLInputElement;
-      const isSearchMode = inputElement?.dataset?.searchMode === "true";
+      console.log('Parsing message:', message);
+      console.log('Current search mode:', this.isSearchMode);
       
-      if (isSearchMode) {
+      // Explicitly check search mode and log the decision path
+      if (this.isSearchMode === true) {
+        console.log('SEARCH MODE: Using handleSearchQuery with endpoint /api/mcp_query');
         this.actionProvider.handleSearchQuery(message);
-        // Search mode was already reset in the SearchButton component
       } else {
+        console.log('NORMAL MODE: Using handleUserMessage with endpoint /api/get_chat_response');
         this.actionProvider.handleUserMessage(message);
       }
     }
   }
 
   setSearchMode(isSearch: boolean) {
+    console.log('MessageParser.setSearchMode called with:', isSearch);
     this.isSearchMode = isSearch;
+    
+    // Log the current value to verify it was set
+    console.log('MessageParser.isSearchMode is now:', this.isSearchMode);
+    
+    // Update input placeholder for better UX
+    const inputElement = document.querySelector('.react-chatbot-kit-chat-input') as HTMLInputElement;
+    if (inputElement) {
+      inputElement.placeholder = isSearch ? 'Enter your search query...' : 'Write a message...';
+      // Set dataset attribute for styling if needed
+      inputElement.dataset.searchMode = isSearch ? "true" : "false";
+      console.log('Input placeholder updated to:', inputElement.placeholder);
+    } else {
+      console.error('Could not find chat input element');
+    }
   }
 }
 

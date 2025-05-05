@@ -9,9 +9,11 @@ class ActionProvider {
     this.setState = setState;
     // Expose this instance globally for the SearchButton
     (window as any).chatActionProvider = this;
+    console.log('ActionProvider constructor called, exposed as window.chatActionProvider');
   }
 
   handleUserMessage = async (message: string) => {
+    console.log('handleUserMessage called with:', message);
     const { sessionId, addMessage } = useChatbotStore.getState();
 
     if (!sessionId) {
@@ -23,6 +25,7 @@ class ActionProvider {
     addMessage({ sender: "user", text: message });
 
     try {
+      console.log('Calling regular chat endpoint /api/get_chat_response with message:', message);
       const response = await fetch(
         `http://127.0.0.1:8000/api/get_chat_response/${sessionId}`,
         {
@@ -40,9 +43,8 @@ class ActionProvider {
 
       const data = await response.json();
       console.log(
-        "$$$$$ ACTION PROVIDER DATA and data.answer &&&&&",
-        data,
-        data.answer
+        "Regular chat response received:",
+        data
       );
       if (data.answer) {
         const botMessage = this.createChatBotMessage(data.answer);
@@ -60,12 +62,14 @@ class ActionProvider {
   };
 
   handleSearchQuery = async (message: string) => {
+    console.log('handleSearchQuery called with:', message);
     const { addMessage } = useChatbotStore.getState();
 
     // Save user search message in the store
     addMessage({ sender: "user", text: `🔍 ${message}` });
 
     try {
+      console.log('Calling search endpoint /api/mcp_query with query:', message);
       const response = await fetch(
         `http://127.0.0.1:8000/api/mcp_query`,
         {
@@ -82,7 +86,7 @@ class ActionProvider {
       }
 
       const data = await response.json();
-      console.log("Search response:", data);
+      console.log("Search response received:", data);
       
       if (data.response) {
         const botMessage = this.createChatBotMessage(data.response);

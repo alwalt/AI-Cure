@@ -42,7 +42,8 @@ from mcp_agent.app import MCPApp
 from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
-
+import torch
+torch.mps.empty_cache()
 from pathlib import Path
 
 # for debuging
@@ -66,6 +67,7 @@ logging.basicConfig(level=logging.INFO)
 
 async def cleanup_job():
     while True:
+        torch.mps.empty_cache()
         await asyncio.sleep(3600 * 24)  # Run every 24 hours 
         now = time.time()
         for session_id, last_active in list(ACTIVE_SESSIONS.items()):

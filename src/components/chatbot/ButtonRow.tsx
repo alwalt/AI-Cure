@@ -3,8 +3,16 @@ import React from 'react';
 // Simple component with no external dependencies
 const ButtonRow: React.FC = () => {
   const handleSearchClick = () => {
-    // Set global flag for search mode
-    window.nextMessageIsSearch = true;
+    console.log('ButtonRow Search button clicked');
+    
+    // Use the same approach as SearchButton.tsx - get the MessageParser instance
+    const parser = (window as any).messageParserInstance;
+    if (parser && typeof parser.setSearchMode === 'function') {
+      console.log('ButtonRow: Found MessageParser instance, activating search mode');
+      parser.setSearchMode(true);
+    } else {
+      console.error('ButtonRow: MessageParser instance not found!');
+    }
     
     // Focus the input field
     const inputElement = document.querySelector(".react-chatbot-kit-chat-input") as HTMLInputElement;
@@ -12,12 +20,18 @@ const ButtonRow: React.FC = () => {
       inputElement.focus();
       inputElement.placeholder = "Enter your search query...";
       
-      // Reset after Enter key is pressed
+      // Reset search mode after Enter key is pressed
       inputElement.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           setTimeout(() => {
             inputElement.placeholder = "Write a message...";
-            window.nextMessageIsSearch = false;
+            
+            // Use the MessageParser instance to turn off search mode
+            const parser = (window as any).messageParserInstance;
+            if (parser && typeof parser.setSearchMode === 'function') {
+              console.log('ButtonRow: Resetting search mode after query submitted');
+              parser.setSearchMode(false);
+            }
           }, 100);
         }
       }, { once: true });
