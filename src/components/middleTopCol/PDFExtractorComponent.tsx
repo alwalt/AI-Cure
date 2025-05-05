@@ -31,20 +31,20 @@ export default function PDFExtractor() {
     <div className="w-full overflow-auto">
       <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
         <CollapsibleSection
-          title="Title"
-          fetchFunction={createFetchFunction("Title")}
+          title="title"
+          fetchFunction={createFetchFunction("title")}
         >
           <EditableTextArea
             value={title} // Set the current state value as the textarea value
             onChange={(newTitle) => setTitle(newTitle)} // Update the state on user input
-            placeholder="Enter Title here..."
+            placeholder="Enter title here..."
             rows={3} // Set dynamic rows for the description section
           />
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Description"
-          fetchFunction={createFetchFunction("Description")}
+          title="description"
+          fetchFunction={createFetchFunction("description")}
         >
           <EditableTextArea
             value={description} // Set the current state value as the textarea value
