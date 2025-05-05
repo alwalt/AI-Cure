@@ -56,6 +56,46 @@ class ActionProvider {
       console.error("Error fetching chatbot response:", error);
     }
   };
+
+  handleSearchQuery = async (message: string) => {
+    const { addMessage } = useChatbotStore.getState();
+
+    // Save user search message in the store
+    addMessage({ sender: "user", text: `🔍 ${message}` });
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/mcp_query`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: message }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch search response: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Search response:", data);
+      
+      if (data.response) {
+        const botMessage = this.createChatBotMessage(data.response);
+        this.setState((prevState: any) => ({
+          ...prevState,
+          messages: [...prevState.messages, botMessage],
+        }));
+        addMessage({ sender: "bot", text: data.response });
+      } else {
+        console.error("No search results received.");
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  };
 }
 
 export default ActionProvider;

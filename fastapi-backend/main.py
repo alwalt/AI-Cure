@@ -37,23 +37,69 @@ from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
 
+import asyncio, yaml
+from mcp_agent.app import MCPApp
+from mcp_agent.config import Settings
+from mcp_agent.agents.agent import Agent
+from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
+
+from pathlib import Path
+
 # for debuging
 import logging
-logging.basicConfig(level=logging.DEBUG)
+# ------------------------------------------------------------------
+from mcp_agent.mcp import mcp_agent_client_session as _mcp_sess
 
+_orig_send = _mcp_sess.MCPAgentClientSession.send_request
+async def _fixed(self, request, *args, **kwargs):
+    kwargs.pop("request_read_timeout_seconds", None)  # strip unknown kwarg
+    return await _orig_send(self, request, *args, **kwargs)
+
+_mcp_sess.MCPAgentClientSession.send_request = _fixed
+# ------------------------------------------------------------------
+logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
+
 ###############################################################################
 # Global configuration & in-memory store
 ###############################################################################
 
-app = FastAPI()
+async def cleanup_job():
+    while True:
+        await asyncio.sleep(3600 * 24)  # Run every 24 hours 
+        now = time.time()
+        for session_id, last_active in list(ACTIVE_SESSIONS.items()):
+            if now - last_active > SESSION_TIMEOUT:
+                shutil.rmtree(f"{USER_DIRS}/{session_id}", ignore_errors=True)
+                del ACTIVE_SESSIONS[session_id]
 
+CONFIG_PATH = Path(__file__).parent / "mcp_modules" / "config.yaml"
+
+def load_config() -> Settings:
+    with CONFIG_PATH.open() as f:
+        return Settings(**yaml.safe_load(f))
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    - Start MCP servers once.
+    - Tear them down when the FastAPI process exits.
+    """
+    settings = load_config()
+    print("Loaded servers from YAML:", settings.mcp.servers.keys())
+
+    app.state.mcp_app = MCPApp(settings=settings)
+    import openai
+    openai.api_key  = settings.openai.api_key
+    openai.base_url = settings.openai.base_url
+    asyncio.create_task(cleanup_job())
+    async with app.state.mcp_app.run():
+        yield 
+app = FastAPI(lifespan=lifespan)
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -79,6 +125,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # { session_id -> [ (csv_file, name), ... ] }
 SESSION_TABLES = {}
 SESSIONS = {}
+
+# MCP server var init
+mcp_server = None
 
 class ChatHistory(BaseModel):
     history: List = []
@@ -123,18 +172,6 @@ async def session_manager(request: Request, call_next):
     return new_response
 
 
-async def cleanup_job():
-    while True:
-        await asyncio.sleep(3600)  # Run hourly
-        now = time.time()
-        for session_id, last_active in list(ACTIVE_SESSIONS.items()):
-            if now - last_active > SESSION_TIMEOUT:
-                shutil.rmtree(f"{USER_DIRS}/{session_id}", ignore_errors=True)
-                del ACTIVE_SESSIONS[session_id]
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-   asyncio.create_task(cleanup_job())
 
 ###############################################################################
 # API Routes
@@ -188,7 +225,7 @@ async def get_files(request: Request):
     
 @app.post("/api/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
-    """ 
+    """
     Upload a file and return a session id. Unless sessionid is present.
     """
     print(f"Upload request received: {file.filename}")
@@ -334,6 +371,32 @@ def export_subset(
 # AI and Vector Routes
 ###############################################################################
 
+# MCP Route
+@app.post("/api/mcp_query")
+async def mcp_query(
+    request: Request,
+    query: str = Body(..., embed=True),
+): 
+    try:
+        # Create your conversational Agent
+        finder = Agent(
+            name="cli_bot",
+            instruction=(
+                "You answer biology‑related questions by calling "
+                "the osdr_fetch_metadata or osdr_find_by_organism tools."
+            ),
+            server_names=["OSDRServer"],
+        )
+
+        async with finder:
+                # Attach an LLM and send the question
+                llm = await finder.attach_llm(OpenAIAugmentedLLM)
+                resp = await llm.generate_str(message=query)
+                    
+        return {"response": resp}            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
@@ -463,7 +526,7 @@ async def get_chat_response(
 @app.post("/api/analyze_image")
 async def analyze_image(
     request: Request,
-    model: str = Form("llama3.1"),
+    model: str = Form("llava"),
     file_name: str = Form(...),
 ):
     """
@@ -542,7 +605,7 @@ async def analyze_image(
 async def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
-    model: str = Form("llama3.1"),
+    model: str = Form("llava"),
     ):
     """
     Analyze a PDF and return a json object with a summary.

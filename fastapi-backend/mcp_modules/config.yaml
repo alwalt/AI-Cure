@@ -1,0 +1,13 @@
+execution_engine: asyncio
+
+mcp:
+  servers:
+    OSDRServer:
+      command: "python3"
+      # Make sure this path is correct relative to where uvicorn runs (fastapi-backend)
+      args: ["-u", "mcp_modules/mcp_tools.py"]
+
+openai:
+  base_url: "http://localhost:11434/v1"
+  api_key: ollama
+  default_model: llama3.2
