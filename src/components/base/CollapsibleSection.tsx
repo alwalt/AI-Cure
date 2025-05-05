@@ -44,7 +44,7 @@ export default function CollapsibleSection({
               }`}
             />
           )}
-          <span>{title}</span>
+          <span className="capitalize">{title}</span>
         </div>
         {isOpen ? (
           <ChevronUpIcon className="w-5 h-5" />
