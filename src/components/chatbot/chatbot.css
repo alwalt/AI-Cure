@@ -73,16 +73,16 @@
 /* Search button styles */
 .search-button {
   cursor: pointer;
-  background-color: #2d2d2d;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  padding: 6px 12px;
   color: white;
+  border: none;
+  font-size: 14px;
   transition: all 0.2s ease;
-  margin-left: 10px;
 }
 
 .search-button:hover {

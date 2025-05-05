@@ -5,14 +5,19 @@ class MessageParser {
   constructor(actionProvider: any) {
     this.actionProvider = actionProvider;
     this.isSearchMode = false;
+    // Expose this parser instance globally for search button
+    (window as any).messageParserInstance = this;
   }
 
   parse(message: string) {
     if (message.trim()) {
-      if (this.isSearchMode) {
+      // Check if search mode is active by looking at the input element
+      const inputElement = document.querySelector('.react-chatbot-kit-chat-input') as HTMLInputElement;
+      const isSearchMode = inputElement?.dataset?.searchMode === "true";
+      
+      if (isSearchMode) {
         this.actionProvider.handleSearchQuery(message);
-        // Reset search mode after handling the query
-        this.isSearchMode = false;
+        // Search mode was already reset in the SearchButton component
       } else {
         this.actionProvider.handleUserMessage(message);
       }

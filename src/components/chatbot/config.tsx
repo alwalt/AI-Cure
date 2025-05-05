@@ -25,11 +25,11 @@ const config = {
     },
   },
   customComponents: {
-    header: (props) => (
-      <div className="react-chatbot-kit-chat-header">
-        {botName}
+    header: ({state, messageParser, actionProvider, createChatBotMessage, setState}: any) => (
+      <div className="react-chatbot-kit-chat-header" style={{display: 'flex', alignItems: 'center'}}>
+        <span>{botName}</span>
         <div style={{ marginLeft: 'auto' }}>
-          {props.widgets && props.widgets.searchButton}
+          <SearchButton onSearch={(query) => actionProvider.handleSearchQuery(query)} />
         </div>
       </div>
     ),

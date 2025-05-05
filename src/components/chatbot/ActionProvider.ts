@@ -7,6 +7,8 @@ class ActionProvider {
   constructor(createChatBotMessage: any, setState: any) {
     this.createChatBotMessage = createChatBotMessage;
     this.setState = setState;
+    // Expose this instance globally for the SearchButton
+    (window as any).chatActionProvider = this;
   }
 
   handleUserMessage = async (message: string) => {
