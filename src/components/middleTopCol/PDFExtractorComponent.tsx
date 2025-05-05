@@ -29,7 +29,7 @@ export default function PDFExtractor() {
 
   return (
     <div className="w-full overflow-auto">
-      <div className="min-w-[400px] max-w-[850px] rounded overflow-hidden border border-grey">
+      <div className="rounded overflow-hidden border border-grey">
         <CollapsibleSection
           title="title"
           fetchFunction={createFetchFunction("title")}
