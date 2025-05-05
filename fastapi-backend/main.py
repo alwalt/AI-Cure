@@ -48,16 +48,17 @@ from pathlib import Path
 
 # for debuging
 import logging
-# ------------------------------------------------------------------
+
+# Source code overide for MCP agent with fastapi 
 from mcp_agent.mcp import mcp_agent_client_session as _mcp_sess
 
 _orig_send = _mcp_sess.MCPAgentClientSession.send_request
 async def _fixed(self, request, *args, **kwargs):
-    kwargs.pop("request_read_timeout_seconds", None)  # strip unknown kwarg
+    kwargs.pop("request_read_timeout_seconds", None)  # strips unsupported kwarg
     return await _orig_send(self, request, *args, **kwargs)
 
 _mcp_sess.MCPAgentClientSession.send_request = _fixed
-# ------------------------------------------------------------------
+
 logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
 
@@ -94,10 +95,12 @@ async def lifespan(app: FastAPI):
     import openai
     openai.api_key  = settings.openai.api_key
     openai.base_url = settings.openai.base_url
-    asyncio.create_task(cleanup_job())
+    asyncio.create_task(cleanup_job()) # Clean up job for cookie tokens
     async with app.state.mcp_app.run():
         yield 
+
 app = FastAPI(lifespan=lifespan)
+
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
     "http://localhost:5173",
@@ -376,13 +379,12 @@ def export_subset(
 # MCP Route
 @app.post("/api/mcp_query")
 async def mcp_query(
-    request: Request,
     query: str = Body(..., embed=True),
 ): 
     try:
-        # Create your conversational Agent
-        finder = Agent(
-            name="cli_bot",
+        # Create Agent
+        osdr_agent = Agent(
+            name="osdr_bot",
             instruction=(
                 "You answer biology‑related questions by calling "
                 "the osdr_fetch_metadata or osdr_find_by_organism tools."
@@ -390,9 +392,9 @@ async def mcp_query(
             server_names=["OSDRServer"],
         )
 
-        async with finder:
+        async with osdr_agent:
                 # Attach an LLM and send the question
-                llm = await finder.attach_llm(OpenAIAugmentedLLM)
+                llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
                 resp = await llm.generate_str(message=query)
                     
         return {"response": resp}            

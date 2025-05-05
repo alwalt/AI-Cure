@@ -4,7 +4,6 @@ mcp:
   servers:
     OSDRServer:
       command: "python3"
-      # Make sure this path is correct relative to where uvicorn runs (fastapi-backend)
       args: ["-u", "mcp_modules/mcp_tools.py"]
 
 openai:
