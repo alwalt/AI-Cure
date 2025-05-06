@@ -16,15 +16,26 @@ class MessageParser {
     if (message.trim()) {
       console.log('Parsing message:', message);
       console.log('Current search mode:', this.isSearchMode);
-      
-      // Explicitly check search mode and log the decision path
-      if (this.isSearchMode === true) {
+
+      const searchButton = document.querySelector('.search-button');
+      const isSearchMode = searchButton?.getAttribute('data-search-active') === 'true';
+
+      if (isSearchMode) {
         console.log('SEARCH MODE: Using handleSearchQuery with endpoint /api/mcp_query');
         this.actionProvider.handleSearchQuery(message);
       } else {
         console.log('NORMAL MODE: Using handleUserMessage with endpoint /api/get_chat_response');
         this.actionProvider.handleUserMessage(message);
       }
+      
+      // Explicitly check search mode and log the decision path
+      // if (this.isSearchMode === true) {
+      //   console.log('SEARCH MODE: Using handleSearchQuery with endpoint /api/mcp_query');
+      //   this.actionProvider.handleSearchQuery(message);
+      // } else {
+      //   console.log('NORMAL MODE: Using handleUserMessage with endpoint /api/get_chat_response');
+      //   this.actionProvider.handleUserMessage(message);
+      // }
     }
   }
 

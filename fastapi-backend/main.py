@@ -12,10 +12,11 @@ import re
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
+api_router = APIRouter()
 
 
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
@@ -43,7 +44,11 @@ from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 import torch
-torch.mps.empty_cache()
+if hasattr(torch, "mps") and torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+    print("MPS cache cleared.")
+else:
+    print("MPS not available, skipping cache clear.")
 from pathlib import Path
 
 # for debuging
@@ -83,6 +88,9 @@ def load_config() -> Settings:
         return Settings(**yaml.safe_load(f))
 
 @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     asyncio.create_task(cleanup_job())
+#     yield
 async def lifespan(app: FastAPI):
     """
     - Start MCP servers once.
@@ -100,6 +108,17 @@ async def lifespan(app: FastAPI):
         yield 
 
 app = FastAPI(lifespan=lifespan)
+
+# Read prefix from environment variable, default to empty string
+API_PREFIX = os.getenv("API_PREFIX", "")
+
+# Mount router under the prefix
+app.include_router(api_router, prefix=API_PREFIX)
+
+# Optional: root path for basic health check
+@app.get("/")
+def read_root():
+    return {"status": "API running"}
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -181,7 +200,7 @@ async def session_manager(request: Request, call_next):
 ###############################################################################
 # API Routes
 ###############################################################################
-@app.get("/api/get_file/{filename}")
+@app.get("/get_file/{filename}")
 async def get_file(filename: str, request: Request):
     session_id = request.state.session_id
     file_path = os.path.join(USER_DIRS, session_id, filename)
@@ -191,7 +210,7 @@ async def get_file(filename: str, request: Request):
     
     return FileResponse(file_path)
 
-@app.get("/api/get_session_files")
+@app.get("/get_session_files")
 async def get_files(request: Request):
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
@@ -228,7 +247,7 @@ async def get_files(request: Request):
         logging.error(f"Error during retrieval: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
-@app.post("/api/upload_file")
+@app.post("/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
     """
     Upload a file and return a session id. Unless sessionid is present.
@@ -299,7 +318,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
         logging.error(f"Error during upload: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.get("/api/list_tables/{session_id}")
+@app.get("/list_tables/{session_id}")
 def list_tables(session_id: str):
     """
     Return the tables found for a given session, if any.
@@ -314,7 +333,7 @@ def list_tables(session_id: str):
     ]
     return JSONResponse(content={"tables": data})
 
-@app.get("/api/preview_table")
+@app.get("/preview_table")
 def preview_table(request: Request, csv_filename: str):
     """
     Return a small preview of the CSV (first 5 rows, for example).
@@ -345,7 +364,7 @@ def preview_table(request: Request, csv_filename: str):
         logging.error(f"Error loading CSV for preview: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.post("/api/export_subset")
+@app.post("/export_subset")
 def export_subset(
     session_id: str = Form(...),
     csv_filename: str = Form(...),
@@ -377,7 +396,35 @@ def export_subset(
 ###############################################################################
 
 # MCP Route
-@app.post("/api/mcp_query")
+@app.post("/mcp_query")
+# async def mcp_query(
+#     request: Request,
+#     query: str = Body(..., embed=True),
+# ): 
+#     try:
+#         # Lazy-load MCP app if not already initialized
+#         if not hasattr(request.app.state, "mcp_app"):
+#             settings = load_config()
+#             request.app.state.mcp_app = MCPApp(settings=settings)
+#             import openai
+#             openai.api_key  = settings.openai.api_key
+#             openai.base_url = settings.openai.base_url
+#             await request.app.state.mcp_app.start()
+
+#         # Create Agent
+#         osdr_agent = Agent(
+#             name="osdr_bot",
+#             instruction="You answer biology‑related questions by calling the osdr_fetch_metadata or osdr_find_by_organism tools.",
+#             server_names=["OSDRServer"],
+#         )
+
+#         async with osdr_agent:
+#             llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+#             resp = await llm.generate_str(message=query)
+
+#         return {"response": resp}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 async def mcp_query(
     query: str = Body(..., embed=True),
 ): 
@@ -402,7 +449,7 @@ async def mcp_query(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Vector Generator
-@app.post("/api/create_vectorstore")
+@app.post("/create_vectorstore")
 async def generate_vectors(
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
@@ -439,7 +486,7 @@ async def generate_vectors(
     return JSONResponse(content={"session_id": session_id})
 
 # Create Documents from Images 
-@app.post("/api/create_documents_from_images")
+@app.post("/create_documents_from_images")
 async def create_documents_from_images(
     image_jsons: str = Form(...)  # JSON string of image data
 ):
@@ -459,7 +506,7 @@ async def create_documents_from_images(
     return JSONResponse(content={"documents": data})
 
 # Generate Chatbot 
-@app.post("/api/create_chatbot/{session_id}")
+@app.post("/create_chatbot/{session_id}")
 async def create_chatbot(
     session_id: str,
     model_name: str = Body(...),
@@ -504,7 +551,7 @@ async def create_chatbot(
     return JSONResponse(content={"status": "success"})
 
 # Get Chat Response 
-@app.post("/api/get_chat_response/{session_id}")
+@app.post("/get_chat_response/{session_id}")
 async def get_chat_response(
     session_id: str,
     query: str = Body(..., embed=True)
@@ -527,7 +574,7 @@ async def get_chat_response(
     return JSONResponse(content={"answer": result["answer"]})
 
 # Image Analyzer
-@app.post("/api/analyze_image")
+@app.post("/analyze_image")
 async def analyze_image(
     request: Request,
     model: str = Form("llava"),
@@ -605,7 +652,7 @@ async def analyze_image(
 
 
 # PDF Analyzer
-@app.post("/api/analyze_pdf")
+@app.post("/analyze_pdf")
 async def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
@@ -684,7 +731,7 @@ async def analyze_pdf(
     #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
     # })
 
-@app.post("/api/analyze_table")
+@app.post("/analyze_table")
 def analyze_table(
     request: Request,
     csv_name: str = Form(...),

@@ -1,4 +1,5 @@
 import { useChatbotStore } from "@/store/useChatbotStore";
+import { apiBase } from '@/lib/api';
 
 class ActionProvider {
   createChatBotMessage: any;
@@ -27,7 +28,7 @@ class ActionProvider {
     try {
       console.log('Calling regular chat endpoint /api/get_chat_response with message:', message);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/get_chat_response/${sessionId}`,
+        `${apiBase}/api/get_chat_response/${sessionId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -71,7 +72,7 @@ class ActionProvider {
     try {
       console.log('Calling search endpoint /api/mcp_query with query:', message);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/mcp_query`,
+        `${apiBase}/api/mcp_query`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
