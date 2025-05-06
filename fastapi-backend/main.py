@@ -5,7 +5,7 @@ import os
 import time
 import uuid
 import shutil
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
 import logging
 import re
 
@@ -741,8 +741,187 @@ def analyze_table(
     except Exception as e:
         logging.error(f"Error analyzing table: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+# Ingest raw list of files into vector store
+@app.post("/api/ingest")
+async def ingest(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    embedding_model: str    = Form("sentence-transformers/all-MiniLM-L6-v2"),
+):
+    """
+    Ingest any mix of CSV, PDF, and image files into a new vectorstore batch.
+    Returns a vectorstore_id for this batch.
+    """
+    session_id = request.state.session_id
+    user_session = SESSIONS.setdefault(session_id, {"vectorstores": {}})
     
+    # Create a new batch ID
+    batch_id = uuid.uuid4().hex
+    save_dir = f"chroma_db/{session_id}/{batch_id}"
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Initialize Chroma against that directory
+    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    vecstore   = Chroma(persist_directory=save_dir, embedding_function=embeddings)
+
+    for upload in files:
+        ext = Path(upload.filename).suffix.lower()
+        metadata = {"source": upload.filename, "filetype": ext}
+
+        # 1) CSV → pandas → split rows
+        if ext == ".csv":
+            df = pd.read_csv(BytesIO(await upload.read()))
+            df = clean_dataframe(df)
+            for _, row in df.iterrows():
+                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
+                vecstore.add_texts([text], metadatas=[metadata])
+
+        # 2) PDF → PyMuPDFLoader
+        elif ext == ".pdf":
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            tmp.write(await upload.read()); tmp.flush()
+            docs = PyMuPDFLoader(tmp.name).load()
+            for doc in docs:
+                doc.metadata.update(metadata)
+            vecstore.add_documents(docs)
+
+        # 3) Images → (example) CLIP or other image embedder
+        elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
+                # TODO: implement image embedding, can use HugginFace's CLIP model
+            continue
+            data = await upload.read()
+            # imagine we have `image_to_embedding` util
+            emb, text = image_to_embedding(data)  
+            # add one “Document” wrapping both embedding + caption text
+            vecstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
+
+        else:
+            # skip unknown types
+            continue
+
+    # persist to disk
+    vecstore.persist()
+
+    # save under user session
+    user_session["vectorstores"][batch_id] = {
+        "path": save_dir,
+        "model": embedding_model
+    }
+
+    return JSONResponse({"vectorstore_id": batch_id}) 
+
+
 # Magic Wand / Sparkles Description tables route
+# Helper function to be moved to it's own folder/file, services/rag_services.py
+def _generic_rag_summarizer(
+    request: Request,
+    csv_names:         List[str],
+    model:             str,
+    top_k:             int,
+    instructions:      Dict[str,str],
+    extra_instructions: Optional[str] = None
+) -> JSONResponse:
+    session_id = request.state.session_id
+    session    = SESSIONS.get(session_id, {})
+    vecstore   = session.get("vectorstore")
+    if not vecstore:
+        raise HTTPException(400, "No vectorstore for this session")
+
+    # 1) Collect top_k chunks for each CSV
+    all_chunks = []
+    for name in csv_names:
+        docs = vecstore.similarity_search(
+            query=f"Fetch context for '{name}'",
+            k=top_k,
+            filter={"source": name}
+        )
+        if docs:
+            all_chunks.extend(docs)
+
+    if not all_chunks:
+        raise HTTPException(404, "No data chunks found for any requested files")
+
+    context = "\n\n".join(d.page_content for d in all_chunks)
+
+    # 2) Build your dynamic schema block
+    schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
+    schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
+
+    # 3) Prepend any extra instructions
+    prompt = "You are a scientific assistant.\n"
+    if extra_instructions:
+        prompt += extra_instructions.strip() + "\n\n"
+    prompt += f"""Based only on the data snippets below, produce valid JSON with:
+
+Output format:
+{schema_block}
+
+Data snippets:
+{context}
+"""
+
+    # 4) Call the LLM
+    res_text = ollama.chat(
+        model=model,
+        messages=[{"role":"user","content": prompt}]
+    )["message"]["content"]
+
+    # 5) Extract the JSON blob
+    import re, json
+    m = re.search(r'\{[\s\S]*\}', res_text)
+    if not m:
+        return JSONResponse({"error": "No JSON found", "raw": res_text}, status_code=500)
+    try:
+        payload = json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return JSONResponse({"error": "Invalid JSON", "raw": res_text}, status_code=500)
+
+    return JSONResponse(payload)
+
+# To Go to config/rag_templates when bug free
+TEMPLATES = {
+  "biophysics": {
+     "title":    "A concise, 5-8 word, Title-Case scientific title",
+     "decription":  "A 2-sentence overview of the main findings",
+     "keywords": "List 4-6 terms capturing the study's topics",
+     "species":  "Name any species used in the experiments",
+     "methods":  "Brief description of the experimental methods"
+  },
+  "geology": {
+     "title":    "A concise, 5-8 word, Title-Case geoscience title",
+     "decription":  "A 2-sentence overview of the study's findings",
+     "keywords": "List 4-6 terms capturing the study's topics",
+     "rocks":    "Name the main rock types analyzed",
+     "methods":  "Brief description of the sampling or lab methods"
+  },
+  # add more branches…
+}
+
+class BranchRequest(BaseModel):
+    csv_names:          List[str]
+    template:           Literal["biophysics","geology","physics"]
+    model:              str = "llama3.1"
+    top_k:              int = 5
+    extra_instructions: Optional[str] = None
+
+@app.post("/api/generate_rag_with_template")
+def generate_rag_with_template(
+    request: Request,
+    payload: BranchRequest = Body(...),
+):
+    # pick the right instruction set
+    instructions = TEMPLATES[payload.template]
+    # hand off to the generic summarizer
+    return _generic_rag_summarizer(
+        request,
+        csv_names          = payload.csv_names,
+        model              = payload.model,
+        top_k              = payload.top_k,
+        instructions       = instructions,
+        extra_instructions = payload.extra_instructions
+    )
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
