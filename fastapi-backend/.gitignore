@@ -6,5 +6,5 @@ uploaded_files/
 output_tables/
 __pycache__/
 download_files
-
+chroma_db/
 

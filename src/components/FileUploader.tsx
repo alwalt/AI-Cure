@@ -82,7 +82,10 @@ export default function FileUploader({
     files.forEach((file) => {
       ingestForm.append("files", file); // raw File blob
     });
-    ingestForm.append("embedding_model", "llama3.1"); // or whatever default/model
+    ingestForm.append(
+      "embedding_model",
+      "sentence-transformers/all-MiniLM-L6-v2"
+    ); // or whatever default/model
 
     // 2) call your ingest route
     try {

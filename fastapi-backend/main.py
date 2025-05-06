@@ -911,6 +911,7 @@ def generate_rag_with_template(
     request: Request,
     payload: BranchRequest = Body(...),
 ):
+    print(payload)
     # pick the right instruction set
     instructions = TEMPLATES[payload.template]
     # hand off to the generic summarizer
