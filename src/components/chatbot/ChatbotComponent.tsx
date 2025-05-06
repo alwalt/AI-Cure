@@ -10,6 +10,8 @@ import ActionProvider from "./ActionProvider";
 import { useChatbotStore } from "@/store/useChatbotStore";
 import { apiBase } from '@/lib/api'; 
 
+console.log('[DEBUG] apiBase:', apiBase);  
+
 // Create singleton instances outside the component
 let messageParserInstance: MessageParser | null = null;
 let actionProviderInstance: ActionProvider | null = null;

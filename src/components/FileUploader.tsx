@@ -7,6 +7,7 @@ import {
   UploadedFile,
   FileUploaderProps,
 } from "@/types/files";
+import { apiBase } from '@/lib/api';
 
 export default function FileUploader({
   onTablesUpdate,
@@ -91,7 +92,7 @@ export default function FileUploader({
         formData.append("file_type", fileType);
 
         const response = await axios.post<UploadResponse>(
-          "http://localhost:8000/api/upload_file",
+          `${apiBase}/api/upload_file`,
           formData,
           {
             headers: {
