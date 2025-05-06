@@ -19,6 +19,10 @@ export interface UploadResponse {
   tables: Table[];
 }
 
+export interface IngestResponse {
+  vectorstore_id: string;
+}
+
 export interface UploadFileButtonProps {
   onTablesUpdate: (tables: Table[]) => void;
   // onSessionUpdate: (sessionId: string) => void;

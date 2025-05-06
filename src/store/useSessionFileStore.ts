@@ -5,13 +5,13 @@ interface SessionFileStoreState {
   sessionId: string | null;
   previewCsv: string | null;
   previewFile: UploadedFile | null;
-  selectedFiles: UploadedFile[]; // ✅ Add this
+  selectedFiles: UploadedFile[]; // Add this
   setSessionId: (id: string) => void;
   setPreviewCsv: (filename: string | null) => void;
   setPreviewFile: (file: UploadedFile | null) => void;
   setSelectedFiles: (
     files: UploadedFile[] | ((prev: UploadedFile[]) => UploadedFile[])
-  ) => void; // ✅ Add this
+  ) => void; //  Add this
   handlePreview: (csvFilename: string) => void;
   handleFilePreview: (file: UploadedFile | null) => void;
 }
@@ -20,7 +20,7 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
   sessionId: null,
   previewCsv: null,
   previewFile: null,
-  selectedFiles: [], // ✅ Initialize it as an empty array
+  selectedFiles: [], // Initialize it as an empty array
   setSessionId: (id) => set({ sessionId: id }),
   setPreviewCsv: (filename) => set({ previewCsv: filename }),
   setPreviewFile: (file) => set({ previewFile: file }),
@@ -29,7 +29,7 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
     set((state) => ({
       selectedFiles:
         typeof files === "function" ? files(state.selectedFiles) : files,
-    })), // ✅ Allow function updates
+    })), //  Allow function updates
 
   handlePreview: (csvFilename) => {
     set({
