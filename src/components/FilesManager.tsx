@@ -7,6 +7,8 @@ import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
+import { apiBase } from '@/lib/api';
+
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
@@ -19,7 +21,7 @@ export default function FilesManager() {
     const fetchSessionFiles = async () => {
       try {
         const response = await axios.get<{ files: UploadedFile[] }>(
-          "http://localhost:8000/api/get_session_files",
+          `${apiBase}/api/get_session_files`,
           { withCredentials: true }
         );
 
