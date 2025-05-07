@@ -2,7 +2,7 @@ import { useState, ReactNode } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
-import useAiGenerateFetch from "./useAiGenerateFetch";
+import useAiGenerateFetch from "../../hooks/useAiGenerateFetch";
 import { sectionIcons } from "../../../util/sectionIcons";
 import { DocumentIcon } from "@heroicons/react/24/outline";
 
