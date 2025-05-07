@@ -12,10 +12,11 @@ import re
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
+api_router = APIRouter()
 
 
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
@@ -43,7 +44,11 @@ from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 import torch
-torch.mps.empty_cache()
+if hasattr(torch, "mps") and torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+    print("MPS cache cleared.")
+else:
+    print("MPS not available, skipping cache clear.")
 from pathlib import Path
 
 # for debuging
@@ -83,6 +88,9 @@ def load_config() -> Settings:
         return Settings(**yaml.safe_load(f))
 
 @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     asyncio.create_task(cleanup_job())
+#     yield
 async def lifespan(app: FastAPI):
     """
     - Start MCP servers once.
@@ -378,6 +386,34 @@ def export_subset(
 
 # MCP Route
 @app.post("/api/mcp_query")
+# async def mcp_query(
+#     request: Request,
+#     query: str = Body(..., embed=True),
+# ): 
+#     try:
+#         # Lazy-load MCP app if not already initialized
+#         if not hasattr(request.app.state, "mcp_app"):
+#             settings = load_config()
+#             request.app.state.mcp_app = MCPApp(settings=settings)
+#             import openai
+#             openai.api_key  = settings.openai.api_key
+#             openai.base_url = settings.openai.base_url
+#             await request.app.state.mcp_app.start()
+
+#         # Create Agent
+#         osdr_agent = Agent(
+#             name="osdr_bot",
+#             instruction="You answer biology‑related questions by calling the osdr_fetch_metadata or osdr_find_by_organism tools.",
+#             server_names=["OSDRServer"],
+#         )
+
+#         async with osdr_agent:
+#             llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+#             resp = await llm.generate_str(message=query)
+
+#         return {"response": resp}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 async def mcp_query(
     query: str = Body(..., embed=True),
 ): 
@@ -743,4 +779,4 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
+    uvicorn.run(app, host="0.0.0.0", port=5000, lifespan=lifespan, workers=4)
