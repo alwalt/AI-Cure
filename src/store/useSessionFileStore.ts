@@ -14,6 +14,10 @@ interface SessionFileStoreState {
   ) => void; //  Add this
   handlePreview: (csvFilename: string) => void;
   handleFilePreview: (file: UploadedFile | null) => void;
+  // NEW for RAG:
+  ragData: Record<string, string>; // e.g. { description: "...", studies: "...", ... }
+  setRagData: (data: Record<string, string>) => void;
+  updateRagSection: (section: string, text: string) => void;
 }
 
 export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
@@ -44,4 +48,11 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
       previewCsv: null,
     });
   },
+  // RAG slice
+  ragData: {},
+  setRagData: (data) => set({ ragData: data }),
+  updateRagSection: (section, text) =>
+    set((state) => ({
+      ragData: { ...state.ragData, [section]: text },
+    })),
 }));

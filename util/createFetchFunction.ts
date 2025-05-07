@@ -1,18 +1,17 @@
-const createFetchFunction = (sectionName: string) => {
+import { generateWithTemplate } from "@/lib/ragClient";
+
+export default function createFetchFunction(sectionName: string) {
   return async () => {
-    // PREP WORK FOR REAL API CALL
-    const response = await fetch(`/api/generate_rag_with_template`, {
-      method: "POST",
-      body: JSON.stringify({ section: sectionName }),
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    console.log("!!!! data:, ", data);
-    return data.generatedText;
-
-    // console.log(`From section: ${sectionName}`);
-    // return `Generated ${sectionName} from AI.`; // Simulated LLM response
+    // 1) hit the single RAG endpoint with the right template & csv names
+    const full = await generateWithTemplate(
+      /* csvNames */ selectedCsvNames,
+      /* template */ sectionName as "biophysics" | "geology"
+      /* rest defaulted */
+    );
+    // 2) pull out just the bit you need
+    if (!(sectionName in full)) {
+      throw new Error(`Missing field ${sectionName} in RAG response`);
+    }
+    return full[sectionName] as string;
   };
-};
-
-export default createFetchFunction;
+}
