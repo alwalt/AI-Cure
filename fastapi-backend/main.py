@@ -901,7 +901,7 @@ TEMPLATES = {
 
 class BranchRequest(BaseModel):
     csv_names:          List[str]
-    template:           Literal["biophysics","geology","physics"]
+    template:           Literal["biophysics","geology"]
     model:              str = "llama3.1"
     top_k:              int = 5
     extra_instructions: Optional[str] = None
