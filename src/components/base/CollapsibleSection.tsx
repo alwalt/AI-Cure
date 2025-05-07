@@ -9,6 +9,8 @@ import { DocumentIcon } from "@heroicons/react/24/outline";
 export default function CollapsibleSection({
   title,
   fetchFunction,
+  value,
+  onChange,
   children,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);

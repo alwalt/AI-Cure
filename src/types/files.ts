@@ -99,6 +99,8 @@ export interface FilePreviewerProps {
 export interface CollapsibleSectionProps {
   title: string;
   fetchFunction: () => Promise<string>;
+  value: string;
+  onChange: (txt: string) => void;
   children: ReactNode;
 }
 

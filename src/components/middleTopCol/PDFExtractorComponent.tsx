@@ -30,6 +30,7 @@ export default function PDFExtractor() {
   return (
     <div className="w-full overflow-auto">
       <div className="rounded overflow-hidden border border-grey">
+        {/* 
         <CollapsibleSection
           title="title"
           fetchFunction={createFetchFunction("title")}
@@ -53,6 +54,7 @@ export default function PDFExtractor() {
             rows={20} // Set dynamic rows for the description section
           />
         </CollapsibleSection>
+        */}
       </div>
     </div>
   );
