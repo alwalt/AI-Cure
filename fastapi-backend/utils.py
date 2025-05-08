@@ -3,6 +3,7 @@ import numpy as np
 import os
 import logging
 from typing import List
+import ollama
 
 UPLOAD_DIR = "uploaded_files"
 OUTPUT_DIR = "output_tables"
@@ -131,3 +132,31 @@ def create_table_summary_prompt(table_df):
     """
 
     return prompt
+
+def get_magic_wand_suggestions(context, model):
+    col_to_question = {'Description':'What is the Description?',
+    'Author List': 'What is the list of Author? Return the person(s) first name, middle initials, and last name.',
+    'Title': 'What is the Title?',
+    'PubMed ID':'Are there any PubMed identifiers? If so, return PubMed ids as list otherwise return None.',
+    'Publication DOI':'Are there any Publication DOIs? If so, return Publication DOIs as list otherwise return None.',
+    'Submission Date':'Is a Submission Date listed? If so, return Submission Date as list otherwise return None.',
+    'Public Release Date':'Is a Public Release Date listed? If so, return Public Release Date as list otherwise return None.',
+    'Study Assays':'Are there any Study Assays list? Some example Study Assays are RNA-seq, Microscopy, and Protein expression. If Study Assays are listed, return Study Assays as list otherwise return None.',
+    'Study Factor Type':'Are there any Factor Type Assays list? Some example Study Factor Types are Space Flight, Ionizing Radiation, and Altered Gravity. If Study Assays are listed, return Study Assays as list otherwise return None.',
+    }
+    #
+    json_output = {}
+    for col, question in col_to_question.items():
+        res = ollama.chat(
+            model=model,
+            messages=[
+                {
+                    "role":"user",
+                    'content': f"You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n. Only return the answer.",
+                }
+            ]
+        )
+        json_output[col] = res['message']['content']
+        print(json_output[col])
+    return json_output
+
