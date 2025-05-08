@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface UploadedFile {
   name: string;
   type: string;
@@ -65,17 +67,40 @@ export interface FileUploaderProps {
 export interface ButtonProps {
   targetId: string;
   buttonDescription: string;
-  onClick?: () => void;
+  onClick?: () => Promise<void> | void; // Allow onClick to return a Promise or nothing
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // This accepts any Heroicon
   iconClassName?: string; // Optional extra styles
   spanClassName?: string;
+  role?: string; // Add role prop (optional)
+  "aria-label"?: string; // Optional aria-label for accessibility
+  className: string;
 }
 
 export interface TextButtonProps {
   label: string;
   buttonDescription: string;
-  onClick: () => void;
+  onClick?: () => void;
   isActive: boolean;
   buttonClassName?: string;
   spanClassName?: string;
+}
+
+export interface FilePreviewerProps {
+  file: File | undefined;
+  type: string | undefined;
+  name: string;
+  objectUrl: string;
+}
+
+export interface CollapsibleSectionProps {
+  title: string;
+  fetchFunction: () => Promise<string>;
+  children: ReactNode;
+}
+
+export interface EditableTextAreaProps {
+  value: string;
+  onChange: (newValue: string) => void;
+  placeholder?: string;
+  rows?: number;
 }

@@ -15,7 +15,7 @@ export default function TextButton({
         className={`px-2 text-sm rounded-none border-none outline-none focus:outline-none 
         ${
           isActive
-            ? "font-bold text-primaryWhite"
+            ? "font-bold text-primaryWhite underline"
             : "font-normal text-brightGrey"
         } 
         ${buttonClassName}`}

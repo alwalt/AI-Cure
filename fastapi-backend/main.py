@@ -12,10 +12,11 @@ import re
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
+api_router = APIRouter()
 
 
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe, get_magic_wand_suggestions
@@ -37,16 +38,76 @@ from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
 
+import asyncio, yaml
+from mcp_agent.app import MCPApp
+from mcp_agent.config import Settings
+from mcp_agent.agents.agent import Agent
+from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
+import torch
+if hasattr(torch, "mps") and torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+    print("MPS cache cleared.")
+else:
+    print("MPS not available, skipping cache clear.")
+from pathlib import Path
+
 # for debuging
 import logging
-logging.basicConfig(level=logging.DEBUG)
 
+# Source code overide for MCP agent with fastapi 
+from mcp_agent.mcp import mcp_agent_client_session as _mcp_sess
+
+_orig_send = _mcp_sess.MCPAgentClientSession.send_request
+async def _fixed(self, request, *args, **kwargs):
+    kwargs.pop("request_read_timeout_seconds", None)  # strips unsupported kwarg
+    return await _orig_send(self, request, *args, **kwargs)
+
+_mcp_sess.MCPAgentClientSession.send_request = _fixed
+
+logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
+
 ###############################################################################
 # Global configuration & in-memory store
 ###############################################################################
 
-app = FastAPI()
+async def cleanup_job():
+    while True:
+        torch.mps.empty_cache()
+        await asyncio.sleep(3600 * 24)  # Run every 24 hours 
+        now = time.time()
+        for session_id, last_active in list(ACTIVE_SESSIONS.items()):
+            if now - last_active > SESSION_TIMEOUT:
+                shutil.rmtree(f"{USER_DIRS}/{session_id}", ignore_errors=True)
+                del ACTIVE_SESSIONS[session_id]
+
+CONFIG_PATH = Path(__file__).parent / "mcp_modules" / "config.yaml"
+
+def load_config() -> Settings:
+    with CONFIG_PATH.open() as f:
+        return Settings(**yaml.safe_load(f))
+
+@asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     asyncio.create_task(cleanup_job())
+#     yield
+async def lifespan(app: FastAPI):
+    """
+    - Start MCP servers once.
+    - Tear them down when the FastAPI process exits.
+    """
+    settings = load_config()
+    print("Loaded servers from YAML:", settings.mcp.servers.keys())
+
+    app.state.mcp_app = MCPApp(settings=settings)
+    import openai
+    openai.api_key  = settings.openai.api_key
+    openai.base_url = settings.openai.base_url
+    asyncio.create_task(cleanup_job()) # Clean up job for cookie tokens
+    async with app.state.mcp_app.run():
+        yield 
+
+app = FastAPI(lifespan=lifespan)
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -64,6 +125,7 @@ app.add_middleware(
 # Add to config
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 USER_DIRS = "user_uploads"
+JSON_DIRS = "cached_jsons"
 
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
@@ -76,6 +138,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # { session_id -> [ (csv_file, name), ... ] }
 SESSION_TABLES = {}
 SESSIONS = {}
+
+# MCP server var init
+mcp_server = None
 
 class ChatHistory(BaseModel):
     history: List = []
@@ -120,18 +185,6 @@ async def session_manager(request: Request, call_next):
     return new_response
 
 
-async def cleanup_job():
-    while True:
-        await asyncio.sleep(3600)  # Run hourly
-        now = time.time()
-        for session_id, last_active in list(ACTIVE_SESSIONS.items()):
-            if now - last_active > SESSION_TIMEOUT:
-                shutil.rmtree(f"{USER_DIRS}/{session_id}", ignore_errors=True)
-                del ACTIVE_SESSIONS[session_id]
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-   asyncio.create_task(cleanup_job())
 
 ###############################################################################
 # API Routes
@@ -331,6 +384,59 @@ def export_subset(
 # AI and Vector Routes
 ###############################################################################
 
+# MCP Route
+@app.post("/api/mcp_query")
+# async def mcp_query(
+#     request: Request,
+#     query: str = Body(..., embed=True),
+# ): 
+#     try:
+#         # Lazy-load MCP app if not already initialized
+#         if not hasattr(request.app.state, "mcp_app"):
+#             settings = load_config()
+#             request.app.state.mcp_app = MCPApp(settings=settings)
+#             import openai
+#             openai.api_key  = settings.openai.api_key
+#             openai.base_url = settings.openai.base_url
+#             await request.app.state.mcp_app.start()
+
+#         # Create Agent
+#         osdr_agent = Agent(
+#             name="osdr_bot",
+#             instruction="You answer biology‑related questions by calling the osdr_fetch_metadata or osdr_find_by_organism tools.",
+#             server_names=["OSDRServer"],
+#         )
+
+#         async with osdr_agent:
+#             llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+#             resp = await llm.generate_str(message=query)
+
+#         return {"response": resp}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+async def mcp_query(
+    query: str = Body(..., embed=True),
+): 
+    try:
+        # Create Agent
+        osdr_agent = Agent(
+            name="osdr_bot",
+            instruction=(
+                "You answer biology‑related questions by calling "
+                "the osdr_fetch_metadata or osdr_find_by_organism tools."
+            ),
+            server_names=["OSDRServer"],
+        )
+
+        async with osdr_agent:
+                # Attach an LLM and send the question
+                llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+                resp = await llm.generate_str(message=query)
+                    
+        return {"response": resp}            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
@@ -468,7 +574,15 @@ async def analyze_image(
     """
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
+    os.makedirs(CACHED_DIR, exist_ok=True)
+    json_path = os.path.join(CACHED_DIR, f"{file_name}.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            loaded_output = json.load(f)
 
+        return JSONResponse(content=loaded_output)
+    
     print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
 
     # get the image from the session
@@ -512,15 +626,23 @@ async def analyze_image(
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
 
+
     if "Error" in json_output or "error" in json_output:
         normalized_output["error"] = json_output.get("Error") or json_output.get("error")
+    else:
+        # Save normalized output to cached json file
+        try: 
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error saving file: {str(e)}")
 
     return JSONResponse(content=normalized_output)
 
 
 # PDF Analyzer
 @app.post("/api/analyze_pdf")
-def analyze_pdf(
+async def analyze_pdf(
     request: Request,
     pdf_file_name: str = Form(...),
     model: str = Form("llava"),
@@ -532,7 +654,15 @@ def analyze_pdf(
     print(f"received: {pdf_file_name}")
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-
+    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
+    os.makedirs(CACHED_DIR, exist_ok=True)
+    json_path = os.path.join(CACHED_DIR, f"{pdf_file_name}.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            loaded_output = json.load(f)
+        
+        return JSONResponse(content=loaded_output)
+    
     # Get pdf file
     pdf_path = os.path.join(UPLOAD_DIR, f"{pdf_file_name}")
     with open(pdf_path, "rb") as pdf_file:        
@@ -575,7 +705,18 @@ def analyze_pdf(
         "summary": json_output.get("Summary") or json_output.get("summary", ""),
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
+
     normalized_output.update(get_magic_wand_suggestions(data[0].page_content, model))
+
+    if "Error" in json_output or "error" in json_output:
+        normalized_output["error"] = json_output.get("Error") or json_output.get("error")
+    else:
+        try:
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error saving file: {str(e)}")
+
     return JSONResponse(content=normalized_output)
     # return JSONResponse(content={
     #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
@@ -641,4 +782,4 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan)
+    uvicorn.run(app, host="0.0.0.0", port=5000, lifespan=lifespan, workers=4)

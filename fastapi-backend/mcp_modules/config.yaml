@@ -1,0 +1,12 @@
+execution_engine: asyncio
+
+mcp:
+  servers:
+    OSDRServer:
+      command: "python3"
+      args: ["-u", "mcp_modules/mcp_tools.py"]
+
+openai:
+  base_url: "http://localhost:11434/v1"
+  api_key: ollama
+  default_model: llama3.2

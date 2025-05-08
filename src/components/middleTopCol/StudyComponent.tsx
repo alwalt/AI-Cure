@@ -1,32 +1,81 @@
+"use client";
+import { useState } from "react";
+import CollapsibleSection from "@/components/base/CollapsibleSection";
+import EditableTextArea from "../base/EditableTextArea";
+import createFetchFunction from "../../../util/createFetchFunction";
+
 export default function StudyComponent() {
+  const [description, setDescription] = useState<string>("");
+  const [studies, setStudies] = useState<string>("");
+
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-auto">
       <div className="rounded overflow-hidden border border-grey">
-        <table className="min-w-full bg-grey">
-          <thead>
-            <tr>
-              <th className="border border-brightGrey px-2 py"></th>
-              <th className="border border-brightGrey px-2 py">Description</th>
-              <th className="border border-brightGrey px-2 py">Title</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-brightGrey px-2 py-2">Alpha</td>
-              <td className="border border-brightGrey px-2 py-2">Study note</td>
-              <td className="border border-brightGrey px-2 py-2">
-                Study title
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-brightGrey px-2 py-2">Beta</td>
-              <td className="border border-brightGrey px-2 py-2">Study text</td>
-              <td className="border border-brightGrey px-2 py-2">
-                Study entry
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <CollapsibleSection
+          title="Description"
+          fetchFunction={createFetchFunction("Description")}
+        >
+          <EditableTextArea
+            value={description} // Set the current state value as the textarea value
+            onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
+            placeholder="Enter description here..."
+            rows={20} // Set dynamic rows for the description section
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Studies"
+          fetchFunction={createFetchFunction("Studies")}
+        >
+          <EditableTextArea
+            value={studies} // Set the current state value as the textarea value
+            onChange={(newStudies) => setStudies(newStudies)} // Update the state on user input
+            placeholder="Enter Studies here..."
+            rows={3} // Set dynamic rows for the description section
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Payloads"
+          fetchFunction={createFetchFunction("Payloads")}
+        >
+          <></>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Subjects/Biospecimens"
+          fetchFunction={createFetchFunction("Subjects/Biospecimens")}
+        >
+          <></>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Hardware"
+          fetchFunction={createFetchFunction("Hardware")}
+        >
+          <></>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Publications"
+          fetchFunction={createFetchFunction("Publications")}
+        >
+          <></>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Files"
+          fetchFunction={createFetchFunction("Files")}
+        >
+          <></>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Version history"
+          fetchFunction={createFetchFunction("Version history")}
+        >
+          <></>
+        </CollapsibleSection>
       </div>
     </div>
   );

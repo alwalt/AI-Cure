@@ -7,6 +7,7 @@ import {
   UploadedFile,
   FileUploaderProps,
 } from "@/types/files";
+import { apiBase } from '@/lib/api';
 
 export default function FileUploader({
   onTablesUpdate,
@@ -91,11 +92,11 @@ export default function FileUploader({
         formData.append("file_type", fileType);
 
         const response = await axios.post<UploadResponse>(
-          "http://localhost:8000/api/upload_file",
+          `${apiBase}/api/upload_file`,
           formData,
           {
             headers: {
-              "Content-Type": "multipart/form-data",
+            "Content-Type": "multipart/form-data",
             },
             timeout: 30000,
             withCredentials: true,
@@ -104,11 +105,11 @@ export default function FileUploader({
         // print out the response data decoded
         // console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
         // console.log(`Session ID: ${response.data.session_id}`);
-
+        
         // setSessionId(response.data.session_id);
         // onSessionUpdate?.(response.data.session_id);
         // console.log(`Session ID: ${response.data.session_id}`);
-
+        
         if (fileType == "excel" || fileType == "xlsx") {
           if (response.data.tables.length > 0) {
             setTables(response.data.tables);
@@ -121,7 +122,7 @@ export default function FileUploader({
         console.error(`Error uploading file ${file.name}:`, error);
       }
     }
-
+    
     const uploadedFiles = files.map((file) => ({
       name: file.name,
       type: getFileType(file.name),
@@ -137,7 +138,7 @@ export default function FileUploader({
     setUploadStatus("Files uploaded successfully!");
     setIsUploading(false);
   };
-
+    
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
     setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));

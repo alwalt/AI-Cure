@@ -31,8 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+#.env*
 fastapi-backend/venv/
+.venv
 
 # vercel
 .vercel
@@ -45,3 +46,5 @@ util/__pycache__/
 
 fastapi-backend/user_uploads/
 
+fastapi-backend/cached_jsons/
+package-lock.json

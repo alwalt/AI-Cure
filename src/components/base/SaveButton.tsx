@@ -1,9 +1,5 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { BookmarkIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/base/Button";
-
-// type SaveButtonProps = {
-//   onClick?: () => void;
-// };
 
 export default function SaveButton() {
   const handleClick = () => {
@@ -12,11 +8,15 @@ export default function SaveButton() {
 
   return (
     <Button
-      targetId="PlayButton"
-      buttonDescription="Play"
-      Icon={ArrowDownTrayIcon}
-      iconClassName="h-8 w-8"
+      targetId="SaveButton"
+      buttonDescription="Save"
+      Icon={BookmarkIcon}
+      iconClassName="h-7 w-7"
       onClick={handleClick}
+      aria-label="Save" // Accessible label for screen readers
+      role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
+      className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
+      spanClassName="left-1/2 -translate-x-1/2"
     />
   );
 }
