@@ -233,13 +233,8 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
     """
     Upload a file and return a session id. Unless sessionid is present.
     """
-    print(f"Upload request received: {file.filename}")
-    print(f"File content type: {file.content_type}")
-    print(f"PASEED FILE TYPE: {file_type}")
+  
     session_id = request.state.session_id
-    print(f"Session ID: {session_id}")
-    if session_id is not None:
-        print(f"Session ID: {session_id}")
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
     
     try:
