@@ -19,7 +19,7 @@ export default function MiddleTopColumn() {
   };
 
   return (
-    <div className="relative bg-primaryBlack mt-2 h-full max-h-full overflow-y-auto">
+    <div className="relative bg-primaryBlack mt-2 h-full max-h-full overflow-y-auto custom-scrollbar">
       <div className="sticky top-0 z-10 bg-primaryBlack">
         <h2 className="font-bold text-xl p-2 capitalize">
           Scientific data curation

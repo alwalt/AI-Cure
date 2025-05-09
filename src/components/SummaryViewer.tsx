@@ -76,7 +76,6 @@ const fetchPDFAnalysis = async ({
   const formData = new FormData();
   formData.append("pdf_file_name", fileName);
   // Use default model (llava)
-  console.log(formData);
   console.log(fileName);
   const response = await axios.post(
     `${apiBase}/api/analyze_pdf`,
