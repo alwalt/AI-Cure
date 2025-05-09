@@ -117,11 +117,11 @@ export default function UploadedFiles({
                 <td className="p-2">
                   <div className="flex items-center">
                     <div className="h-3 w-3 rounded-full bg-green-400 mr-2"></div>
-                    <span className="text-sm text-primiaryWhite">Ready</span>
+                    <span className="text-sm text-primaryWhite">Ready</span>
                   </div>
                 </td>
-                <td className="p-2 text-sm text-primiaryWhite">{file.type}</td>
-                <td className="p-2 text-sm text-primiaryWhite">
+                <td className="p-2 text-sm text-primaryWhite">{file.type}</td>
+                <td className="p-2 text-sm text-primaryWhite">
                   {file.dateCreated}
                 </td>
                 <td className="p-2">

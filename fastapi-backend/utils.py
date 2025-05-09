@@ -133,7 +133,7 @@ def create_table_summary_prompt(table_df):
 
     return prompt
 
-def get_magic_wand_suggestions(context, model):
+def get_magic_wand_suggestions(context, model, vectorstore):
     col_to_question = {'Description':'What is the Description?',
     'Author List': 'What is the list of Author? Return the person(s) first name, middle initials, and last name.',
     'Title': 'What is the Title?',

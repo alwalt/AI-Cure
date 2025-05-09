@@ -243,7 +243,7 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
     """
     print(f"Upload request received: {file.filename}")
     print(f"File content type: {file.content_type}")
-    print(f"PASEED FILE TYPE: {file_type}")
+    print(f"PASSED FILE TYPE: {file_type}")
     session_id = request.state.session_id
     print(f"Session ID: {session_id}")
     if session_id is not None:
@@ -386,34 +386,6 @@ def export_subset(
 
 # MCP Route
 @app.post("/api/mcp_query")
-# async def mcp_query(
-#     request: Request,
-#     query: str = Body(..., embed=True),
-# ): 
-#     try:
-#         # Lazy-load MCP app if not already initialized
-#         if not hasattr(request.app.state, "mcp_app"):
-#             settings = load_config()
-#             request.app.state.mcp_app = MCPApp(settings=settings)
-#             import openai
-#             openai.api_key  = settings.openai.api_key
-#             openai.base_url = settings.openai.base_url
-#             await request.app.state.mcp_app.start()
-
-#         # Create Agent
-#         osdr_agent = Agent(
-#             name="osdr_bot",
-#             instruction="You answer biology‑related questions by calling the osdr_fetch_metadata or osdr_find_by_organism tools.",
-#             server_names=["OSDRServer"],
-#         )
-
-#         async with osdr_agent:
-#             llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
-#             resp = await llm.generate_str(message=query)
-
-#         return {"response": resp}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 async def mcp_query(
     query: str = Body(..., embed=True),
 ): 
@@ -782,4 +754,4 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000, lifespan=lifespan, workers=4)
+    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)

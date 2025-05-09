@@ -8,7 +8,7 @@ export default function CollectionMangaer() {
         <SaveButton />
       </div>
       <div className="min-h-[200px] border-grey border rounded">
-        <p className="p-2"> place holder collections container</p>
+        <p className="p-2 text-gray-400">default collection</p>
       </div>
     </div>
   );

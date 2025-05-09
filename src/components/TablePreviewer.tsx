@@ -18,6 +18,7 @@ import { useSessionFileStore } from "../store/useSessionFileStore"; // Import th
 import { PreviewResponse } from "@/types/files";
 import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from "@config";
+import { apiBase } from '@/lib/api';
 
 const fullConfig = resolveConfig(tailwindConfig);
 const greyColor = fullConfig.theme.colors.grey;
@@ -37,7 +38,7 @@ const fetchTablePreview = async ({
     csv_filename: previewCsv || "", // Use previewCsv from Zustand
   });
   const response = await fetch(
-    `http://localhost:8000/api/preview_table?${params.toString()}`,
+    `${apiBase}/api/preview_table?${params.toString()}`,
     {
       headers: {
         "Content-Type": "multipart/form-data",
