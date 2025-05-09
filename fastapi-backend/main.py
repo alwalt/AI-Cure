@@ -8,6 +8,8 @@ import shutil
 from typing import Dict, List, Optional
 import logging
 import re
+import datetime
+
 
 import pandas as pd
 import numpy as np
@@ -216,7 +218,7 @@ async def get_files(request: Request):
                 files.append({
                     "name": filename,
                     "type": file_ext,
-                    "dateCreated": os.path.getctime(file_path),
+                    "dateCreated": datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%-m/%-d/%Y'),
                     "size": os.path.getsize(file_path),
                 })
 
