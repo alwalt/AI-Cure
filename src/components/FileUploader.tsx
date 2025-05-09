@@ -8,6 +8,7 @@ import {
   FileUploaderProps,
   IngestResponse,
 } from "@/types/files";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 
 export default function FileUploader({
   onTablesUpdate,
@@ -23,6 +24,7 @@ export default function FileUploader({
   const [tables, setTables] = useState<Table[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const setSelectedFiles = useSessionFileStore((s) => s.setSelectedFiles);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -159,6 +161,9 @@ export default function FileUploader({
 
     setUploadedFiles((prev) => [...prev, ...uploadedFiles]);
     onFilesUpdate?.(uploadedFiles);
+
+    // Update Zustand selectedFiles with uploaded files
+    setSelectedFiles((prev) => [...prev, ...uploadedFiles]);
 
     setUploadStatus("Files uploaded successfully!");
     setIsUploading(false);

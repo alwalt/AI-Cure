@@ -5,16 +5,16 @@ import AiGenerateButton from "@/components/base/AiGenerateButton";
 import useAiGenerateFetch from "../../hooks/useAiGenerateFetch";
 import { sectionIcons } from "../../../util/sectionIcons";
 import { DocumentIcon } from "@heroicons/react/24/outline";
+import EditableTextArea from "./EditableTextArea";
 
 export default function CollapsibleSection({
   title,
-  fetchFunction,
+  onGenerate,
   value,
   onChange,
-  children,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [data, fetchData] = useAiGenerateFetch(fetchFunction);
+  // const [data, fetchData] = useAiGenerateFetch(fetchFunction);
   const Icon = sectionIcons[title] || DocumentIcon; // Dynamically get the correct icon | backup icon if not in Dict
 
   // Toggles the section visibility
@@ -58,8 +58,12 @@ export default function CollapsibleSection({
       {/* Content */}
       {isOpen && (
         <div id={`section-content-${title}`} className="p-4">
-          <AiGenerateButton onClick={fetchData} />
-          {children}
+          <AiGenerateButton onClick={onGenerate} />
+          <EditableTextArea
+            value={value}
+            onChange={onChange}
+            placeholder={`Enter ${title}…`}
+          />
         </div>
       )}
     </div>

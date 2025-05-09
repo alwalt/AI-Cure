@@ -1,33 +1,42 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
 import EditableTextArea from "../base/EditableTextArea";
 import createFetchFunction from "../../../util/createFetchFunction";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
+import { shallow } from "zustand/shallow";
 
 export default function StudyComponent() {
   const [description, setDescription] = useState<string>("");
   const [studies, setStudies] = useState<string>("");
 
+  // 1) Select the raw UploadedFile[] from Zustand (stable until it really changes)
+  const selectedFiles = useSessionFileStore((s) => s.selectedFiles);
+
   // grab the current CSV names from selectedFiles
-  const selectedCsvNames = useSessionFileStore((s) =>
-    s.selectedFiles.map((f) => f.name)
+  const selectedCsvNames = useMemo(
+    () => selectedFiles.map((f) => f.name),
+    [selectedFiles]
   );
+
   const setRagData = useSessionFileStore((s) => s.setRagData);
+
   const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
   const ragData = useSessionFileStore((s) => s.ragData);
 
   // generic onGenerate for any section
   const onGenerate = async (section: string) => {
+    console.log("BEFORE FETCH, selectedCsvNames", selectedCsvNames);
     const full = await generateWithTemplate(
       selectedCsvNames,
       "biophysics" // hard‐coded template for now
     );
     // stash the entire object
-    setRagData(full as Record<string, string>);
+    // setRagData(full as Record<string, string>);
+    console.log("After fetch, full obj", full);
     // or, if you only want to update one section at a time:
-    // updateRagSection(section, full[section] as string);
+    updateRagSection(section, full[section] as string);
   };
 
   return (
@@ -35,31 +44,17 @@ export default function StudyComponent() {
       <div className="rounded overflow-hidden border border-grey">
         <CollapsibleSection
           title="description"
-          fetchFunction={() => onGenerate("description")}
-          value={ragData.description || ""}
+          onGenerate={() => onGenerate("description")}
+          value={ragData.description}
           onChange={(txt) => updateRagSection("description", txt)}
-        >
-          <EditableTextArea
-            value={description} // Set the current state value as the textarea value
-            onChange={(newDescription) => setDescription(newDescription)} // Update the state on user input
-            placeholder="Enter description here..."
-            rows={20} // Set dynamic rows for the description section
-          />
-        </CollapsibleSection>
+        ></CollapsibleSection>
 
         <CollapsibleSection
           title="studies"
-          fetchFunction={() => onGenerate("studies")}
-          value={ragData.studies || ""}
+          onGenerate={() => onGenerate("studies")}
+          value={ragData.studies}
           onChange={(txt) => updateRagSection("studies", txt)}
-        >
-          <EditableTextArea
-            value={studies} // Set the current state value as the textarea value
-            onChange={(newStudies) => setStudies(newStudies)} // Update the state on user input
-            placeholder="Enter studies here..."
-            rows={3} // Set dynamic rows for the description section
-          />
-        </CollapsibleSection>
+        ></CollapsibleSection>
         {/*
         <CollapsibleSection
           title="payloads"

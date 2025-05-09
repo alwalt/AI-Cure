@@ -30,7 +30,6 @@ export default function UploadedFiles({
       const fileType = blob.type;
       // convert mime type to file type
       const newFileType = fileType.split("/").pop() || "";
-      console.log(newFileType);
       const fileObj = new File([blob], file.name, { type: fileType });
 
       handleFilePreview({

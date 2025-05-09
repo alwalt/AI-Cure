@@ -1,18 +1,21 @@
 import { useState } from "react";
 
 const useAiGenerateFetch = (fetchFunction: () => Promise<string>) => {
-  const [data, setData] = useState<string>("");
+  // const [data, setData] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const result = await fetchFunction();
-      setData(result);
-    } catch (error) {
-      console.error("Error fetching LLM data:", error);
+      await fetchFunction(); // no return value expected
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return [data, fetchData] as const; // Return the data and the fetch function
+  return [loading, fetchData] as const;
 };
 
 export default useAiGenerateFetch;

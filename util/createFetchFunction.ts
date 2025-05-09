@@ -5,7 +5,7 @@ export default function createFetchFunction(sectionName: string) {
     // 1) hit the single RAG endpoint with the right template & csv names
     const full = await generateWithTemplate(
       /* csvNames */ selectedCsvNames,
-      /* template */ sectionName as "biophysics" | "geology"
+      /* template */ "biophysics",
       /* rest defaulted */
     );
     // 2) pull out just the bit you need
