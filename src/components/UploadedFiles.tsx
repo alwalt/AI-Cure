@@ -69,9 +69,9 @@ export default function UploadedFiles({
 
   return (
     <div className="bg-panelBlack border-grey border rounded p-2">
-      <h3 className="text-lg font-semibold text-primaryWhite mb-2">
+      {/* <h3 className="text-lg font-semibold text-primaryWhite mb-2">
         Uploaded Files
-      </h3>
+      </h3> */}
 
       <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded">
         <table className="w-full">

@@ -106,8 +106,6 @@ export default function SummaryViewer({
       ));
   const isPDF = file && file.type.startsWith("application/pdf");
   console.log(file);
-  console.log(file?.type);
-  console.log(isPDF);
   // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
     queryKey: isImage

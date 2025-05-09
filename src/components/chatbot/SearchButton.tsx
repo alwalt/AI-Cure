@@ -53,12 +53,13 @@ const SearchButton: React.FC = () => {
 
   return (
     <>
-      <button 
+      {/* <button 
         onClick={() => (window as any).messageParserInstance?.setSearchMode(true)}
         style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 1000 }}
       >
         FORCE SEARCH MODE
-      </button>
+      </button> */}
+
       <button
         onClick={handleClick}
         className={`search-button ${isActive ? 'active' : ''}`}
