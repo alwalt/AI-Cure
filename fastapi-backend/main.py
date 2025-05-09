@@ -45,6 +45,9 @@ from mcp_agent.app import MCPApp
 from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
+from mcp_agent.logging.logger import get_logger
+
+
 import torch
 if hasattr(torch, "mps") and torch.backends.mps.is_available():
     torch.mps.empty_cache()
@@ -392,22 +395,40 @@ async def mcp_query(
     query: str = Body(..., embed=True),
 ): 
     try:
+        logger = get_logger(__name__)
         # Create Agent
         osdr_agent = Agent(
             name="osdr_bot",
             instruction=(
-                "You answer biology‑related questions by calling "
-                "the osdr_fetch_metadata or osdr_find_by_organism tools."
+                """
+                    You are an AI agent that helps users understand NASA space biology datasets in the OSDR repository.
+
+                    Your job is to:
+                    1. Detect if the user referenced an OSD study (e.g., “study 488”, “osd488”, “OSD-488”).
+                    2. Normalize it to the correct dataset ID format: `OSD-###`.
+                    3. Use the tool `osdr_fetch_metadata` to retrieve metadata from:
+                    https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{dataset_id}/
+                """
             ),
             server_names=["OSDRServer"],
         )
 
         async with osdr_agent:
-                # Attach an LLM and send the question
-                llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
-                resp = await llm.generate_str(message=query)
-                    
-        return {"response": resp}            
+
+            # Automatically initialize the MCP servers and adds their tools for LLM use
+            tools = await osdr_agent.list_tools()
+            logger.info(f"Tools available:", data=tools)
+
+            # Attach an LLM and send the question
+            llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+
+            # Step 1: Call the tool directly
+            resp = await llm.generate_str(message=query)
+            logger.info(f"Result: {resp}")
+          
+            return {"response": resp}   
+
+                 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -654,7 +675,7 @@ async def analyze_pdf(
     # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
     print(data[0].page_content)
     # Call model to get summary in json format
-    prompt = "Summerize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
+    prompt = "Summarize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
     res = ollama.chat(
         model=model,
         messages=[
