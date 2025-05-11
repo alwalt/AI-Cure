@@ -91,11 +91,11 @@
 }
 
 .search-button.active {
-  background-color: #4f46e5; /* Indigo color to indicate active search */
+  background-color: #4f46e5;
   color: white;
   transform: scale(1.05);
 }
 
 .search-button.active:hover {
-  background-color: #3730a3; /* Darker indigo on hover */
+  background-color: #3730a3; 
 }

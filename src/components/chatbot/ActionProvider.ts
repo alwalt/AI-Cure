@@ -7,8 +7,8 @@ class ActionProvider {
   constructor(createChatBotMessage: any, setState: any) {
     this.createChatBotMessage = createChatBotMessage;
     this.setState = setState;
-    // Expose this instance globally for the SearchButton
     (window as any).chatActionProvider = this;
+
     console.log('ActionProvider constructor called, exposed as window.chatActionProvider');
   }
 
@@ -66,7 +66,7 @@ class ActionProvider {
     const { addMessage } = useChatbotStore.getState();
 
     // Save user search message in the store
-    addMessage({ sender: "user", text: `🔍 ${message}` });
+    addMessage({ sender: "user", text: `${message}` });
 
     try {
       console.log('Calling search endpoint /api/mcp_query with query:', message);
