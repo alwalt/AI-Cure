@@ -25,7 +25,6 @@ const config = {
       </div>
     ),
   },
-  state: {}
 };
 
 export default config; 
