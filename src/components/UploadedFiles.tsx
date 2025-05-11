@@ -3,6 +3,7 @@ import { UploadedFile } from "@/types/files";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { UploadedFilesProps } from "@/types/files";
 import axios from "axios";
+import { apiBase } from '@/lib/api';
 
 export default function UploadedFiles({
   files,
@@ -20,7 +21,7 @@ export default function UploadedFiles({
   const previewFile = async (file: UploadedFile) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/get_file/${file.name}`,
+        `${apiBase}/api/get_file/${file.name}`,
         {
           credentials: "include",
         }
@@ -68,9 +69,9 @@ export default function UploadedFiles({
 
   return (
     <div className="bg-panelBlack border-grey border rounded p-2">
-      <h3 className="text-lg font-semibold text-primaryWhite mb-2">
+      {/* <h3 className="text-lg font-semibold text-primaryWhite mb-2">
         Uploaded Files
-      </h3>
+      </h3> */}
 
       <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded">
         <table className="w-full">
@@ -116,11 +117,11 @@ export default function UploadedFiles({
                 <td className="p-2">
                   <div className="flex items-center">
                     <div className="h-3 w-3 rounded-full bg-green-400 mr-2"></div>
-                    <span className="text-sm text-primiaryWhite">Ready</span>
+                    <span className="text-sm text-primaryWhite">Ready</span>
                   </div>
                 </td>
-                <td className="p-2 text-sm text-primiaryWhite">{file.type}</td>
-                <td className="p-2 text-sm text-primiaryWhite">
+                <td className="p-2 text-sm text-primaryWhite">{file.type}</td>
+                <td className="p-2 text-sm text-primaryWhite">
                   {file.dateCreated}
                 </td>
                 <td className="p-2">
