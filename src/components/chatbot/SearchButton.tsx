@@ -6,7 +6,7 @@ const SearchButton: React.FC = () => {
  
 
   const handleClick = () => {
-   setSearchMode(!isSearchMode);                       
+   setSearchMode((prev) => !prev);                       
    const input = document.querySelector(
      ".react-chatbot-kit-chat-input"
    ) as HTMLInputElement | null;
