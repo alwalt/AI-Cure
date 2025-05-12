@@ -5,6 +5,7 @@ import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { apiBase } from '@/lib/api';
 
 const fetchTableAnalysis = async ({
   queryKey,
@@ -23,7 +24,7 @@ const fetchTableAnalysis = async ({
   // Use default model (llama3)
 
   const response = await axios.post(
-    "http://localhost:8000/api/analyze_table",
+    `${apiBase}/api/analyze_table`,
     formData,
     {
       headers: {
@@ -53,7 +54,7 @@ const fetchImageAnalysis = async ({
   console.log(formData);
   console.log(fileName);
   const response = await axios.post(
-    "http://localhost:8000/api/analyze_image",
+    `${apiBase}/api/analyze_image`,
     formData,
     {
       headers: {
@@ -75,10 +76,9 @@ const fetchPDFAnalysis = async ({
   const formData = new FormData();
   formData.append("pdf_file_name", fileName);
   // Use default model (llava)
-  console.log(formData);
   console.log(fileName);
   const response = await axios.post(
-    "http://localhost:8000/api/analyze_pdf",
+    `${apiBase}/api/analyze_pdf`,
     formData,
     {
       headers: {
@@ -105,8 +105,6 @@ export default function SummaryViewer({
       ));
   const isPDF = file && file.type.startsWith("application/pdf");
   console.log(file);
-  console.log(file?.type);
-  console.log(isPDF);
   // Determine which analysis function to use based on the file type
   const { data, isLoading, isError, error } = useQuery({
     queryKey: isImage

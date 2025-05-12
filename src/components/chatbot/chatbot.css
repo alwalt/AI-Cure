@@ -37,11 +37,32 @@
   width: 100% !important;
   max-width: 100%;
   box-sizing: border-box;
-  flex-direction: column;
+  position: relative;          /* ensures it's not absolute/fixed */
+  margin-top: .7rem;            /* gives it breathing room from what's above */
 }
 
 .react-chatbot-kit-chat-message-container {
   background-color: #393834 !important;
+  overflow-y: auto; /* make sure it's scrollable */
+}
+
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(160, 160, 160, 0.8);
 }
 
 .react-chatbot-kit-chat-bot-message-container {
@@ -91,11 +112,11 @@
 }
 
 .search-button.active {
-  background-color: #4f46e5; /* Indigo color to indicate active search */
+  background-color: #4f46e5;
   color: white;
   transform: scale(1.05);
 }
 
 .search-button.active:hover {
-  background-color: #3730a3; /* Darker indigo on hover */
+  background-color: #3730a3; 
 }

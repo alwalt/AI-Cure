@@ -8,17 +8,20 @@ import shutil
 from typing import Dict, List, Optional, Literal
 import logging
 import re
+import datetime
+
 
 import pandas as pd
 import numpy as np
 
-from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
+api_router = APIRouter()
 
 
-from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe
+from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe, get_magic_wand_suggestions
 
 from pydantic import BaseModel
 import base64
@@ -42,8 +45,15 @@ from mcp_agent.app import MCPApp
 from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
+from mcp_agent.logging.logger import get_logger
+
+
 import torch
-torch.mps.empty_cache()
+if hasattr(torch, "mps") and torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+    print("MPS cache cleared.")
+else:
+    print("MPS not available, skipping cache clear.")
 from pathlib import Path
 
 # for debuging
@@ -83,6 +93,9 @@ def load_config() -> Settings:
         return Settings(**yaml.safe_load(f))
 
 @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     asyncio.create_task(cleanup_job())
+#     yield
 async def lifespan(app: FastAPI):
     """
     - Start MCP servers once.
@@ -208,7 +221,7 @@ async def get_files(request: Request):
                 files.append({
                     "name": filename,
                     "type": file_ext,
-                    "dateCreated": os.path.getctime(file_path),
+                    "dateCreated": datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%-m/%-d/%Y'),
                     "size": os.path.getsize(file_path),
                 })
 
@@ -377,22 +390,40 @@ async def mcp_query(
     query: str = Body(..., embed=True),
 ): 
     try:
+        logger = get_logger(__name__)
         # Create Agent
         osdr_agent = Agent(
             name="osdr_bot",
             instruction=(
-                "You answer biology‑related questions by calling "
-                "the osdr_fetch_metadata or osdr_find_by_organism tools."
+                """
+                    You are an AI agent that helps users understand NASA space biology datasets in the OSDR repository.
+
+                    Your job is to:
+                    1. Detect if the user referenced an OSD study (e.g., “study 488”, “osd488”, “OSD-488”).
+                    2. Normalize it to the correct dataset ID format: `OSD-###`.
+                    3. Use the tool `osdr_fetch_metadata` to retrieve metadata from:
+                    https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{dataset_id}/
+                """
             ),
             server_names=["OSDRServer"],
         )
 
         async with osdr_agent:
-                # Attach an LLM and send the question
-                llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
-                resp = await llm.generate_str(message=query)
-                    
-        return {"response": resp}            
+
+            # Automatically initialize the MCP servers and adds their tools for LLM use
+            tools = await osdr_agent.list_tools()
+            logger.info(f"Tools available:", data=tools)
+
+            # Attach an LLM and send the question
+            llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+
+            # Step 1: Call the tool directly
+            resp = await llm.generate_str(message=query)
+            logger.info(f"Result: {resp}")
+          
+            return {"response": resp}   
+
+                 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -671,6 +702,8 @@ async def analyze_pdf(
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
 
+    normalized_output.update(get_magic_wand_suggestions(data[0].page_content, model))
+
     if "Error" in json_output or "error" in json_output:
         normalized_output["error"] = json_output.get("Error") or json_output.get("error")
     else:
@@ -737,7 +770,8 @@ def analyze_table(
                 json_output = json.loads(res_text)
             except json.decoder.JSONDecodeError:
                 json_output['Error'] = res_text
-            
+        
+        json_output.update(get_magic_wand_suggestions(table_df.to_string(), model))
         return JSONResponse(content=json_output)
     except Exception as e:
         logging.error(f"Error analyzing table: {str(e)}")
