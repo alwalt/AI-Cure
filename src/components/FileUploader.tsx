@@ -142,7 +142,7 @@ export default function FileUploader({
             onTablesUpdate?.(response.data.tables);
           }
         }
-        console.log(`Response: ${response.data}`);
+        // console.log(`Response: ${response.data}`);
         // console.log(`Session ID: ${sessionId}`);
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
