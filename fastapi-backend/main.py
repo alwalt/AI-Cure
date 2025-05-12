@@ -399,12 +399,15 @@ async def mcp_query(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
+    request: Request,
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
+    # ⇨ use the cookie‐managed session_id
+    session_id = request.state.session_id
 
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
@@ -417,9 +420,12 @@ async def generate_vectors(
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
     split_docs = text_splitter.split_documents(docs)
     
-    # Create vector store
-    session_id = uuid.uuid4().hex
-    save_directory = f"download_files/chroma_db/{session_id}"
+    # Create vector store - 2 lines below, old code, creating a new session_id each time
+    # session_id = uuid.uuid4().hex
+    # save_directory = f"download_files/chroma_db/{session_id}"
+
+    # persist under a folder for this session
+    save_directory = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_directory, exist_ok=True)
     
     vectorstore = Chroma.from_documents(
