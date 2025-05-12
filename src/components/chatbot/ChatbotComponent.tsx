@@ -21,20 +21,6 @@ export default function ChatbotComponent() {
       if (!sessionId) {
         try {
           console.log("No session ID found, creating vectorstore...");
-          const res1 = await fetch(
-            "http://127.0.0.1:8000/api/create_vectorstore",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                embedding_model: "nomic-ai/nomic-embed-text-v1.5",
-                documents: JSON.stringify([
-                  { page_content: "Test doc", metadata: {} },
-                ]),
-              }),
-            }
-          );
-          console.log("No session ID found, creating vectorstore...");
           const res1 = await fetch(`${apiBase}/api/create_vectorstore`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
