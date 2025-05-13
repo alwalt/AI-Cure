@@ -1,5 +1,4 @@
-/* Override default chatbot positioning */
-
+/* Your "OLD" chatbot.css content STARTS HERE */
 .react-chatbot-kit-chat-input {
   background-color: #393834 !important;
 }
@@ -70,28 +69,69 @@
   justify-content: flex-start !important;
   margin-left: 0 !important;
   margin-right: auto !important;
+  margin-bottom: 10px; /* Added from more recent CSS for spacing */
 }
 
 .react-chatbot-kit-user-chat-message {
   background-color: #2d2d2d;
   color: white;
-  width: 100%;
+  /* width: 100%; */ /* Let's use auto width from newer versions */
   max-width: 75%;
-  margin-left: 0;
-  margin-right: 0;
+  /* margin-left: 0; */ /* User messages align right */
+  /* margin-right: 0; */
+  padding: 10px 12px; /* Added from more recent CSS */
+  border-radius: 8px; /* Added from more recent CSS */
+  position: relative; /* Added from more recent CSS */
+  text-align: left; /* Added from more recent CSS */
 }
 
+/* MODIFIED from your old CSS to ensure bot messages also have dark background */
 .react-chatbot-kit-chat-bot-message {
+  background-color: #2d2d2d; /* Match user message background */
+  color: white; /* Ensure text is visible */
+  padding: 10px 12px; /* Consistent padding */
+  border-radius: 8px; /* Consistent border radius */
   display: flex;
   justify-content: flex-start !important;
   margin-left: 0;
-  margin-right: 0;
+  margin-right: auto; /* This will make it align left with an avatar */
   text-align: left;
-  max-width: 75%;
-  width: 100%;
+  max-width: 75%; /* Or calc(75% - 50px) if default avatar is ~40px */
+  position: relative; /* For arrow */
+ /* width: auto; */ /* Let bubble size based on content */
 }
 
-/* Search button styles */
+/* Copied from current working CSS for bot arrow */
+.react-chatbot-kit-chat-bot-message-arrow {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  border-left: 8px solid transparent;
+  border-right: 8px solid #2d2d2d; 
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  left: -8px; 
+  top: 10px; 
+}
+
+/* User message arrow from current working CSS (if different from your old one) */
+/* Ensure your old .react-chatbot-kit-user-chat-message-arrow is correct or use this: */
+.react-chatbot-kit-user-chat-message-arrow {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  border-left: 8px solid #2d2d2d; 
+  border-right: 8px solid transparent;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  right: -8px;
+  top: 10px; 
+}
+
+
+/* Search button styles (from your old CSS) */
 .search-button {
   cursor: pointer;
   display: flex;
@@ -119,4 +159,80 @@
 
 .search-button.active:hover {
   background-color: #3730a3; 
+}
+/* Your "OLD" chatbot.css content ENDS HERE */
+
+/* Styles for content INSIDE the bot message when using MarkdownMessage */
+/* Appended from the version where Markdown styling was working well */
+.bot-markdown {
+  width: 100%; 
+  color: #fff; 
+  line-height: 1.45;
+  padding: 0; 
+  text-align: left; 
+}
+
+.bot-markdown p {
+  margin-top: 0;
+  margin-bottom: 0.5em; 
+}
+
+.bot-markdown a {
+  color: #87ceeb; 
+  text-decoration: underline;
+}
+.bot-markdown a:hover {
+  color: #add8e6; 
+}
+
+.bot-markdown pre {
+  background-color: #404040; 
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto; 
+  margin: 0.8em 0;
+  font-size: 0.9em; 
+}
+
+.bot-markdown code {
+  font-family: monospace;
+  background-color: #404040; 
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.bot-markdown pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 1em; 
+}
+
+.bot-markdown ul, .bot-markdown ol {
+  padding-left: 25px; 
+  margin: 0.8em 0;
+}
+
+.bot-markdown li {
+  margin-bottom: 0.3em; 
+}
+
+.bot-markdown h1, .bot-markdown h2, .bot-markdown h3, .bot-markdown h4, .bot-markdown h5, .bot-markdown h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+  border-bottom: 1px solid #555; 
+  padding-bottom: 0.2em;
+}
+.bot-markdown h1 { font-size: 1.6em; }
+.bot-markdown h2 { font-size: 1.4em; }
+.bot-markdown h3 { font-size: 1.2em; }
+
+.bot-markdown-error {
+  color: #ffdddd;
+  background-color: #8b0000; 
+  padding: 5px 10px;
+  border-radius: 3px;
+  border: 1px solid #ffaaaa;
 }

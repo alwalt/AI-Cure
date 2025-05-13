@@ -1,12 +1,32 @@
 import React from 'react';
-import { createChatBotMessage } from "react-chatbot-kit";
+import { createCustomMessage } from "react-chatbot-kit";
 import SearchButton from './SearchButton';
+import MarkdownMessage from './MarkdownMessage';
 
-const botName = "AI Curation Bot";
+export const botName = "AI Curation Bot";
+
+// Create initial message for Markdown
+const initialMarkdown = `# Welcome to **${botName}**!\nAsk me anything.`;
+const initialMessageObject = createCustomMessage(
+  initialMarkdown,
+  "markdown",
+  {} 
+);
+// Manually add the messageId to its payload
+initialMessageObject.payload = { 
+  ...initialMessageObject.payload, 
+  messageId: initialMessageObject.id 
+};
+console.log("[Config] Initial Message Object with Payload:", JSON.stringify(initialMessageObject, null, 2));
 
 const config = {
   botName: botName,
-  initialMessages: [createChatBotMessage(`Hello! How can I assist you?`, {})],
+  // Use the modified Markdown message object
+  initialMessages: [ initialMessageObject ], 
+  // Add customMessages for Markdown
+  customMessages: {
+    markdown: (props: any) => <MarkdownMessage {...props} />,
+  },
   customStyles: {
     botMessageBox: {
       backgroundColor: "#393834",
