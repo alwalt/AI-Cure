@@ -5,7 +5,7 @@ export interface RagResponse {
 
 export async function generateWithTemplate(
   csvNames: string[],
-  template: "biophysics" | "geology",
+  template: "biophysics",
   model = "llama3.1",
   top_k = 5,
   extra_instructions: string | null = null
