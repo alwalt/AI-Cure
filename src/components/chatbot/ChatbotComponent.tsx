@@ -23,6 +23,7 @@ export default function ChatbotComponent() {
           console.log("No session ID found, creating vectorstore...");
           const res1 = await fetch(`${apiBase}/api/create_vectorstore`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               embedding_model: "nomic-ai/nomic-embed-text-v1.5",

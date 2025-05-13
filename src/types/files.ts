@@ -20,7 +20,7 @@ export interface UploadResponse {
 }
 
 export interface IngestResponse {
-  vectorstore_id: string;
+  session_id: string;
 }
 
 export interface UploadFileButtonProps {

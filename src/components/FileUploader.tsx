@@ -100,7 +100,7 @@ export default function FileUploader({
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log("Vectorstore batch ID:", resp.data.vectorstore_id);
+      console.log("Vectorstore batch ID:", resp.data.session_id);
       // you can store that ID in state or show it in the UI
     } catch (err) {
       console.error("Failed to ingest files:", err);

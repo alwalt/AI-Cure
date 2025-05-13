@@ -118,10 +118,12 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
@@ -430,16 +432,17 @@ async def mcp_query(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
-    request: Request,
+    request: Request, # CHANGED!
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
-    # ⇨ use the cookie‐managed session_id
+    # ⇨ use the cookie‐managed session_id - CHANGED!
     session_id = request.state.session_id
 
+    print("CREATE VECTORSTORE, cookis: ", session_id)
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
     docs = [Document(page_content=doc["page_content"], metadata=doc["metadata"]) for doc in docs_data]
@@ -455,10 +458,11 @@ async def generate_vectors(
     # session_id = uuid.uuid4().hex
     # save_directory = f"download_files/chroma_db/{session_id}"
 
-    # persist under a folder for this session
+    # persist under a folder for this session - CHANGED!
     save_directory = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_directory, exist_ok=True)
     
+
     vectorstore = Chroma.from_documents(
         documents=split_docs, 
         embedding=embeddings,
@@ -466,7 +470,15 @@ async def generate_vectors(
     )
     
     # Store in session
-    SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
+    # SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
+    # user_session = SESSIONS.setdefault(session_id, {"vectorstore": {}, "history": []})
+    user_session = SESSIONS.setdefault(
+    session_id,
+    {"vectorstore": None, "history": []}
+)
+    user_session["vectorstore"] = vectorstore
+
+    print("create_vectorstore - session_id:", session_id)
     
     return JSONResponse(content={"session_id": session_id})
 
@@ -790,21 +802,25 @@ async def ingest(
     Returns a vectorstore_id for this batch.
     """
     session_id = request.state.session_id
-    user_session = SESSIONS.setdefault(session_id, {"vectorstores": {}})
-    
+    print("session id in Ingest Route, before user_session: ", session_id)
+ 
+    # user_session = SESSIONS.get(session_id, {})
+
     # Create a new batch ID
-    batch_id = uuid.uuid4().hex
-    save_dir = f"chroma_db/{session_id}/{batch_id}"
+    # batch_id = uuid.uuid4().hex
+    save_dir = f"{USER_DIRS}/{session_id}/chroma_db"
     os.makedirs(save_dir, exist_ok=True)
 
     # Initialize Chroma against that directory
     embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
     vecstore   = Chroma(persist_directory=save_dir, embedding_function=embeddings)
 
+
     for upload in files:
         ext = Path(upload.filename).suffix.lower()
         metadata = {"source": upload.filename, "filetype": ext}
 
+        print("What is the current file's ext, ", ext)
         # 1) CSV → pandas → split rows
         if ext == ".csv":
             df = pd.read_csv(BytesIO(await upload.read()))
@@ -836,16 +852,32 @@ async def ingest(
             # skip unknown types
             continue
 
+    # ensure there’s a dict for this session
+    user_session = SESSIONS.setdefault(session_id, {"history": []})
+
+    # store the Chroma instance directly
+    user_session["vectorstore"] = vecstore
+
     # persist to disk
     vecstore.persist()
 
+    vecstore_info = user_session.get("vectorstore")
+    vecstore = Chroma(
+    persist_directory=vecstore_info["path"],
+    embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
+)
+    print("vectore_info, ", vecstore_info)
+    print("Ingest user_session,  user_session", user_session)
+    print("user_session @ vectorstore", user_session["vectorstore"])
+    
     # save under user session
-    user_session["vectorstores"][batch_id] = {
+    user_session["vectorstore"] = {
         "path": save_dir,
         "model": embedding_model
     }
+    print("path to chroma, user_session.vectorstore.path", user_session["vectorstore"]["path"])
 
-    return JSONResponse({"vectorstore_id": batch_id}) 
+    return JSONResponse({"session_id": session_id}) 
 
 
 # Magic Wand / Sparkles Description tables route
@@ -859,8 +891,16 @@ def _generic_rag_summarizer(
     extra_instructions: Optional[str] = None
 ) -> JSONResponse:
     session_id = request.state.session_id
-    session    = SESSIONS.get(session_id, {})
-    vecstore   = session.get("vectorstore")
+    session = SESSIONS.get(session_id, {})
+    # vecstore = session.get("vectorstore")
+    save_dir = f"{USER_DIRS}/{session_id}/chroma_db"
+    os.makedirs(save_dir, exist_ok=True)
+
+
+    vecstore   = Chroma(persist_directory=save_dir)
+
+    print("!! generate_rag_with_template - session_id:", session_id, "has_vecstore?", bool(vecstore))
+    print("All stored session IDs:", list(SESSIONS.keys()))
     if not vecstore:
         raise HTTPException(400, "No vectorstore for this session")
 
@@ -946,7 +986,7 @@ def generate_rag_with_template(
     request: Request,
     payload: BranchRequest = Body(...),
 ):
-    print(payload)
+    print("payload_ _ _ :", payload)
     # pick the right instruction set
     instructions = TEMPLATES[payload.template]
     # hand off to the generic summarizer
