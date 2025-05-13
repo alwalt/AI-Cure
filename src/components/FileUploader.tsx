@@ -92,6 +92,7 @@ export default function FileUploader({
 
     // 2) call your ingest route
     try {
+      console.log("!!!! files, ", files);
       const resp = await axios.post<IngestResponse>(
         "http://localhost:8000/api/ingest",
         ingestForm,
@@ -100,7 +101,7 @@ export default function FileUploader({
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log("Vectorstore batch ID:", resp.data.session_id);
+      console.log("Vectorstore cookie ID:", resp.data.session_id);
       // you can store that ID in state or show it in the UI
     } catch (err) {
       console.error("Failed to ingest files:", err);

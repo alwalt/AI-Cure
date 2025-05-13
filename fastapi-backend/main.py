@@ -145,6 +145,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # { session_id -> [ (csv_file, name), ... ] }
 SESSION_TABLES = {}
 SESSIONS = {}
+VECTOR_STORES = {}
 
 # MCP server var init
 mcp_server = None
@@ -473,12 +474,15 @@ async def generate_vectors(
     # SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
     # user_session = SESSIONS.setdefault(session_id, {"vectorstore": {}, "history": []})
     user_session = SESSIONS.setdefault(
-    session_id,
-    {"vectorstore": None, "history": []}
-)
+        session_id,
+        {"vectorstore": None, "history": []}
+    )
+
     user_session["vectorstore"] = vectorstore
 
     print("create_vectorstore - session_id:", session_id)
+
+    vectorstore.persist()
     
     return JSONResponse(content={"session_id": session_id})
 
@@ -808,13 +812,12 @@ async def ingest(
 
     # Create a new batch ID
     # batch_id = uuid.uuid4().hex
-    save_dir = f"{USER_DIRS}/{session_id}/chroma_db"
+    save_dir = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_dir, exist_ok=True)
 
     # Initialize Chroma against that directory
-    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
-    vecstore   = Chroma(persist_directory=save_dir, embedding_function=embeddings)
-
+    # embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    vectorstore  = SESSIONS[session_id]["vectorstore"]
 
     for upload in files:
         ext = Path(upload.filename).suffix.lower()
@@ -824,10 +827,9 @@ async def ingest(
         # 1) CSV → pandas → split rows
         if ext == ".csv":
             df = pd.read_csv(BytesIO(await upload.read()))
-            df = clean_dataframe(df)
-            for _, row in df.iterrows():
-                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
-                vecstore.add_texts([text], metadatas=[metadata])
+        elif ext in {".xlsx", ".xls"}:
+            # Handle Excel files
+            df = pd.read_excel(BytesIO(await upload.read()), engine="openpyxl")
 
         # 2) PDF → PyMuPDFLoader
         elif ext == ".pdf":
@@ -836,7 +838,7 @@ async def ingest(
             docs = PyMuPDFLoader(tmp.name).load()
             for doc in docs:
                 doc.metadata.update(metadata)
-            vecstore.add_documents(docs)
+            vectorstore.add_documents(docs)
 
         # 3) Images → (example) CLIP or other image embedder
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
@@ -846,36 +848,48 @@ async def ingest(
             # imagine we have `image_to_embedding` util
             emb, text = image_to_embedding(data)  
             # add one “Document” wrapping both embedding + caption text
-            vecstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
+            vectorstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
 
         else:
             # skip unknown types
             continue
 
+        # Now you have a DataFrame for both CSV and Excel:
+        df = clean_dataframe(df)
+        for _, row in df.iterrows():
+            text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
+            print("TEXT We are about to store in Chroma:", text)
+            vectorstore.add_texts([text], metadatas=[metadata])
+
+
     # ensure there’s a dict for this session
-    user_session = SESSIONS.setdefault(session_id, {"history": []})
+    # Is this reseting the default of the vecstore if the history is empty, like if nothing got added to the vecstore if file came in with an extension I did not account for?
+    # user_session = SESSIONS.get(session_id, {"history": []})
 
     # store the Chroma instance directly
-    user_session["vectorstore"] = vecstore
+    # with the line above, a new vecstore is created with the added embedings and then we set that to `user_session["vectorstore"]`
+    # user_session["vectorstore"] = vecstore
 
-    # persist to disk
-    vecstore.persist()
+    # persist to disk - saving
+    # vecstore.persist()
 
-    vecstore_info = user_session.get("vectorstore")
-    vecstore = Chroma(
-    persist_directory=vecstore_info["path"],
-    embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
-)
-    print("vectore_info, ", vecstore_info)
-    print("Ingest user_session,  user_session", user_session)
-    print("user_session @ vectorstore", user_session["vectorstore"])
+    # store *only* the metadata needed to re-open later
+    # user_session = SESSIONS.setdefault(session_id, {"history": []})
+    # user_session["vectorstore_info"] = {
+    #     "path":  save_dir,
+    #     "model": embedding_model
+    # }
+
+
+    # print("Ingest user_session,  user_session", user_session)
+    # print("user_session @ vectorstore", user_session["vectorstore_info"])
     
     # save under user session
-    user_session["vectorstore"] = {
-        "path": save_dir,
-        "model": embedding_model
-    }
-    print("path to chroma, user_session.vectorstore.path", user_session["vectorstore"]["path"])
+    # user_session["vectorstore"] = {
+    #     "path": save_dir,
+    #     "model": embedding_model
+    # }
+    # print("path to chroma, user_session.vectorstore.path", user_session["vectorstore"]["path"])
 
     return JSONResponse({"session_id": session_id}) 
 
@@ -892,12 +906,11 @@ def _generic_rag_summarizer(
 ) -> JSONResponse:
     session_id = request.state.session_id
     session = SESSIONS.get(session_id, {})
-    # vecstore = session.get("vectorstore")
-    save_dir = f"{USER_DIRS}/{session_id}/chroma_db"
-    os.makedirs(save_dir, exist_ok=True)
-
-
-    vecstore   = Chroma(persist_directory=save_dir)
+    vecstore_info = session.get("vectorstore") 
+    vecstore = Chroma(
+    persist_directory=vecstore_info["path"],
+    embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
+)
 
     print("!! generate_rag_with_template - session_id:", session_id, "has_vecstore?", bool(vecstore))
     print("All stored session IDs:", list(SESSIONS.keys()))
