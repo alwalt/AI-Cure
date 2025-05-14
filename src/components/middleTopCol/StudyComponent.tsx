@@ -2,7 +2,6 @@
 import { useState, useMemo } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
 import EditableTextArea from "../base/EditableTextArea";
-import createFetchFunction from "../../../util/createFetchFunction";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
 
@@ -20,8 +19,7 @@ export default function StudyComponent() {
     [selectedFiles]
   );
 
-  const setRagData = useSessionFileStore((s) => s.setRagData);
-
+  // const setRagData = useSessionFileStore((s) => s.setRagData);
   const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
   const ragData = useSessionFileStore((s) => s.ragData);
 
@@ -33,7 +31,7 @@ export default function StudyComponent() {
       "biophysics" // hard‐coded template for now
     );
 
-    // store the full object separately
+    // store the full rag object separately
     setFullRagData(full as Record<string, string>);
 
     console.log("After fetch, full obj", full);
