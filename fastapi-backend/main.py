@@ -810,8 +810,6 @@ async def ingest(
  
     # user_session = SESSIONS.get(session_id, {})
 
-    # Create a new batch ID
-    # batch_id = uuid.uuid4().hex
     save_dir = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_dir, exist_ok=True)
 
@@ -863,7 +861,7 @@ async def ingest(
 
 
     # ensure there’s a dict for this session
-    # Is this reseting the default of the vecstore if the history is empty, like if nothing got added to the vecstore if file came in with an extension I did not account for?
+    # Is this reseting the default of ttorhe vecstore if the history is empty, like if nothing got added to the vecstore if file came in with an extension I did not account for?
     # user_session = SESSIONS.get(session_id, {"history": []})
 
     # store the Chroma instance directly
@@ -904,23 +902,21 @@ def _generic_rag_summarizer(
     instructions:      Dict[str,str],
     extra_instructions: Optional[str] = None
 ) -> JSONResponse:
+    
     session_id = request.state.session_id
-    session = SESSIONS.get(session_id, {})
-    vecstore_info = session.get("vectorstore") 
-    vecstore = Chroma(
-    persist_directory=vecstore_info["path"],
-    embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
-)
+    print("PRINT THE COOKIE!!!, ", session_id)
+    vectorstore  = SESSIONS[session_id]["vectorstore"]
+    # vecstore_info = session.get("vectorstore") 
+    # vecstore = Chroma(
+    # persist_directory=vecstore_info["path"],
+    # embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
 
-    print("!! generate_rag_with_template - session_id:", session_id, "has_vecstore?", bool(vecstore))
-    print("All stored session IDs:", list(SESSIONS.keys()))
-    if not vecstore:
-        raise HTTPException(400, "No vectorstore for this session")
+    print("!! generate_rag_with_template - session_id:", session_id, "has_vecstore?", bool(vectorstore))
 
     # 1) Collect top_k chunks for each CSV
     all_chunks = []
     for name in csv_names:
-        docs = vecstore.similarity_search(
+        docs = vectorstore.similarity_search(
             query=f"Fetch context for '{name}'",
             k=top_k,
             filter={"source": name}
