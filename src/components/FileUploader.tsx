@@ -92,7 +92,7 @@ export default function FileUploader({
 
     // 2) call your ingest route
     try {
-      console.log("!!!! files, ", files);
+      console.log("!!!! files to be ingested, ", files);
       const resp = await axios.post<IngestResponse>(
         "http://localhost:8000/api/ingest",
         ingestForm,
@@ -143,8 +143,6 @@ export default function FileUploader({
             onTablesUpdate?.(response.data.tables);
           }
         }
-        // console.log(`Response: ${response.data}`);
-        // console.log(`Session ID: ${sessionId}`);
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
       }

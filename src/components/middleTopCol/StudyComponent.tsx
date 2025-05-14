@@ -5,11 +5,10 @@ import EditableTextArea from "../base/EditableTextArea";
 import createFetchFunction from "../../../util/createFetchFunction";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
-import { shallow } from "zustand/shallow";
 
 export default function StudyComponent() {
-  const [description, setDescription] = useState<string>("");
-  const [studies, setStudies] = useState<string>("");
+  const [description, setDescription] = useState<string>(""); // seems like not being used but are
+  const [studies, setStudies] = useState<string>(""); // will need to add in other CollapsibleSection titles
 
   // 1) Select the raw UploadedFile[] from Zustand (stable until it really changes)
   const selectedFiles = useSessionFileStore((s) => s.selectedFiles);
