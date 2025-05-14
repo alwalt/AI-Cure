@@ -47,6 +47,7 @@ from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
+from config.rag_templates import TEMPLATES
 
 import torch
 if hasattr(torch, "mps") and torch.backends.mps.is_available():
@@ -919,27 +920,6 @@ def _generic_rag_summarizer(
         return JSONResponse({"error": "Invalid JSON", "raw": res_text}, status_code=500)
 
     return JSONResponse(payload)
-
-# To Go to config/rag_templates when bug free
-TEMPLATES = {
-  "biophysics": {
-     "title":    "A concise, 5-8 word, Title-Case scientific title",
-     "decription":  "A 2-sentence overview of the main findings",
-     "studies" : "Summarize the goals of the study",
-     "keywords": "List 4-6 terms capturing the study's topics",
-     "species":  "Name any species used in the experiments",
-     "methods":  "Brief description of the experimental methods"
-  },
-  "geology": {
-     "title":    "A concise, 5-8 word, Title-Case geoscience title",
-     "decription":  "A 2-sentence overview of the study's findings",
-     "studies" : "Summarize the goals of the study",
-     "keywords": "List 4-6 terms capturing the study's topics",
-     "rocks":    "Name the main rock types analyzed",
-     "methods":  "Brief description of the sampling or lab methods"
-  },
-  # add more branches…
-}
 
 class BranchRequest(BaseModel):
     file_names:         List[str]
