@@ -5,7 +5,7 @@ import os
 import time
 import uuid
 import shutil
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
 import logging
 import re
 import datetime
@@ -47,6 +47,7 @@ from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
+from config.rag_templates import TEMPLATES
 
 import torch
 if hasattr(torch, "mps") and torch.backends.mps.is_available():
@@ -118,10 +119,12 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
@@ -143,6 +146,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # { session_id -> [ (csv_file, name), ... ] }
 SESSION_TABLES = {}
 SESSIONS = {}
+VECTOR_STORES = {}
 
 # MCP server var init
 mcp_server = None
@@ -246,13 +250,8 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
     """
     Upload a file and return a session id. Unless sessionid is present.
     """
-    print(f"Upload request received: {file.filename}")
-    print(f"File content type: {file.content_type}")
-    print(f"PASSED FILE TYPE: {file_type}")
+  
     session_id = request.state.session_id
-    print(f"Session ID: {session_id}")
-    if session_id is not None:
-        print(f"Session ID: {session_id}")
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
     
     try:
@@ -435,13 +434,17 @@ async def mcp_query(
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
+    request: Request, # CHANGED!
     embedding_model: str = Body(...),
     documents: str = Body(...)  # JSON string of documents
 ):
     """
     Create a vector store from a list of documents and a specified embedding model.
     """
+    # ⇨ use the cookie‐managed session_id - CHANGED!
+    session_id = request.state.session_id
 
+    print("CREATE VECTORSTORE, cookie: ", session_id)
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
     docs = [Document(page_content=doc["page_content"], metadata=doc["metadata"]) for doc in docs_data]
@@ -453,19 +456,28 @@ async def generate_vectors(
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
     split_docs = text_splitter.split_documents(docs)
     
-    # Create vector store
-    session_id = uuid.uuid4().hex
-    save_directory = f"download_files/chroma_db/{session_id}"
+
+    # persist under a folder for this session - CHANGED!
+    # instead of vectorstore, it was chroma_db, but that path is not used anywhere
+    # it doesn't work, when changed to vectorstore
+    save_directory = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_directory, exist_ok=True)
     
+    # returns VectorStore initialized from documents and embeddings.
     vectorstore = Chroma.from_documents(
         documents=split_docs, 
         embedding=embeddings,
         persist_directory=save_directory
     )
     
-    # Store in session
-    SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
+    # Check if cookie exists in SESSIONS, if not create one
+    user_session = SESSIONS.setdefault(
+        session_id,
+        {"vectorstore": None, "history": []}
+    )
+
+    user_session["vectorstore"] = vectorstore
+    vectorstore.persist() # maybe redundent
     
     return JSONResponse(content={"session_id": session_id})
 
@@ -775,6 +787,164 @@ def analyze_table(
     except Exception as e:
         logging.error(f"Error analyzing table: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+# Ingest raw list of files into vector store
+@app.post("/api/ingest")
+async def ingest(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    embedding_model: str    = Form("sentence-transformers/all-MiniLM-L6-v2"),
+):
+    """
+    Ingest any mix of CSV, PDF, and image files into a new vectorstore batch.
+    Returns a vectorstore_id for this batch.
+    """
+    session_id = request.state.session_id
+
+    save_dir = os.path.join(USER_DIRS, session_id, "chroma_db")
+    os.makedirs(save_dir, exist_ok=True)
+
+    vectorstore  = SESSIONS[session_id]["vectorstore"]
+
+    df = None
+    for upload in files:
+        ext = Path(upload.filename).suffix.lower()
+        metadata = {"source": upload.filename, "filetype": ext}
+
+        print("What is the current file's ext, ", ext)
+        # 1) Handle CSV files
+        if ext == ".csv":
+            df = pd.read_csv(BytesIO(await upload.read()))
+        elif ext in {".xlsx", ".xls"}:
+            # Handle Excel files
+            df = pd.read_excel(BytesIO(await upload.read()), engine="openpyxl")
+
+        # 2) PDF → PyMuPDFLoader
+        elif ext == ".pdf":
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            tmp.write(await upload.read()); tmp.flush()
+            docs = PyMuPDFLoader(tmp.name).load()
+            for doc in docs:
+                doc.metadata.update(metadata)
+            vectorstore.add_documents(docs)
+
+        # 3) Images → (example) CLIP or other image embedder
+        elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
+                # TODO: implement image embedding, can use HugginFace's CLIP model
+            continue
+            data = await upload.read()
+            # imagine we have `image_to_embedding` util
+            emb, text = image_to_embedding(data)  
+            # add one “Document” wrapping both embedding + caption text
+            vectorstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
+
+        else:
+            # skip unknown types
+            continue
+
+    # Now you have a DataFrame for both CSV and Excel, add embeddings to vectorstore
+    if df is not None:
+        df = clean_dataframe(df)
+        for _, row in df.iterrows():
+            text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
+            print("TEXT We are about to store in Chroma:", text)
+            vectorstore.add_texts([text], metadatas=[metadata])
+
+    return JSONResponse({"session_id": session_id}) 
+
+
+# Magic Wand / Sparkles Description tables route
+# Helper function to be moved to it's own folder/file, services/rag_services.py
+def _generic_rag_summarizer(
+    request: Request,
+    file_names:        List[str],
+    model:             str,
+    top_k:             int,
+    instructions:      Dict[str,str],
+    extra_instructions: Optional[str] = None
+) -> JSONResponse:
     
+    session_id = request.state.session_id
+    vectorstore  = SESSIONS[session_id]["vectorstore"]
+
+    print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
+
+    # 1) Collect top_k chunks for each CSV
+    all_chunks = []
+    for name in file_names:
+        docs = vectorstore.similarity_search(
+            query=f"Fetch context for '{name}'",
+            k=top_k,
+            filter={"source": name}
+        )
+        if docs:
+            all_chunks.extend(docs)
+
+    if not all_chunks:
+        raise HTTPException(404, "No data chunks found for any requested files")
+
+    context = "\n\n".join(d.page_content for d in all_chunks)
+
+    # 2) Build your dynamic schema block
+    schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
+    schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
+
+    # 3) Prepend any extra instructions
+    prompt = "You are a scientific assistant.\n"
+    if extra_instructions:
+        prompt += extra_instructions.strip() + "\n\n"
+    prompt += f"""Based only on the data snippets below, produce valid JSON with:
+
+    Output format:
+    {schema_block}
+
+    Data snippets:
+    {context}
+    """
+
+    # 4) Call the LLM
+    res_text = ollama.chat(
+        model=model,
+        messages=[{"role":"user","content": prompt}]
+    )["message"]["content"]
+
+    # 5) Extract the JSON blob
+    import re, json
+    m = re.search(r'\{[\s\S]*\}', res_text)
+    if not m:
+        return JSONResponse({"error": "No JSON found", "raw": res_text}, status_code=500)
+    try:
+        payload = json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return JSONResponse({"error": "Invalid JSON", "raw": res_text}, status_code=500)
+
+    return JSONResponse(payload)
+
+class BranchRequest(BaseModel):
+    file_names:         List[str]
+    template:           Literal["biophysics","geology"]
+    model:              str = "llama3.1"
+    top_k:              int = 5
+    extra_instructions: Optional[str] = None
+
+@app.post("/api/generate_rag_with_template")
+def generate_rag_with_template(
+    request: Request,
+    payload: BranchRequest = Body(...),
+):
+    print("payload_ _ _ :", payload)
+    # pick the right instruction set
+    instructions = TEMPLATES[payload.template]
+    # hand off to the generic summarizer
+    return _generic_rag_summarizer(
+        request,
+        file_names         = payload.file_names,
+        model              = payload.model,
+        top_k              = payload.top_k,
+        instructions       = instructions,
+        extra_instructions = payload.extra_instructions
+    )
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)

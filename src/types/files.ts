@@ -19,6 +19,10 @@ export interface UploadResponse {
   tables: Table[];
 }
 
+export interface IngestResponse {
+  session_id: string;
+}
+
 export interface UploadFileButtonProps {
   onTablesUpdate: (tables: Table[]) => void;
   // onSessionUpdate: (sessionId: string) => void;
@@ -94,8 +98,9 @@ export interface FilePreviewerProps {
 
 export interface CollapsibleSectionProps {
   title: string;
-  fetchFunction: () => Promise<string>;
-  children: ReactNode;
+  onGenerate: () => Promise<void>;
+  value: string;
+  onChange: (txt: string) => void;
 }
 
 export interface EditableTextAreaProps {

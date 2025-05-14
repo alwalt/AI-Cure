@@ -19,18 +19,18 @@ export const sectionIcons: Record<
   string,
   React.ComponentType<React.SVGProps<SVGSVGElement>>
 > = {
-  Description: InformationCircleIcon,
-  Studies: SquaresPlusIcon,
-  Payloads: ArrowUpCircleIcon,
-  "Subjects/Biospecimens": BugAntIcon, // must be wrapped in quotes due to /
-  Hardware: RectangleStackIcon,
-  Publications: BookOpenIcon,
-  Files: DocumentArrowDownIcon,
-  "Version history": AdjustmentsVerticalIcon,
-  Experiments: ClipboardDocumentListIcon,
-  Mission: RocketLaunchIcon,
-  Protocols: ClipboardIcon,
-  Samples: BeakerIcon,
-  Assays: ListBulletIcon,
-  Vizualization: ChartBarSquareIcon,
+  description: InformationCircleIcon,
+  studies: SquaresPlusIcon,
+  Ppayloads: ArrowUpCircleIcon,
+  "subjects/biospecimens": BugAntIcon, // must be wrapped in quotes due to /
+  hardware: RectangleStackIcon,
+  publications: BookOpenIcon,
+  files: DocumentArrowDownIcon,
+  "version history": AdjustmentsVerticalIcon,
+  experiments: ClipboardDocumentListIcon,
+  mission: RocketLaunchIcon,
+  protocols: ClipboardIcon,
+  samples: BeakerIcon,
+  assays: ListBulletIcon,
+  vizualization: ChartBarSquareIcon,
 };

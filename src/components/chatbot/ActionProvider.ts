@@ -1,5 +1,5 @@
 import { useChatbotStore } from "@/store/useChatbotStore";
-import { apiBase } from '@/lib/api';
+import { apiBase } from "@/lib/api";
 
 class ActionProvider {
   createChatBotMessage: any;
@@ -10,11 +10,11 @@ class ActionProvider {
     this.setState = setState;
     (window as any).chatActionProvider = this;
 
-    console.log('ActionProvider constructor called, exposed as window.chatActionProvider');
+    // console.log('ActionProvider constructor called, exposed as window.chatActionProvider');
   }
 
   handleUserMessage = async (message: string) => {
-    console.log('handleUserMessage called with:', message);
+    console.log("handleUserMessage called with:", message);
     const { sessionId, addMessage } = useChatbotStore.getState();
 
     if (!sessionId) {
@@ -26,7 +26,7 @@ class ActionProvider {
     addMessage({ sender: "user", text: message });
 
     try {
-      console.log('Calling regular chat endpoint /api/get_chat_response with message:', message);
+      // console.log('Calling regular chat endpoint /api/get_chat_response with message:', message);
       const response = await fetch(
         `${apiBase}/api/get_chat_response/${sessionId}`,
         {
@@ -43,10 +43,10 @@ class ActionProvider {
       }
 
       const data = await response.json();
-      console.log(
-        "Regular chat response received:",
-        data
-      );
+      // console.log(
+      //   "Regular chat response received:",
+      //   data
+      // );
       if (data.answer) {
         const botMessage = this.createChatBotMessage(data.answer);
         this.setState((prevState: any) => ({
@@ -63,22 +63,22 @@ class ActionProvider {
   };
 
   handleSearchQuery = async (message: string) => {
-    console.log('handleSearchQuery called with:', message);
+    // console.log('handleSearchQuery called with:', message);
     const { addMessage } = useChatbotStore.getState();
 
     // Save user search message in the store
     addMessage({ sender: "user", text: `${message}` });
 
     try {
-      console.log('Calling search endpoint /api/mcp_query with query:', message);
-      const response = await fetch(
-        `${apiBase}/api/mcp_query`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: message }),
-        }
+      console.log(
+        "Calling search endpoint /api/mcp_query with query:",
+        message
       );
+      const response = await fetch(`${apiBase}/api/mcp_query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: message }),
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -87,8 +87,8 @@ class ActionProvider {
       }
 
       const data = await response.json();
-      console.log("Search response received:", data);
-      
+      // console.log("Search response received:", data);
+
       if (data.response) {
         const botMessage = this.createChatBotMessage(data.response);
         this.setState((prevState: any) => ({

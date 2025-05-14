@@ -6,8 +6,10 @@ import {
   UploadResponse,
   UploadedFile,
   FileUploaderProps,
+  IngestResponse,
 } from "@/types/files";
-import { apiBase } from '@/lib/api';
+import { useSessionFileStore } from "@/store/useSessionFileStore";
+import { apiBase } from "@/lib/api";
 
 export default function FileUploader({
   onTablesUpdate,
@@ -23,6 +25,7 @@ export default function FileUploader({
   const [tables, setTables] = useState<Table[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const setSelectedFiles = useSessionFileStore((s) => s.setSelectedFiles);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -74,6 +77,37 @@ export default function FileUploader({
     }
   };
 
+  async function handleEmbed() {
+    if (files.length === 0) return;
+
+    // 1) build a new FormData for ingestion
+    const ingestForm = new FormData();
+    files.forEach((file) => {
+      ingestForm.append("files", file); // raw File blob
+    });
+    ingestForm.append(
+      "embedding_model",
+      "sentence-transformers/all-MiniLM-L6-v2"
+    ); // or whatever default/model
+
+    // 2) call your ingest route
+    try {
+      console.log("!!!! files to be ingested, ", files);
+      const resp = await axios.post<IngestResponse>(
+        "http://localhost:8000/api/ingest",
+        ingestForm,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      console.log("Vectorstore cookie ID:", resp.data.session_id);
+      // you can store that ID in state or show it in the UI
+    } catch (err) {
+      console.error("Failed to ingest files:", err);
+    }
+  }
+
   const handleUpload = async () => {
     if (files.length === 0) {
       setUploadStatus("Please select files first");
@@ -96,33 +130,26 @@ export default function FileUploader({
           formData,
           {
             headers: {
-            "Content-Type": "multipart/form-data",
+              "Content-Type": "multipart/form-data",
             },
             timeout: 30000,
             withCredentials: true,
           }
         );
-        // print out the response data decoded
-        // console.log(`Response: ${JSON.stringify(response.data, null, 2)}`);
-        // console.log(`Session ID: ${response.data.session_id}`);
-        
-        // setSessionId(response.data.session_id);
-        // onSessionUpdate?.(response.data.session_id);
-        // console.log(`Session ID: ${response.data.session_id}`);
-        
+
         if (fileType == "excel" || fileType == "xlsx") {
           if (response.data.tables.length > 0) {
             setTables(response.data.tables);
             onTablesUpdate?.(response.data.tables);
           }
         }
-        console.log(`Response: ${response.data}`);
-        // console.log(`Session ID: ${sessionId}`);
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
       }
     }
-    
+    // Injest files into vector store
+    await handleEmbed();
+
     const uploadedFiles = files.map((file) => ({
       name: file.name,
       type: getFileType(file.name),
@@ -135,10 +162,13 @@ export default function FileUploader({
     setUploadedFiles((prev) => [...prev, ...uploadedFiles]);
     onFilesUpdate?.(uploadedFiles);
 
+    // Update Zustand selectedFiles with uploaded files
+    setSelectedFiles((prev) => [...prev, ...uploadedFiles]);
+
     setUploadStatus("Files uploaded successfully!");
     setIsUploading(false);
   };
-    
+
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
     setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));
