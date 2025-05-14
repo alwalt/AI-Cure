@@ -455,34 +455,26 @@ async def generate_vectors(
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
     split_docs = text_splitter.split_documents(docs)
     
-    # Create vector store - 2 lines below, old code, creating a new session_id each time
-    # session_id = uuid.uuid4().hex
-    # save_directory = f"download_files/chroma_db/{session_id}"
 
     # persist under a folder for this session - CHANGED!
     save_directory = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_directory, exist_ok=True)
     
-
+    # returns VectorStore initialized from documents and embeddings.
     vectorstore = Chroma.from_documents(
         documents=split_docs, 
         embedding=embeddings,
         persist_directory=save_directory
     )
     
-    # Store in session
-    # SESSIONS[session_id] = {"vectorstore": vectorstore, "history": []}
-    # user_session = SESSIONS.setdefault(session_id, {"vectorstore": {}, "history": []})
+    # Check if cookie exists in SESSIONS, if not create one
     user_session = SESSIONS.setdefault(
         session_id,
         {"vectorstore": None, "history": []}
     )
 
     user_session["vectorstore"] = vectorstore
-
-    print("create_vectorstore - session_id:", session_id)
-
-    vectorstore.persist()
+    vectorstore.persist() # maybe redundent
     
     return JSONResponse(content={"session_id": session_id})
 
@@ -806,15 +798,10 @@ async def ingest(
     Returns a vectorstore_id for this batch.
     """
     session_id = request.state.session_id
-    print("session id in Ingest Route, before user_session: ", session_id)
- 
-    # user_session = SESSIONS.get(session_id, {})
 
     save_dir = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_dir, exist_ok=True)
 
-    # Initialize Chroma against that directory
-    # embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
     vectorstore  = SESSIONS[session_id]["vectorstore"]
 
     for upload in files:
@@ -859,36 +846,6 @@ async def ingest(
             print("TEXT We are about to store in Chroma:", text)
             vectorstore.add_texts([text], metadatas=[metadata])
 
-
-    # ensure there’s a dict for this session
-    # Is this reseting the default of ttorhe vecstore if the history is empty, like if nothing got added to the vecstore if file came in with an extension I did not account for?
-    # user_session = SESSIONS.get(session_id, {"history": []})
-
-    # store the Chroma instance directly
-    # with the line above, a new vecstore is created with the added embedings and then we set that to `user_session["vectorstore"]`
-    # user_session["vectorstore"] = vecstore
-
-    # persist to disk - saving
-    # vecstore.persist()
-
-    # store *only* the metadata needed to re-open later
-    # user_session = SESSIONS.setdefault(session_id, {"history": []})
-    # user_session["vectorstore_info"] = {
-    #     "path":  save_dir,
-    #     "model": embedding_model
-    # }
-
-
-    # print("Ingest user_session,  user_session", user_session)
-    # print("user_session @ vectorstore", user_session["vectorstore_info"])
-    
-    # save under user session
-    # user_session["vectorstore"] = {
-    #     "path": save_dir,
-    #     "model": embedding_model
-    # }
-    # print("path to chroma, user_session.vectorstore.path", user_session["vectorstore"]["path"])
-
     return JSONResponse({"session_id": session_id}) 
 
 
@@ -905,13 +862,10 @@ def _generic_rag_summarizer(
     
     session_id = request.state.session_id
     print("PRINT THE COOKIE!!!, ", session_id)
+    # assign vectorstore based on cookie
     vectorstore  = SESSIONS[session_id]["vectorstore"]
-    # vecstore_info = session.get("vectorstore") 
-    # vecstore = Chroma(
-    # persist_directory=vecstore_info["path"],
-    # embedding_function=HuggingFaceEmbeddings(model_name=vecstore_info["model"])
 
-    print("!! generate_rag_with_template - session_id:", session_id, "has_vecstore?", bool(vectorstore))
+    print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
 
     # 1) Collect top_k chunks for each CSV
     all_chunks = []
@@ -939,12 +893,12 @@ def _generic_rag_summarizer(
         prompt += extra_instructions.strip() + "\n\n"
     prompt += f"""Based only on the data snippets below, produce valid JSON with:
 
-Output format:
-{schema_block}
+    Output format:
+    {schema_block}
 
-Data snippets:
-{context}
-"""
+    Data snippets:
+    {context}
+    """
 
     # 4) Call the LLM
     res_text = ollama.chat(
