@@ -18,6 +18,8 @@ interface SessionFileStoreState {
   ragData: Record<string, string>; // e.g. { description: "...", studies: "...", ... }
   setRagData: (data: Record<string, string>) => void;
   updateRagSection: (section: string, text: string) => void;
+  fullRagData: Record<string, string>;
+  setFullRagData: (data: Record<string, string>) => void;
 }
 
 export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
@@ -48,6 +50,10 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
       previewCsv: null,
     });
   },
+  // full rag obj
+  fullRagData: {},
+  setFullRagData: (data) => set({ fullRagData: data }),
+
   // RAG slice
   ragData: {},
   setRagData: (data) => set({ ragData: data }),

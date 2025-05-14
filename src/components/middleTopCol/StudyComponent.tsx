@@ -12,6 +12,7 @@ export default function StudyComponent() {
 
   // 1) Select the raw UploadedFile[] from Zustand (stable until it really changes)
   const selectedFiles = useSessionFileStore((s) => s.selectedFiles);
+  const setFullRagData = useSessionFileStore((state) => state.setFullRagData);
 
   // grab the current CSV names from selectedFiles
   const selectedCsvNames = useMemo(
@@ -31,10 +32,12 @@ export default function StudyComponent() {
       selectedCsvNames,
       "biophysics" // hard‐coded template for now
     );
-    // stash the entire object
-    // setRagData(full as Record<string, string>);
+
+    // store the full object separately
+    setFullRagData(full as Record<string, string>);
+
     console.log("After fetch, full obj", full);
-    // or, if you only want to update one section at a time:
+    // update one section at a time:
     updateRagSection(section, full[section] as string);
   };
 
