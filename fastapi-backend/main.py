@@ -443,7 +443,7 @@ async def generate_vectors(
     # ⇨ use the cookie‐managed session_id - CHANGED!
     session_id = request.state.session_id
 
-    print("CREATE VECTORSTORE, cookis: ", session_id)
+    print("CREATE VECTORSTORE, cookie: ", session_id)
     # Parse the JSON string back to documents
     docs_data = json.loads(documents)
     docs = [Document(page_content=doc["page_content"], metadata=doc["metadata"]) for doc in docs_data]
@@ -457,6 +457,8 @@ async def generate_vectors(
     
 
     # persist under a folder for this session - CHANGED!
+    # instead of vectorstore, it was chroma_db, but that path is not used anywhere
+    # it doesn't work, when changed to vectorstore
     save_directory = os.path.join(USER_DIRS, session_id, "chroma_db")
     os.makedirs(save_directory, exist_ok=True)
     
@@ -804,12 +806,13 @@ async def ingest(
 
     vectorstore  = SESSIONS[session_id]["vectorstore"]
 
+    df = None
     for upload in files:
         ext = Path(upload.filename).suffix.lower()
         metadata = {"source": upload.filename, "filetype": ext}
 
         print("What is the current file's ext, ", ext)
-        # 1) CSV → pandas → split rows
+        # 1) Handle CSV files
         if ext == ".csv":
             df = pd.read_csv(BytesIO(await upload.read()))
         elif ext in {".xlsx", ".xls"}:
@@ -839,7 +842,8 @@ async def ingest(
             # skip unknown types
             continue
 
-        # Now you have a DataFrame for both CSV and Excel:
+    # Now you have a DataFrame for both CSV and Excel, add embeddings to vectorstore
+    if df is not None:
         df = clean_dataframe(df)
         for _, row in df.iterrows():
             text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
@@ -853,7 +857,7 @@ async def ingest(
 # Helper function to be moved to it's own folder/file, services/rag_services.py
 def _generic_rag_summarizer(
     request: Request,
-    csv_names:         List[str],
+    file_names:        List[str],
     model:             str,
     top_k:             int,
     instructions:      Dict[str,str],
@@ -861,15 +865,13 @@ def _generic_rag_summarizer(
 ) -> JSONResponse:
     
     session_id = request.state.session_id
-    print("PRINT THE COOKIE!!!, ", session_id)
-    # assign vectorstore based on cookie
     vectorstore  = SESSIONS[session_id]["vectorstore"]
 
     print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
 
     # 1) Collect top_k chunks for each CSV
     all_chunks = []
-    for name in csv_names:
+    for name in file_names:
         docs = vectorstore.similarity_search(
             query=f"Fetch context for '{name}'",
             k=top_k,
@@ -938,7 +940,7 @@ TEMPLATES = {
 }
 
 class BranchRequest(BaseModel):
-    csv_names:          List[str]
+    file_names:         List[str]
     template:           Literal["biophysics","geology"]
     model:              str = "llama3.1"
     top_k:              int = 5
@@ -955,7 +957,7 @@ def generate_rag_with_template(
     # hand off to the generic summarizer
     return _generic_rag_summarizer(
         request,
-        csv_names          = payload.csv_names,
+        file_names         = payload.file_names,
         model              = payload.model,
         top_k              = payload.top_k,
         instructions       = instructions,

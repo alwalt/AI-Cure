@@ -4,7 +4,7 @@ export interface RagResponse {
 }
 
 export async function generateWithTemplate(
-  csvNames: string[],
+  fileNames: string[],
   template: "biophysics",
   model = "llama3.1",
   top_k = 5,
@@ -17,7 +17,7 @@ export async function generateWithTemplate(
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        csv_names: csvNames,
+        file_names: fileNames,
         template: template,
         model,
         top_k,
