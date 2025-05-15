@@ -6,37 +6,50 @@ import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
 
 export default function StudyComponent() {
-  const [description, setDescription] = useState<string>(""); // seems like not being used but are
-  const [studies, setStudies] = useState<string>(""); // will need to add in other CollapsibleSection titles
+  // const [description, setDescription] = useState<string>(""); // seems like not being used but are
+  // const [studies, setStudies] = useState<string>(""); // will need to add in other CollapsibleSection titles
+  // const [species, setSpecies ] = useState<string>("");
 
   // 1) Select the raw UploadedFile[] from Zustand (stable until it really changes)
   const selectedFiles = useSessionFileStore((s) => s.selectedFiles);
   const setFullRagData = useSessionFileStore((state) => state.setFullRagData);
-
-  // grab the current CSV names from selectedFiles
-  const selectedCsvNames = useMemo(
+  const fullRagData = useSessionFileStore((s) => s.fullRagData); // whole obj from rag call
+  // const setRagData = useSessionFileStore((s) => s.setRagData);
+  const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
+  const ragData = useSessionFileStore((s) => s.ragData); // single description, leave to be editable
+  // grab the current file names from selectedFiles
+  const selectedFileNames = useMemo(
     () => selectedFiles.map((f) => f.name),
     [selectedFiles]
   );
 
-  // const setRagData = useSessionFileStore((s) => s.setRagData);
-  const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
-  const ragData = useSessionFileStore((s) => s.ragData);
-
   // generic onGenerate for any section
   const onGenerate = async (section: string) => {
-    console.log("BEFORE FETCH, selectedCsvNames", selectedCsvNames);
-    const full = await generateWithTemplate(
-      selectedCsvNames,
-      "biophysics" // hard‐coded template for now
-    );
+    if (fullRagData[section]) {
+      console.log("updating section, ", section, ", no rag call");
+      updateRagSection(section, fullRagData[section] as string);
+    } else {
+      console.log("Preparing to FETCH, selectedFileNames", selectedFileNames);
 
-    // store the full rag object separately
-    setFullRagData(full as Record<string, string>);
+      const fullSectionObj = await generateWithTemplate(
+        selectedFileNames,
+        "biophysics" // hard‐coded template for now
+      );
 
-    console.log("After fetch, full obj", full);
-    // update one section at a time:
-    updateRagSection(section, full[section] as string);
+      // normalize every value to a string
+      const normalized: Record<string, string> = Object.fromEntries(
+        Object.entries(fullSectionObj).map(([k, v]) => [
+          k,
+          typeof v === "string" ? v : JSON.stringify(v),
+        ])
+      );
+      // store the fullRagData rag object separately
+      setFullRagData(normalized);
+
+      console.log("After fetch, fullSectionObj obj", fullSectionObj);
+      // update one section at a time:
+      updateRagSection(section, normalized[section]);
+    }
   };
 
   return (
@@ -69,29 +82,6 @@ export default function StudyComponent() {
           value={ragData.hardware}
           onChange={(txt) => updateRagSection("hardware", txt)}
         ></CollapsibleSection>
-        {/* 
-
-        <CollapsibleSection
-          title="publications"
-          fetchFunction={createFetchFunction("publications")}
-        >
-          <></>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="files"
-          fetchFunction={createFetchFunction("files")}
-        >
-          <></>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="version history"
-          fetchFunction={createFetchFunction("version history")}
-        >
-          <></>
-        </CollapsibleSection>
-        */}
       </div>
     </div>
   );
