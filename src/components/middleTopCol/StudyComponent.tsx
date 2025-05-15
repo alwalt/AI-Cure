@@ -55,22 +55,21 @@ export default function StudyComponent() {
           value={ragData.studies}
           onChange={(txt) => updateRagSection("studies", txt)}
         ></CollapsibleSection>
-        {/* 
+
         <CollapsibleSection
           title="subjects/biospecimens"
           onGenerate={() => onGenerate("subjects/biospecimens")}
-          value={ragData.subjects/biospecimens}
-          onChange={(txt) => updateRagSection("subjects/biospecimens", txt)}}
-        >
-          <></>
-        </CollapsibleSection>
+          value={ragData["subjects/biospecimens"]}
+          onChange={(txt) => updateRagSection("subjects/biospecimens", txt)}
+        ></CollapsibleSection>
 
         <CollapsibleSection
           title="hardware"
-          fetchFunction={createFetchFunction("hardware")}
-        >
-          <></>
-        </CollapsibleSection>
+          onGenerate={() => onGenerate("hardware")}
+          value={ragData.hardware}
+          onChange={(txt) => updateRagSection("hardware", txt)}
+        ></CollapsibleSection>
+        {/* 
 
         <CollapsibleSection
           title="publications"
