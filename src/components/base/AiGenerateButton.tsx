@@ -3,6 +3,7 @@ import { SparklesIcon } from "@heroicons/react/24/outline";
 
 interface AiGenerateButtonProps {
   onClick?: () => Promise<void> | void;
+  disabled: boolean;
 }
 
 export default function AiGenerateButton({ onClick }: AiGenerateButtonProps) {
