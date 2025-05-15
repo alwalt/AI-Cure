@@ -101,6 +101,7 @@ export interface CollapsibleSectionProps {
   onGenerate: () => Promise<void>;
   value: string;
   onChange: (txt: string) => void;
+  isLoading?: boolean;
 }
 
 export interface EditableTextAreaProps {

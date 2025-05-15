@@ -1,8 +1,11 @@
-import { useState, ReactNode } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+import { useState } from "react";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/solid";
 import { CollapsibleSectionProps } from "@/types/files";
 import AiGenerateButton from "@/components/base/AiGenerateButton";
-import useAiGenerateFetch from "../../hooks/useAiGenerateFetch";
 import { sectionIcons } from "../../../util/sectionIcons";
 import { DocumentIcon } from "@heroicons/react/24/outline";
 import EditableTextArea from "./EditableTextArea";
@@ -12,9 +15,9 @@ export default function CollapsibleSection({
   onGenerate,
   value,
   onChange,
+  isLoading = false,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // const [data, fetchData] = useAiGenerateFetch(fetchFunction);
   const Icon = sectionIcons[title] || DocumentIcon; // Dynamically get the correct icon | backup icon if not in Dict
 
   // Toggles the section visibility
@@ -58,7 +61,15 @@ export default function CollapsibleSection({
       {/* Content */}
       {isOpen && (
         <div id={`section-content-${title}`} className="p-4">
-          <AiGenerateButton onClick={onGenerate} />
+          <div className="flex items-center gap-2">
+            <AiGenerateButton onClick={onGenerate} disabled={isLoading} />
+            {isLoading && (
+              <ArrowPathIcon
+                className="loader h-6 w-6 animate-spin"
+                aria-label="Loading…"
+              />
+            )}
+          </div>
           <EditableTextArea
             value={value}
             onChange={onChange}
