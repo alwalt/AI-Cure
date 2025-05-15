@@ -13,6 +13,13 @@ export default function StudyComponent() {
   const fullRagData = useSessionFileStore((s) => s.fullRagData); // whole obj from rag call
   const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
   const ragData = useSessionFileStore((s) => s.ragData); // single description, leave to be editable
+
+  const CollapsibleSectionTitles = [
+    "description",
+    "studies",
+    "subjects/biospecimens",
+    "hardware",
+  ];
   // grab the current file names from selectedFiles
   const selectedFileNames = useMemo(
     () => selectedFiles.map((f) => f.name),
@@ -57,18 +64,16 @@ export default function StudyComponent() {
   return (
     <div className="w-full overflow-auto">
       <div className="rounded overflow-hidden border border-grey">
-        {["description", "studies", "subjects/biospecimens", "hardware"].map(
-          (section) => (
-            <CollapsibleSection
-              key={section}
-              title={section}
-              onGenerate={() => onGenerate(section)}
-              value={ragData[section]}
-              onChange={(txt) => updateRagSection(section, txt)}
-              isLoading={loadingSection === section}
-            />
-          )
-        )}
+        {CollapsibleSectionTitles.map((section) => (
+          <CollapsibleSection
+            key={section}
+            title={section}
+            onGenerate={() => onGenerate(section)}
+            value={ragData[section]}
+            onChange={(txt) => updateRagSection(section, txt)}
+            isLoading={loadingSection === section}
+          />
+        ))}
       </div>
     </div>
   );
