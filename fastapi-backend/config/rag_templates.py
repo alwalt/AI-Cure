@@ -7,7 +7,7 @@ TEMPLATES: Dict[str, Dict[str, str]] = {
      "decription":  "A 2-sentence overview of the main findings",
      "studies" : "Summarize the goals of the study",
      "keywords": "List 4-6 terms capturing the study's topics",
-     "species":  "Name any species used in the experiments",
+     "subjects/biospecimens":  "Name any species used in the experiments",
      "methods":  "Brief description of the experimental methods"
   },
   "geology": {
