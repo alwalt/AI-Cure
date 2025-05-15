@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -18,7 +18,6 @@ export default function CollapsibleSection({
   isLoading = false,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // const [data, fetchData] = useAiGenerateFetch(fetchFunction);
   const Icon = sectionIcons[title] || DocumentIcon; // Dynamically get the correct icon | backup icon if not in Dict
 
   // Toggles the section visibility

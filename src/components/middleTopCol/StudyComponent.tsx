@@ -65,7 +65,7 @@ export default function StudyComponent() {
               onGenerate={() => onGenerate(section)}
               value={ragData[section]}
               onChange={(txt) => updateRagSection(section, txt)}
-              isLoading={loadingSection === section} // <-- pass this in
+              isLoading={loadingSection === section}
             />
           )
         )}
