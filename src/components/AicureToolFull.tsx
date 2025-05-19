@@ -21,7 +21,7 @@ export default function AicureToolFull() {
         <div className="h-1/2">
           <MiddleTopColumn />
         </div>
-        <div className="flex-1 pb-2">
+        <div className="flex-1">
           <MiddleBottomColumn />
         </div>
       </div>

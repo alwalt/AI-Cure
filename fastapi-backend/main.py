@@ -855,7 +855,7 @@ async def ingest(
 
 
 # Magic Wand / Sparkles Description tables route
-# Helper function to be moved to it's own folder/file, services/rag_services.py
+# For main.py refactore, this to be moved to it's own folder/file, services/rag_services.py
 def _generic_rag_summarizer(
     request: Request,
     file_names:        List[str],
