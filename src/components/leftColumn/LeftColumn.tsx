@@ -1,5 +1,5 @@
-import FilesManager from "./FilesArea/FilesManager";
-import CollectionMangaer from "./CollectionsArea/CollectionManager";
+import FilesManager from "./filesArea/FilesManager";
+import CollectionMangaer from "./collectionsArea/CollectionManager";
 
 export default function LeftColumn() {
   return (
