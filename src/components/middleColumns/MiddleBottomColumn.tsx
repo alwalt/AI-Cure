@@ -1,4 +1,4 @@
-import ChatbotComponent from "@/components/chatbot/ChatbotComponent";
+import ChatbotComponent from "@/components/middleColumns/chatbot/ChatbotComponent";
 
 // Try to see if you can remove w-full and overflow-hidden
 export default function MiddleBottomColumn() {

@@ -14,11 +14,11 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { useSessionFileStore } from "../store/useSessionFileStore"; // Import the store
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 import { PreviewResponse } from "@/types/files";
 import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from "@config";
-import { apiBase } from '@/lib/api';
+import { apiBase } from "@/lib/api";
 
 const fullConfig = resolveConfig(tailwindConfig);
 const greyColor = fullConfig.theme.colors.grey;

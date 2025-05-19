@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import LeftColumn from "./LeftColumn";
-import RightColumn from "./RightColumn";
-import MiddleTopColumn from "./middleTopCol/MiddleTopColumn";
-import MiddleBottomColumn from "./MiddleBottomColumn";
+import LeftColumn from "./leftColumn/LeftColumn";
+import RightColumn from "./rightColumn/RightColumn";
+import MiddleTopColumn from "./middleColumns/middleTopCol/MiddleTopColumn";
+import MiddleBottomColumn from "./middleColumns/MiddleBottomColumn";
 import { useIsRightVisible } from "@/store/useIsRightVisible";
 
 export default function AicureToolFull() {
