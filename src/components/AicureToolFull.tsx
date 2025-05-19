@@ -13,7 +13,7 @@ export default function AicureToolFull() {
 
   return (
     <div className="flex h-screen grid-cols-3 bg-primaryBlack">
-      <div className="min-w-[300px] max-w-[300px]">
+      <div className="min-w-[300px] max-w-[300px] 2xl:min-w-[450px] 2xl:max-w-[450px]">
         <LeftColumn />
       </div>
       {/* flex-grow has to be here to allow right col to collapse */}
@@ -28,7 +28,9 @@ export default function AicureToolFull() {
 
       <div
         className={`${
-          isRightColumnVisible ? "min-w-[300px] max-w-[400px]" : "w-[36px]"
+          isRightColumnVisible
+            ? "min-w-[300px] max-w-[400px] 2xl:min-w-[400px] 2xl:max-w-[450px] "
+            : "w-[36px]"
         } flex h-full`}
       >
         <RightColumn />
