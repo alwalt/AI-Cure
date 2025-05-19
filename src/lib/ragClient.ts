@@ -1,7 +1,4 @@
-// src/lib/ragClient.ts
-export interface RagResponse {
-  [key: string]: string | string[];
-}
+import { RagResponse } from "@/types/files";
 
 export async function generateWithTemplate(
   fileNames: string[],
