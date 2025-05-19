@@ -2,7 +2,7 @@
 import { useState } from "react";
 import PDFExtractor from "./PDFExtractorComponent";
 import StudyComponent from "./StudyComponent";
-import TextButton from "../base/TextButton";
+import TextButton from "../../base/TextButton";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");

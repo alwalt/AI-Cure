@@ -5,8 +5,8 @@ import "react-chatbot-kit/build/main.css";
 import "./chatbot.css";
 // @ts-ignore
 import config from "./config.tsx";
-import MessageParser from "./MessageParser";
-import ActionProvider from "./ActionProvider";
+import MessageParser from "./MessageParser.ts";
+import ActionProvider from "./ActionProvider.ts";
 import { useChatbotStore } from "@/store/useChatbotStore";
 import { apiBase } from "@/lib/api";
 

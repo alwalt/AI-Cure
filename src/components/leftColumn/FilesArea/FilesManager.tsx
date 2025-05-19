@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
-import FolderPlusButton from "./base/FolderPlusButton";
-import PlayButton from "./base/PlayButton";
+import FolderPlusButton from "@/components/base/FolderPlusButton";
+import PlayButton from "@/components/base/PlayButton";
 import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
-import { apiBase } from '@/lib/api';
-
+import { apiBase } from "@/lib/api";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);

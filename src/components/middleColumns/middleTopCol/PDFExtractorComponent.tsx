@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
-import EditableTextArea from "../base/EditableTextArea";
+import EditableTextArea from "../../base/EditableTextArea";
 import createFetchFunction from "../../../util/createFetchFunction";
 
 export default function PDFExtractor() {
