@@ -110,3 +110,7 @@ export interface EditableTextAreaProps {
   placeholder?: string;
   rows?: number;
 }
+
+export interface RagResponse {
+  [key: string]: string | string[];
+}
