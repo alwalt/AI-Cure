@@ -17,9 +17,6 @@ export default function UploadedFiles({
   const handleFilePreview = useSessionFileStore(
     (state) => state.handleFilePreview
   );
-  const addToCollectionFiles = useSessionFileStore(
-    (state) => state.addToCollectionFiles
-  );
 
   const previewFile = async (file: UploadedFile) => {
     try {
@@ -59,17 +56,6 @@ export default function UploadedFiles({
     return ["pdf", "png", "jpg", "jpeg", "xlsx", "xls", "csv"].includes(
       fileType.toLowerCase()
     );
-  };
-
-  const handleAddToCollectionClick = () => {
-    if (selectedFiles.length > 0) {
-      addToCollectionFiles(selectedFiles);
-      console.log(
-        "Added to collection (UploadedFiles):",
-        selectedFiles.map((f) => f.name)
-      );
-      setSelectedFiles([]);
-    }
   };
 
   if (!files.length) {
@@ -140,10 +126,7 @@ export default function UploadedFiles({
                 <td className="p-2">
                   {canPreview(file.type) && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        previewFile(file);
-                      }}
+                      onClick={() => previewFile(file)}
                       className={`px-2 py-1 ${
                         currentPreviewFile?.name === file.name
                           ? "bg-green-500"
@@ -164,16 +147,10 @@ export default function UploadedFiles({
 
       {selectedFiles.length > 0 && (
         <div className="mt-2 p-2 rounded border-grey border bg-unSelectedBlack">
-          <p className="text-sm text-primaryWhite bg-unSelectedBlack mb-2">
+          <p className="text-sm text-primaryWhite bg-unSelectedBlack">
             {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}{" "}
             selected
           </p>
-          <button
-            onClick={handleAddToCollectionClick}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-primaryWhite rounded transition-colors"
-          >
-            Add to Collection
-          </button>
         </div>
       )}
     </div>

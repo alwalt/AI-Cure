@@ -5,30 +5,28 @@ interface SessionFileStoreState {
   sessionId: string | null;
   previewCsv: string | null;
   previewFile: UploadedFile | null;
-  selectedFiles: UploadedFile[];
+  selectedFiles: UploadedFile[]; // Add this
   setSessionId: (id: string) => void;
   setPreviewCsv: (filename: string | null) => void;
   setPreviewFile: (file: UploadedFile | null) => void;
   setSelectedFiles: (
     files: UploadedFile[] | ((prev: UploadedFile[]) => UploadedFile[])
-  ) => void;
+  ) => void; //  Add this
   handlePreview: (csvFilename: string) => void;
   handleFilePreview: (file: UploadedFile | null) => void;
-  ragData: Record<string, string>;
+  // NEW for RAG:
+  ragData: Record<string, string>; // e.g. { description: "...", studies: "...", ... }
   setRagData: (data: Record<string, string>) => void;
   updateRagSection: (section: string, text: string) => void;
   fullRagData: Record<string, string>;
   setFullRagData: (data: Record<string, string>) => void;
-
-  collectionFiles: UploadedFile[];
-  addToCollectionFiles: (filesToAdd: UploadedFile[]) => void;
 }
 
 export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
   sessionId: null,
   previewCsv: null,
   previewFile: null,
-  selectedFiles: [],
+  selectedFiles: [], // Initialize it as an empty array
   setSessionId: (id) => set({ sessionId: id }),
   setPreviewCsv: (filename) => set({ previewCsv: filename }),
   setPreviewFile: (file) => set({ previewFile: file }),
@@ -37,7 +35,7 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
     set((state) => ({
       selectedFiles:
         typeof files === "function" ? files(state.selectedFiles) : files,
-    })),
+    })), //  Allow function updates
 
   handlePreview: (csvFilename) => {
     set({
@@ -52,27 +50,15 @@ export const useSessionFileStore = create<SessionFileStoreState>((set) => ({
       previewCsv: null,
     });
   },
+  // full rag obj
   fullRagData: {},
   setFullRagData: (data) => set({ fullRagData: data }),
 
+  // RAG slice
   ragData: {},
   setRagData: (data) => set({ ragData: data }),
   updateRagSection: (section, text) =>
     set((state) => ({
       ragData: { ...state.ragData, [section]: text },
     })),
-
-  collectionFiles: [],
-  addToCollectionFiles: (filesToAdd) =>
-    set((state) => {
-      const currentCollectionFileNames = new Set(
-        state.collectionFiles.map(file => file.name)
-      );
-      const newFiles = filesToAdd.filter(
-        file => !currentCollectionFileNames.has(file.name)
-      );
-      return {
-        collectionFiles: [...state.collectionFiles, ...newFiles],
-      };
-    }),
 }));

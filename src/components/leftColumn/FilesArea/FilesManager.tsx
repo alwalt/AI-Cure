@@ -3,6 +3,7 @@ import TableList from "./TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "@/components/base/FolderPlusButton";
 import PlayButton from "@/components/base/PlayButton";
+import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 import UploadedFiles from "./UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
@@ -14,6 +15,7 @@ export default function FilesManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // for gathering current session files
   useEffect(() => {
     const fetchSessionFiles = async () => {
       try {
@@ -52,10 +54,13 @@ export default function FilesManager() {
 
   const handleFilesUpdate = (files: UploadedFile[]) => {
     setUploadedFiles((prev) => {
+      // Create a map of existing files to avoid duplicates
       const existingFiles = new Map(prev.map((file) => [file.name, file]));
+      // Add new files, replacing existing ones with the same name
       files.forEach((file) => {
         existingFiles.set(file.name, file);
       });
+
       return Array.from(existingFiles.values());
     });
   };
@@ -67,6 +72,7 @@ export default function FilesManager() {
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
+            // onSessionUpdate={setSessionId}
             onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
