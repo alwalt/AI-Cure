@@ -6,7 +6,7 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import FileUploader from "@/components/leftColumn/filesArea/FileUploader";
+import FileUploader from "@/components/leftColumn/FilesArea/FileUploader";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { Table, UploadedFile, UploadFileButtonProps } from "@/types/files";
 import Button from "@/components/base/Button";

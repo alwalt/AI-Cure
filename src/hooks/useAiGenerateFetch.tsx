@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
-const useAiGenerateFetch = (fetchFunction: () => Promise<string>) => {
-  // const [data, setData] = useState<string>("");
-  const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
+const useAiGenerateFetch = <TData = unknown, TError = Error>(
+  fetchFunction: () => Promise<TData> // The function that performs the async operation
+) => {
+  const [data, setData] = useState<TData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<TError | null>(null);
+
+  const executeFetch = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      await fetchFunction(); // no return value expected
-    } catch (e) {
-      console.error(e);
+      const result = await fetchFunction();
+      setData(result);
+    } catch (e: any) {
+      console.error("Error in useAiGenerateFetch:", e);
+      setError(e);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
-
-  return [loading, fetchData] as const;
+  }, [fetchFunction]); 
+  return { data, isLoading, error, executeFetch };
 };
 
 export default useAiGenerateFetch;
