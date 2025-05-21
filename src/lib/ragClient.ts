@@ -1,4 +1,5 @@
 import { RagResponse } from "@/types/files";
+import { apiBase } from "@/lib/api";
 
 export async function generateWithTemplate(
   fileNames: string[],
@@ -7,21 +8,18 @@ export async function generateWithTemplate(
   top_k = 5,
   extra_instructions: string | null = null
 ): Promise<RagResponse> {
-  const res = await fetch(
-    "http://localhost:8000/api/generate_rag_with_template",
-    {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        file_names: fileNames,
-        template: template,
-        model,
-        top_k,
-        extra_instructions,
-      }),
-    }
-  );
+  const res = await fetch(`${apiBase}/api/generate_rag_with_template`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      file_names: fileNames,
+      template: template,
+      model,
+      top_k,
+      extra_instructions,
+    }),
+  });
 
   if (!res.ok) {
     let errBody = {};

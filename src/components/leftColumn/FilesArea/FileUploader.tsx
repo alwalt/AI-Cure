@@ -94,7 +94,7 @@ export default function FileUploader({
     try {
       console.log("!!!! files to be ingested, ", files);
       const resp = await axios.post<IngestResponse>(
-        "http://localhost:8000/api/ingest",
+        `${apiBase}/api/ingest`,
         ingestForm,
         {
           withCredentials: true,
