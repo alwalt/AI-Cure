@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import TableList from "../TableList";
+import TableList from "@/components/leftColumn/filesArea/TableList";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import FolderPlusButton from "../base/FolderPlusButton";
 import PlayButton from "../base/PlayButton";
-import UploadedFiles from "../UploadedFiles";
+import UploadedFiles from "@/components/leftColumn/filesArea/UploadedFiles";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
-import { apiBase } from '@/lib/api';
-
+import { apiBase } from "@/lib/api";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
@@ -69,7 +68,7 @@ export default function FilesManager() {
   const handleFileSelect = (file: UploadedFile, isSelected: boolean) => {
     setSelectedFiles((prevSelectedFiles) => {
       if (isSelected) {
-        if (!prevSelectedFiles.find(sf => sf.name === file.name)) {
+        if (!prevSelectedFiles.find((sf) => sf.name === file.name)) {
           return [...prevSelectedFiles, file];
         }
         return prevSelectedFiles;
@@ -105,8 +104,6 @@ export default function FilesManager() {
           <UploadedFiles
             files={uploadedFiles}
             currentPreviewFile={currentPreviewFile}
-            selectedFiles={selectedFiles}
-            onFileSelect={handleFileSelect}
           />
           {selectedFiles.length > 0 && (
             <div className="mt-2 p-2 border border-gray-600 rounded bg-gray-800">
