@@ -1,18 +1,19 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
-import { useSessionFileStore } from "@/store/useSessionFileStore";
+import { useSessionFileStore, SessionFileStoreState } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
+import { RagResponse, UploadedFile } from "@/types/files";
+import { shallow } from 'zustand/shallow';
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
 
-  // 1) Select the raw UploadedFile[] from Zustand (stable until it really changes)
-  const selectedFiles = useSessionFileStore((s) => s.selectedFiles);
-  const setFullRagData = useSessionFileStore((state) => state.setFullRagData);
-  const fullRagData = useSessionFileStore((s) => s.fullRagData); // whole obj from rag call
-  const updateRagSection = useSessionFileStore((s) => s.updateRagSection);
-  const ragData = useSessionFileStore((s) => s.ragData); // single description, leave to be editable
+  const collectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.collectionFiles, shallow);
+  const sessionId = useSessionFileStore((state: SessionFileStoreState) => state.sessionId);
+  const setFullRagData = useSessionFileStore((state: SessionFileStoreState) => state.setFullRagData);
+  const ragData = useSessionFileStore((state: SessionFileStoreState) => state.ragData, shallow);
+  const updateRagSection = useSessionFileStore((state: SessionFileStoreState) => state.updateRagSection);
 
   const CollapsibleSectionTitles = [
     "description",
@@ -20,42 +21,36 @@ export default function StudyComponent() {
     "subjects/biospecimens",
     "hardware",
   ];
-  // grab the current file names from selectedFiles
-  const selectedFileNames = useMemo(
-    () => selectedFiles.map((f) => f.name),
-    [selectedFiles]
-  );
 
-  // generic onGenerate for any section
-  const onGenerate = async (section: string) => {
-    if (fullRagData[section]) {
-      console.log("updating section, ", section, ", no rag call");
-      updateRagSection(section, fullRagData[section] as string);
+  const onGenerate = async (sectionToLoad: string) => {
+    if (!sessionId) {
+      console.error("StudyComponent: No active session ID. Cannot generate RAG data.");
+      alert("Please ingest files into a collection first to establish a session.");
       return;
     }
 
-    setLoadingSection(section);
+    if (!collectionFiles || collectionFiles.length === 0) {
+      console.error("StudyComponent: No files in the current collection for RAG data generation.");
+      alert("No files in collection. Please add and ingest files first.");
+      return;
+    }
+
+    const fileNamesForRAG = collectionFiles.map((file: UploadedFile) => file.name);
+    console.log("StudyComponent: Calling RAG generation for section:", sectionToLoad, "with fileNames:", fileNamesForRAG);
+
+    setLoadingSection(sectionToLoad);
     try {
-      console.log("Preparing to FETCH, selectedFileNames", selectedFileNames);
-      const fullSectionObj = await generateWithTemplate(
-        selectedFileNames,
-        "biophysics" // hard‐coded template for now
+      const ragResponse: RagResponse = await generateWithTemplate(
+        fileNamesForRAG,
+        "biophysics"
       );
+      
+      console.log("StudyComponent: RAG data received:", ragResponse);
+      setFullRagData(ragResponse);
 
-      // normalize every value to a string
-      const normalized = Object.fromEntries(
-        Object.entries(fullSectionObj).map(([k, v]) => [
-          k,
-          typeof v === "string" ? v : JSON.stringify(v),
-        ])
-      ) as Record<string, string>;
-      // store the normalized fullRagData rag object separately
-      setFullRagData(normalized);
-
-      console.log("After fetch, fullSectionObj obj", fullSectionObj);
-      // update the section where the button was clicked:
-      // We can make it so that every section is updated instead of just one.
-      updateRagSection(section, normalized[section]);
+    } catch (error) {
+      console.error("StudyComponent: Error generating RAG data:", error);
+      alert(`Error generating data: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setLoadingSection(null);
     }
@@ -64,14 +59,14 @@ export default function StudyComponent() {
   return (
     <div className="w-full overflow-auto">
       <div className="rounded overflow-hidden border border-grey">
-        {CollapsibleSectionTitles.map((section) => (
+        {CollapsibleSectionTitles.map((sectionTitle) => (
           <CollapsibleSection
-            key={section}
-            title={section}
-            onGenerate={() => onGenerate(section)}
-            value={ragData[section]}
-            onChange={(txt) => updateRagSection(section, txt)}
-            isLoading={loadingSection === section}
+            key={sectionTitle}
+            title={sectionTitle}
+            onGenerate={() => onGenerate(sectionTitle)}
+            value={ragData[sectionTitle] || ""}
+            onChange={(txt) => updateRagSection(sectionTitle, txt)}
+            isLoading={loadingSection === sectionTitle}
           />
         ))}
       </div>

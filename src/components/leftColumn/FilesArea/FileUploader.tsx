@@ -20,7 +20,6 @@ export default function FileUploader({
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  // const [sessionId, setSessionId] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [tables, setTables] = useState<Table[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -43,7 +42,6 @@ export default function FileUploader({
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Handle multiple files
       const fileArray = Array.from(e.dataTransfer.files);
       setFiles((prev) => [...prev, ...fileArray]);
     }
@@ -52,7 +50,6 @@ export default function FileUploader({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files && e.target.files.length > 0) {
-      // Handle multiple files
       const fileArray = Array.from(e.target.files);
       setFiles((prev) => [...prev, ...fileArray]);
     }
@@ -80,31 +77,28 @@ export default function FileUploader({
   async function handleEmbed() {
     if (files.length === 0) return;
 
-    // 1) build a new FormData for ingestion
     const ingestForm = new FormData();
     files.forEach((file) => {
-      ingestForm.append("files", file); // raw File blob
+      ingestForm.append("files", file);
     });
     ingestForm.append(
       "embedding_model",
       "sentence-transformers/all-MiniLM-L6-v2"
-    ); // or whatever default/model
+    );
 
-    // 2) call your ingest route
     try {
-      console.log("!!!! files to be ingested, ", files);
+      console.log("!!!! Files to be ingested (manual call if ever used): ", files);
       const resp = await axios.post<IngestResponse>(
-        "http://localhost:8000/api/ingest",
+        `${apiBase}/api/ingest`,
         ingestForm,
         {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log("Vectorstore cookie ID:", resp.data.session_id);
-      // you can store that ID in state or show it in the UI
+      console.log("Vectorstore cookie ID (manual call if ever used):", resp.data.session_id);
     } catch (err) {
-      console.error("Failed to ingest files:", err);
+      console.error("Failed to ingest files (manual call if ever used):", err);
     }
   }
 
@@ -117,7 +111,9 @@ export default function FileUploader({
     setIsUploading(true);
     setUploadStatus("Uploading files...");
 
-    // Upload all files to the endpoint
+    const currentUploadedFiles: UploadedFile[] = [];
+    const currentTables: Table[] = [];
+
     for (const file of files) {
       try {
         const formData = new FormData();
@@ -137,41 +133,44 @@ export default function FileUploader({
           }
         );
 
-        if (fileType == "excel" || fileType == "xlsx") {
-          if (response.data.tables.length > 0) {
-            setTables(response.data.tables);
-            onTablesUpdate?.(response.data.tables);
+        currentUploadedFiles.push({
+          name: file.name,
+          type: fileType,
+          dateCreated: new Date().toLocaleDateString(),
+          size: file.size,
+          file: file,
+          selected: false,
+        });
+        
+        if (fileType === "xlsx" || fileType === "excel") {
+          if (response.data.tables && response.data.tables.length > 0) {
+            currentTables.push(...response.data.tables);
           }
         }
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
+        setUploadStatus(`Error uploading ${file.name}.`);
       }
     }
-    // Injest files into vector store
-    await handleEmbed();
-
-    const uploadedFiles = files.map((file) => ({
-      name: file.name,
-      type: getFileType(file.name),
-      dateCreated: new Date().toLocaleDateString(),
-      size: file.size,
-      file: file,
-      selected: false,
-    }));
-
-    setUploadedFiles((prev) => [...prev, ...uploadedFiles]);
-    onFilesUpdate?.(uploadedFiles);
-
-    // Update Zustand selectedFiles with uploaded files
-    setSelectedFiles((prev) => [...prev, ...uploadedFiles]);
-
-    setUploadStatus("Files uploaded successfully!");
+    
+    if (currentUploadedFiles.length > 0) {
+      onFilesUpdate?.(currentUploadedFiles);
+    }
+    if (currentTables.length > 0) {
+      onTablesUpdate?.(currentTables);
+    }
+    
+    setFiles([]);
+    setUploadStatus(
+      currentUploadedFiles.length > 0
+        ? "File(s) uploaded successfully!"
+        : "Upload process completed."
+    );
     setIsUploading(false);
   };
 
   const removeFile = (fileName: string) => {
     setFiles(files.filter((file) => file.name !== fileName));
-    setUploadedFiles((prev) => prev.filter((file) => file.name !== fileName));
     onFilesUpdate?.(uploadedFiles.filter((file) => file.name !== fileName));
   };
 
@@ -201,14 +200,14 @@ export default function FileUploader({
             <button
               onClick={() => inputRef.current?.click()}
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              disabled={isUploading || isExtracting}
+              disabled={isUploading}
             >
               Browse Files
             </button>
           </div>
 
           {uploadStatus && (
-            <div className="mt-2 text-gray-700 font-medium">{uploadStatus}</div>
+            <div className="mt-2 text-gray-400 font-medium">{uploadStatus}</div>
           )}
 
           {files.length > 0 && (
@@ -233,7 +232,7 @@ export default function FileUploader({
                     <button
                       onClick={() => removeFile(file.name)}
                       className="text-red-500 hover:text-red-700"
-                      disabled={isUploading || isExtracting}
+                      disabled={isUploading}
                     >
                       ✕
                     </button>
@@ -244,7 +243,7 @@ export default function FileUploader({
               <div className="mt-4 space-x-4">
                 <button
                   onClick={handleUpload}
-                  disabled={isUploading || isExtracting}
+                  disabled={isUploading}
                   className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
                 >
                   {isUploading ? "Uploading..." : "Upload Files"}
