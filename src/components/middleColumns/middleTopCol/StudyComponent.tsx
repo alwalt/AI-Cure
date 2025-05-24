@@ -4,15 +4,14 @@ import CollapsibleSection from "@/components/base/CollapsibleSection";
 import { useSessionFileStore, SessionFileStoreState } from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
 import { RagResponse, UploadedFile } from "@/types/files";
-import { shallow } from 'zustand/shallow';
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
 
-  const collectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.collectionFiles, shallow);
+  const collectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.collectionFiles);
   const sessionId = useSessionFileStore((state: SessionFileStoreState) => state.sessionId);
   const setFullRagData = useSessionFileStore((state: SessionFileStoreState) => state.setFullRagData);
-  const ragData = useSessionFileStore((state: SessionFileStoreState) => state.ragData, shallow);
+  const ragData = useSessionFileStore((state: SessionFileStoreState) => state.ragData);
   const updateRagSection = useSessionFileStore((state: SessionFileStoreState) => state.updateRagSection);
 
   const CollapsibleSectionTitles = [

@@ -1,7 +1,7 @@
 import { create, StoreApi } from "zustand";
 import { UploadedFile } from "@/types/files";
 
-interface SessionFileStoreState {
+export interface SessionFileStoreState {
   sessionId: string | null;
   previewCsv: string | null;
   previewFile: UploadedFile | null;
