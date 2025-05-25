@@ -1,7 +1,14 @@
 import { create, StoreApi } from "zustand";
 import { UploadedFile } from "@/types/files";
 
-interface SessionFileStoreState {
+export interface Collection {
+  id: string;
+  name: string;
+  files: UploadedFile[];
+  isExpanded?: boolean;
+}
+
+export interface SessionFileStoreState {
   sessionId: string | null;
   previewCsv: string | null;
   previewFile: UploadedFile | null;
@@ -20,6 +27,16 @@ interface SessionFileStoreState {
   fullRagData: Record<string, string | string[]>;
   setFullRagData: (data: Record<string, string | string[]>) => void;
 
+  // Updated collection system
+  collections: Collection[];
+  addCollection: (files: UploadedFile[], name?: string) => void;
+  removeCollection: (collectionId: string) => void;
+  renameCollection: (collectionId: string, newName: string) => void;
+  toggleCollectionExpanded: (collectionId: string) => void;
+  getCollectionFiles: (collectionId: string) => UploadedFile[];
+  getAllCollectionFiles: () => UploadedFile[];
+
+  // Deprecated - keeping for backward compatibility for now
   collectionFiles: UploadedFile[];
   addToCollectionFiles: (filesToAdd: UploadedFile[]) => void;
 }
@@ -91,9 +108,62 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
       };
     }),
 
+  collections: [],
+  addCollection: (files, name) =>
+    set((state) => {
+      const collectionNumber = state.collections.length + 1;
+      const newCollection: Collection = {
+        id: Date.now().toString(),
+        name: name || `Collection ${collectionNumber}`,
+        files,
+        isExpanded: true,
+      };
+      return {
+        collections: [...state.collections, newCollection],
+        collectionFiles: [...state.collectionFiles, ...files],
+      };
+    }),
+  removeCollection: (collectionId) =>
+    set((state) => {
+      const newCollections = state.collections.filter(c => c.id !== collectionId);
+      return {
+        collections: newCollections,
+      };
+    }),
+  renameCollection: (collectionId, newName) =>
+    set((state) => {
+      const newCollections = state.collections.map(c =>
+        c.id === collectionId ? { ...c, name: newName } : c
+      );
+      return {
+        collections: newCollections,
+      };
+    }),
+  toggleCollectionExpanded: (collectionId) =>
+    set((state) => {
+      const newCollections = state.collections.map(c =>
+        c.id === collectionId ? { ...c, isExpanded: !c.isExpanded } : c
+      );
+      return {
+        collections: newCollections,
+      };
+    }),
+  getCollectionFiles: (collectionId) =>
+    get().collections.find(c => c.id === collectionId)?.files || [],
+  getAllCollectionFiles: () =>
+    get().collections.reduce((acc: UploadedFile[], c) => [...acc, ...c.files], [] as UploadedFile[]),
+
   collectionFiles: [],
   addToCollectionFiles: (filesToAdd) =>
     set((state) => {
+      const collectionNumber = state.collections.length + 1;
+      const newCollection: Collection = {
+        id: Date.now().toString(),
+        name: `Collection ${collectionNumber}`,
+        files: filesToAdd,
+        isExpanded: true,
+      };
+      
       const currentCollectionFileNames = new Set(
         state.collectionFiles.map(file => file.name)
       );
@@ -101,6 +171,7 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
         file => !currentCollectionFileNames.has(file.name)
       );
       return {
+        collections: [...state.collections, newCollection],
         collectionFiles: [...state.collectionFiles, ...newFiles],
       };
     }),
