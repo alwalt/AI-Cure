@@ -9,6 +9,13 @@ export interface UploadedFile {
   selected?: boolean;
 }
 
+export interface Collection {
+  id: string;
+  name: string;
+  files: UploadedFile[];
+  isExpanded?: boolean;
+}
+
 export interface Table {
   csv_filename: string;
   display_name: string;

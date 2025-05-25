@@ -8,7 +8,8 @@ import { RagResponse, UploadedFile } from "@/types/files";
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
 
-  const collectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.collectionFiles);
+  const collections = useSessionFileStore((state: SessionFileStoreState) => state.collections);
+  const getAllCollectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.getAllCollectionFiles);
   const sessionId = useSessionFileStore((state: SessionFileStoreState) => state.sessionId);
   const setFullRagData = useSessionFileStore((state: SessionFileStoreState) => state.setFullRagData);
   const ragData = useSessionFileStore((state: SessionFileStoreState) => state.ragData);
@@ -28,14 +29,16 @@ export default function StudyComponent() {
       return;
     }
 
-    if (!collectionFiles || collectionFiles.length === 0) {
-      console.error("StudyComponent: No files in the current collection for RAG data generation.");
-      alert("No files in collection. Please add and ingest files first.");
+    const allFiles = getAllCollectionFiles();
+    if (!allFiles || allFiles.length === 0) {
+      console.error("StudyComponent: No files in any collection for RAG data generation.");
+      alert("No files in collections. Please add and ingest files first.");
       return;
     }
 
-    const fileNamesForRAG = collectionFiles.map((file: UploadedFile) => file.name);
+    const fileNamesForRAG = allFiles.map((file: UploadedFile) => file.name);
     console.log("StudyComponent: Calling RAG generation for section:", sectionToLoad, "with fileNames:", fileNamesForRAG);
+    console.log("StudyComponent: Using files from", collections.length, "collection(s)");
 
     setLoadingSection(sectionToLoad);
     try {
