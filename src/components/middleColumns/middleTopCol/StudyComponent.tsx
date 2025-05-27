@@ -1,19 +1,34 @@
 "use client";
 import { useState } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
-import { useSessionFileStore, SessionFileStoreState } from "@/store/useSessionFileStore";
+import {
+  useSessionFileStore,
+  SessionFileStoreState,
+} from "@/store/useSessionFileStore";
 import { generateWithTemplate } from "@/lib/ragClient";
 import { RagResponse, UploadedFile } from "@/types/files";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
 
-  const collections = useSessionFileStore((state: SessionFileStoreState) => state.collections);
-  const getAllCollectionFiles = useSessionFileStore((state: SessionFileStoreState) => state.getAllCollectionFiles);
-  const sessionId = useSessionFileStore((state: SessionFileStoreState) => state.sessionId);
-  const setFullRagData = useSessionFileStore((state: SessionFileStoreState) => state.setFullRagData);
-  const ragData = useSessionFileStore((state: SessionFileStoreState) => state.ragData);
-  const updateRagSection = useSessionFileStore((state: SessionFileStoreState) => state.updateRagSection);
+  const collections = useSessionFileStore(
+    (state: SessionFileStoreState) => state.collections
+  );
+  const getAllCollectionFiles = useSessionFileStore(
+    (state: SessionFileStoreState) => state.getAllCollectionFiles
+  );
+  const sessionId = useSessionFileStore(
+    (state: SessionFileStoreState) => state.sessionId
+  );
+  const setFullRagData = useSessionFileStore(
+    (state: SessionFileStoreState) => state.setFullRagData
+  );
+  const ragData = useSessionFileStore(
+    (state: SessionFileStoreState) => state.ragData
+  );
+  const updateRagSection = useSessionFileStore(
+    (state: SessionFileStoreState) => state.updateRagSection
+  );
 
   const CollapsibleSectionTitles = [
     "description",
@@ -24,21 +39,36 @@ export default function StudyComponent() {
 
   const onGenerate = async (sectionToLoad: string) => {
     if (!sessionId) {
-      console.error("StudyComponent: No active session ID. Cannot generate RAG data.");
-      alert("Please ingest files into a collection first to establish a session.");
+      console.error(
+        "StudyComponent: No active session ID. Cannot generate RAG data."
+      );
+      alert(
+        "Please ingest files into a collection first to establish a session."
+      );
       return;
     }
 
     const allFiles = getAllCollectionFiles();
     if (!allFiles || allFiles.length === 0) {
-      console.error("StudyComponent: No files in any collection for RAG data generation.");
+      console.error(
+        "StudyComponent: No files in any collection for RAG data generation."
+      );
       alert("No files in collections. Please add and ingest files first.");
       return;
     }
 
     const fileNamesForRAG = allFiles.map((file: UploadedFile) => file.name);
-    console.log("StudyComponent: Calling RAG generation for section:", sectionToLoad, "with fileNames:", fileNamesForRAG);
-    console.log("StudyComponent: Using files from", collections.length, "collection(s)");
+    console.log(
+      "StudyComponent: Calling RAG generation for section:",
+      sectionToLoad,
+      "with fileNames:",
+      fileNamesForRAG
+    );
+    console.log(
+      "StudyComponent: Using files from",
+      collections.length,
+      "collection(s)"
+    );
 
     setLoadingSection(sectionToLoad);
     try {
@@ -46,13 +76,16 @@ export default function StudyComponent() {
         fileNamesForRAG,
         "biophysics"
       );
-      
+
       console.log("StudyComponent: RAG data received:", ragResponse);
       setFullRagData(ragResponse);
-
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);
-      alert(`Error generating data: ${error instanceof Error ? error.message : "Unknown error"}`);
+      alert(
+        `Error generating data: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setLoadingSection(null);
     }
@@ -60,7 +93,7 @@ export default function StudyComponent() {
 
   return (
     <div className="w-full overflow-auto">
-      <div className="rounded overflow-hidden border border-grey">
+      <div className="flex flex-col rounded overflow-hidden">
         {CollapsibleSectionTitles.map((sectionTitle) => (
           <CollapsibleSection
             key={sectionTitle}

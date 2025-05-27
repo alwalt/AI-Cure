@@ -37,8 +37,7 @@
   width: 100% !important;
   max-width: 100%;
   box-sizing: border-box;
-  position: relative;          /* ensures it's not absolute/fixed */
-  margin-top: .7rem;            /* gives it breathing room from what's above */
+  position: relative; /* ensures it's not absolute/fixed */
 }
 
 .react-chatbot-kit-chat-message-container {
@@ -118,5 +117,5 @@
 }
 
 .search-button.active:hover {
-  background-color: #3730a3; 
+  background-color: #3730a3;
 }

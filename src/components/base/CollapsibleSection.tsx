@@ -60,7 +60,7 @@ export default function CollapsibleSection({
 
       {/* Content */}
       {isOpen && (
-        <div id={`section-content-${title}`} className="p-4">
+        <div id={`section-content-${title}`} className="p-2">
           <div className="flex items-center gap-2">
             <AiGenerateButton onClick={onGenerate} disabled={isLoading} />
             {isLoading && (
