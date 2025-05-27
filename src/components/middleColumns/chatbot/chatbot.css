@@ -22,6 +22,8 @@
   min-width: 50px;
   text-align: center;
   border-top: 1px solid white;
+
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-message-container::-webkit-scrollbar {
@@ -109,6 +111,8 @@
   max-width: 100%;
   box-sizing: border-box;
   position: relative; /* ensures it's not absolute/fixed */
+
+  border-radius: 0px;
 }
 
 /* Inner wrapper (header + messages + input) also a flex‐column */
