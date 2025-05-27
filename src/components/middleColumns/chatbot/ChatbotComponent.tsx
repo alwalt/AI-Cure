@@ -70,7 +70,7 @@ export default function ChatbotComponent() {
   }
 
   return (
-    <div className="flex flex-col flex-grow-0">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       <Chatbot
         config={config}
         messageParser={MessageParser}
