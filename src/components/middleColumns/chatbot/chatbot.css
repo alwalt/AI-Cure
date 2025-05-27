@@ -47,9 +47,9 @@
 }
 
 .react-chatbot-kit-chat-bot-message-container {
-  display: flex !important;
-  justify-content: flex-start !important;
-  margin-left: 0 !important;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: 0;
   margin-right: auto;
 }
 
@@ -70,6 +70,13 @@
   text-align: left;
   max-width: 75%;
   width: 100%;
+  background-color: #1d1b19 !important;
+}
+
+.react-chatbot-kit-chat-bot-message-arrow {
+  border-top-color: transparent !important;
+  border-right-color: #1d1b19 !important;
+  border-bottom-color: transparent !important;
 }
 
 /* Search button styles */
