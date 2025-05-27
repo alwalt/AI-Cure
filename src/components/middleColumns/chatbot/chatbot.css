@@ -2,6 +2,7 @@
 
 .react-chatbot-kit-chat-input {
   background-color: #393834 !important;
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-input::placeholder {
@@ -49,7 +50,7 @@
   display: flex !important;
   justify-content: flex-start !important;
   margin-left: 0 !important;
-  margin-right: auto !important;
+  margin-right: auto;
 }
 
 .react-chatbot-kit-user-chat-message {
@@ -111,17 +112,16 @@
   max-width: 100%;
   box-sizing: border-box;
   position: relative; /* ensures it's not absolute/fixed */
-
-  border-radius: 0px;
 }
 
 /* Inner wrapper (header + messages + input) also a flex‐column */
 .react-chatbot-kit-chat-inner-container {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-header {
@@ -130,11 +130,12 @@
   color: white;
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-message-list {
   /* flex‐1 so it fills the remaining space after the header/input */
-  flex: 1 1 auto !important;
-  overflow-y: auto !important;
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
