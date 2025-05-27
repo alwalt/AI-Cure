@@ -44,7 +44,7 @@ export default function MiddleTopColumn() {
       </div>
 
       {/* Table Content */}
-      <div className="flex-1 min-h-0 rounded w-full overflow-y-auto overflow-x-auto">
+      <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-auto">
         {renderContent()}
       </div>
     </div>

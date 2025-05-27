@@ -93,7 +93,7 @@ export default function StudyComponent() {
 
   return (
     <div className="w-full overflow-auto">
-      <div className="flex flex-col rounded overflow-hidden">
+      <div className="flex flex-col overflow-hidden">
         {CollapsibleSectionTitles.map((sectionTitle) => (
           <CollapsibleSection
             key={sectionTitle}
