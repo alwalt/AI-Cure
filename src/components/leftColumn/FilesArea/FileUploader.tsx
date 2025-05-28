@@ -87,7 +87,10 @@ export default function FileUploader({
     );
 
     try {
-      console.log("!!!! Files to be ingested (manual call if ever used): ", files);
+      console.log(
+        "!!!! Files to be ingested (manual call if ever used): ",
+        files
+      );
       const resp = await axios.post<IngestResponse>(
         `${apiBase}/api/ingest`,
         ingestForm,
@@ -96,7 +99,10 @@ export default function FileUploader({
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log("Vectorstore cookie ID (manual call if ever used):", resp.data.session_id);
+      console.log(
+        "Vectorstore cookie ID (manual call if ever used):",
+        resp.data.session_id
+      );
     } catch (err) {
       console.error("Failed to ingest files (manual call if ever used):", err);
     }
@@ -141,7 +147,7 @@ export default function FileUploader({
           file: file,
           selected: false,
         });
-        
+
         if (fileType === "xlsx" || fileType === "excel") {
           if (response.data.tables && response.data.tables.length > 0) {
             currentTables.push(...response.data.tables);
@@ -152,14 +158,14 @@ export default function FileUploader({
         setUploadStatus(`Error uploading ${file.name}.`);
       }
     }
-    
+
     if (currentUploadedFiles.length > 0) {
       onFilesUpdate?.(currentUploadedFiles);
     }
     if (currentTables.length > 0) {
       onTablesUpdate?.(currentTables);
     }
-    
+
     setFiles([]);
     setUploadStatus(
       currentUploadedFiles.length > 0
@@ -194,7 +200,7 @@ export default function FileUploader({
           className="hidden"
         />
 
-        <div className="space-y-4">
+        <div className="space-y-4 last:mb-0">
           <div className="text-primaryWhite font-medium">
             <p>Drag and drop your files here, or</p>
             <button
@@ -215,13 +221,13 @@ export default function FileUploader({
               <h3 className="text-lg font-semibold text-primaryWhite mb-2">
                 Selected Files:
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 last:mb-0">
                 {files.map((file, idx) => (
                   <div
                     key={idx}
                     className="flex items-center justify-between bg-selectedBlack text-primaryWhite p-3 rounded-md shadow-sm border-grey border"
                   >
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 last:mb-0">
                       <span className="text-primaryWhite max-w-[180px] overflow-x-auto whitespace-nowrap">
                         {file.name}
                       </span>
@@ -240,7 +246,7 @@ export default function FileUploader({
                 ))}
               </div>
 
-              <div className="mt-4 space-x-4">
+              <div className="mt-4 space-x-4 last:mb-0">
                 <button
                   onClick={handleUpload}
                   disabled={isUploading}

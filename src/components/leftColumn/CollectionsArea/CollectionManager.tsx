@@ -198,7 +198,7 @@ export default function CollectionManager() {
                   <div className="p-2">
                     {collection.files.length > 0 ? (
                       <>
-                        <ul className="space-y-1 mb-3">
+                        <ul className="space-y-1 mb-3 last:mb-0">
                           {collection.files.map((file: UploadedFile) => (
                             <li
                               key={file.name}
