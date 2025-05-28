@@ -13,7 +13,7 @@ export default function AicureToolFull() {
 
   return (
     <div className="outline-4 outline-teal-400 flex h-screen grid-cols-3 bg-primaryBlack">
-      <div className="min-w-[300px] max-w-[300px] 2xl:min-w-[450px] 2xl:max-w-[450px]">
+      <div className="overflow-hidden min-w-[300px] max-w-[300px] 2xl:min-w-[450px] 2xl:max-w-[450px]">
         <LeftColumn />
       </div>
       {/* flex-grow has to be here to allow right col to collapse */}
