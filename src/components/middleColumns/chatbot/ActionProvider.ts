@@ -2,26 +2,44 @@ import { useChatbotStore } from "@/store/useChatbotStore";
 import { apiBase } from "@/lib/api";
 import { createChatBotMessage } from "react-chatbot-kit";
 
-// infer the type of the message‐factory fn
+// 1. Capture the exact type of a chat message:
+//    createChatBotMessage(text, options) -> ChatBotMessage
 type CreateChatBotMessageFunc = typeof createChatBotMessage;
-// your own setState type (tighten `any` to your ChatbotState if you have it)
-type SetStateFunc = (updater: (prevState: any) => any) => void;
 
+// 2. Define your chatbot’s slice of state
+interface ChatbotState {
+  messages: ReturnType<CreateChatBotMessageFunc>[];
+  // (add any other pieces of state you use in your store here)
+}
+
+// 0️⃣ Extend the Window interface
+declare global {
+  interface Window {
+    chatActionProvider?: ActionProvider;
+  }
+}
+
+// 3. Strongly type setState so updater “prev” is ChatbotState
+type SetStateFunc = (
+  updater: (prevState: ChatbotState) => ChatbotState
+) => void;
+
+// shape of your JSON from the API
 interface ChatResponse {
   answer: string;
 }
 
 class ActionProvider {
-  private createChatBotMessage: CreateChatBotMessageFunc;
+  private messageFactory: CreateChatBotMessageFunc;
   private setState: SetStateFunc;
 
   constructor(
-    createChatBotMessage: CreateChatBotMessageFunc,
+    messageFactory: CreateChatBotMessageFunc,
     setState: SetStateFunc
   ) {
-    this.createChatBotMessage = createChatBotMessage;
+    this.messageFactory = messageFactory;
     this.setState = setState;
-    (window as any).chatActionProvider = this;
+    window.chatActionProvider = this;
   }
 
   async handleUserMessage(message: string): Promise<void> {
@@ -56,7 +74,7 @@ class ActionProvider {
       const data = (await response.json()) as ChatResponse;
       if (!data.answer) return console.error("No answer!");
 
-      const botMsg = this.createChatBotMessage(data.answer, {});
+      const botMsg = this.messageFactory(data.answer, {});
       this.setState((prev) => ({
         ...prev,
         messages: [...prev.messages, botMsg],
@@ -92,7 +110,7 @@ class ActionProvider {
       const data = (await response.json()) as { response: string };
       if (!data.response) return console.error("No search results.");
 
-      const botMsg = this.createChatBotMessage(data.response, {});
+      const botMsg = this.messageFactory(data.response, {});
       this.setState((prev) => ({
         ...prev,
         messages: [...prev.messages, botMsg],
