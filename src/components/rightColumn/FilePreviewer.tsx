@@ -1,5 +1,6 @@
 import React from "react";
 import { FilePreviewerProps } from "@/types/files";
+import Image from "next/image";
 
 export default function FilePreviewer({
   file,
@@ -24,11 +25,14 @@ export default function FilePreviewer({
         <h3 className="p-2 bg-selectedBlack text-primaryWhite font-medium border-b">
           {name}
         </h3>
-        <div className="p-2 flex items-center justify-center bg-selectedBlack flex-1">
-          <img
+        <div className="relative w-full h-[70vh]">
+          <Image
             src={objectUrl}
             alt={name}
-            className="max-h-full max-w-full object-contain"
+            fill
+            unoptimized
+            style={{ objectFit: "contain" }}
+            sizes="(max-width: 1024px) 100vw, 1024px"
           />
         </div>
       </div>
