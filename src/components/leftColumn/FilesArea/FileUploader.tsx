@@ -8,23 +8,18 @@ import {
   FileUploaderProps,
   IngestResponse,
 } from "@/types/files";
-import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { apiBase } from "@/lib/api";
 
 export default function FileUploader({
   onTablesUpdate,
-  onSessionUpdate,
   onFilesUpdate,
 }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState<string>("");
-  const [tables, setTables] = useState<Table[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const setSelectedFiles = useSessionFileStore((s) => s.setSelectedFiles);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -73,40 +68,6 @@ export default function FileUploader({
         return extension;
     }
   };
-
-  async function handleEmbed() {
-    if (files.length === 0) return;
-
-    const ingestForm = new FormData();
-    files.forEach((file) => {
-      ingestForm.append("files", file);
-    });
-    ingestForm.append(
-      "embedding_model",
-      "sentence-transformers/all-MiniLM-L6-v2"
-    );
-
-    try {
-      console.log(
-        "!!!! Files to be ingested (manual call if ever used): ",
-        files
-      );
-      const resp = await axios.post<IngestResponse>(
-        `${apiBase}/api/ingest`,
-        ingestForm,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log(
-        "Vectorstore cookie ID (manual call if ever used):",
-        resp.data.session_id
-      );
-    } catch (err) {
-      console.error("Failed to ingest files (manual call if ever used):", err);
-    }
-  }
 
   const handleUpload = async () => {
     if (files.length === 0) {
