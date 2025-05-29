@@ -1,19 +1,30 @@
 import { useChatbotStore } from "@/store/useChatbotStore";
 import { apiBase } from "@/lib/api";
+import { createChatBotMessage } from "react-chatbot-kit";
+
+// infer the type of the message‐factory fn
+type CreateChatBotMessageFunc = typeof createChatBotMessage;
+// your own setState type (tighten `any` to your ChatbotState if you have it)
+type SetStateFunc = (updater: (prevState: any) => any) => void;
+
+interface ChatResponse {
+  answer: string;
+}
 
 class ActionProvider {
-  createChatBotMessage: any;
-  setState: any; // Added to manage chatbot state updates
+  private createChatBotMessage: CreateChatBotMessageFunc;
+  private setState: SetStateFunc;
 
-  constructor(createChatBotMessage: any, setState: any) {
+  constructor(
+    createChatBotMessage: CreateChatBotMessageFunc,
+    setState: SetStateFunc
+  ) {
     this.createChatBotMessage = createChatBotMessage;
     this.setState = setState;
     (window as any).chatActionProvider = this;
-
-    // console.log('ActionProvider constructor called, exposed as window.chatActionProvider');
   }
 
-  handleUserMessage = async (message: string) => {
+  async handleUserMessage(message: string): Promise<void> {
     console.log("handleUserMessage called with:", message);
     const { sessionId, addMessage } = useChatbotStore.getState();
 
@@ -42,30 +53,22 @@ class ActionProvider {
         );
       }
 
-      const data = await response.json();
-      // console.log(
-      //   "Regular chat response received:",
-      //   data
-      // );
-      if (data.answer) {
-        const botMessage = this.createChatBotMessage(data.answer);
-        this.setState((prevState: any) => ({
-          ...prevState,
-          messages: [...prevState.messages, botMessage],
-        }));
-        addMessage({ sender: "bot", text: data.answer });
-      } else {
-        console.error("No answer received from chatbot.");
-      }
-    } catch (error) {
-      console.error("Error fetching chatbot response:", error);
+      const data = (await response.json()) as ChatResponse;
+      if (!data.answer) return console.error("No answer!");
+
+      const botMsg = this.createChatBotMessage(data.answer, {});
+      this.setState((prev) => ({
+        ...prev,
+        messages: [...prev.messages, botMsg],
+      }));
+      addMessage({ sender: "bot", text: data.answer });
+    } catch (err) {
+      console.error("Chat error:", err);
     }
-  };
+  }
 
-  handleSearchQuery = async (message: string) => {
-    // console.log('handleSearchQuery called with:', message);
+  async handleSearchQuery(message: string): Promise<void> {
     const { addMessage } = useChatbotStore.getState();
-
     // Save user search message in the store
     addMessage({ sender: "user", text: `${message}` });
 
@@ -86,23 +89,19 @@ class ActionProvider {
         );
       }
 
-      const data = await response.json();
-      // console.log("Search response received:", data);
+      const data = (await response.json()) as { response: string };
+      if (!data.response) return console.error("No search results.");
 
-      if (data.response) {
-        const botMessage = this.createChatBotMessage(data.response);
-        this.setState((prevState: any) => ({
-          ...prevState,
-          messages: [...prevState.messages, botMessage],
-        }));
-        addMessage({ sender: "bot", text: data.response });
-      } else {
-        console.error("No search results received.");
-      }
-    } catch (error) {
-      console.error("Error fetching search results:", error);
+      const botMsg = this.createChatBotMessage(data.response, {});
+      this.setState((prev) => ({
+        ...prev,
+        messages: [...prev.messages, botMsg],
+      }));
+      addMessage({ sender: "bot", text: data.response });
+    } catch (err) {
+      console.error("Search error:", err);
     }
-  };
+  }
 }
 
 export default ActionProvider;
