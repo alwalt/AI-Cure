@@ -1,7 +1,6 @@
 import { ButtonProps } from "@/types/files";
 
 export default function Button({
-  targetId,
   buttonDescription,
   onClick,
   Icon,
@@ -9,7 +8,6 @@ export default function Button({
   spanClassName = "",
   role = "button", // Default role if not provided
   "aria-label": ariaLabel,
-  className,
 }: ButtonProps) {
   const handleClick = async () => {
     if (onClick) await onClick();
