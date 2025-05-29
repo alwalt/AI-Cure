@@ -6,7 +6,6 @@ import {
   UploadResponse,
   UploadedFile,
   FileUploaderProps,
-  IngestResponse,
 } from "@/types/files";
 import { apiBase } from "@/lib/api";
 
