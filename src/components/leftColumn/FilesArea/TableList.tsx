@@ -62,7 +62,7 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
               `}
               onClick={() => handleTableSelect(table)}
             >
-              <div className="flex items-center space-x-3 bg-unSelectedBlack">
+              <div className="flex items-center space-x-3 bg-unSelectedBlack last:mb-0">
                 <input
                   type="checkbox"
                   checked={selectedTables.some(

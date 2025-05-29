@@ -3,7 +3,7 @@ import { UploadedFile } from "@/types/files";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { UploadedFilesProps } from "@/types/files";
 import axios from "axios";
-import { apiBase } from '@/lib/api';
+import { apiBase } from "@/lib/api";
 
 export default function UploadedFiles({
   files,
@@ -23,12 +23,9 @@ export default function UploadedFiles({
 
   const previewFile = async (file: UploadedFile) => {
     try {
-      const response = await fetch(
-        `${apiBase}/api/get_file/${file.name}`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${apiBase}/api/get_file/${file.name}`, {
+        credentials: "include",
+      });
 
       const blob = await response.blob();
       const fileType = blob.type;

@@ -4,7 +4,7 @@ from typing import Dict
 TEMPLATES: Dict[str, Dict[str, str]] = {
   "biophysics": {
      "title":    "A concise, 5-8 word, Title-Case scientific title",
-     "decription":  "A 2-sentence overview of the main findings",
+     "decription":  "A comprehensive one paragraph summary of the scientific article. The summary should include the scientific assays used, factors studied, results.\n Do not provide a preamble.",
      "studies" : "Summarize the goals of the study",
      "keywords": "List 4-6 terms capturing the study's topics",
      "subjects/biospecimens":  "Name any species used in the experiments and how many species",

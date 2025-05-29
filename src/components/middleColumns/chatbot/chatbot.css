@@ -2,20 +2,12 @@
 
 .react-chatbot-kit-chat-input {
   background-color: #393834 !important;
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-input::placeholder {
   color: white !important;
   opacity: 1;
-}
-
-.react-chatbot-kit-chat-header {
-  background-color: #393834 !important;
-  border-bottom: 1px solid white;
-  color: white;
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
 }
 
 .react-chatbot-kit-user-chat-message-arrow {
@@ -31,19 +23,8 @@
   min-width: 50px;
   text-align: center;
   border-top: 1px solid white;
-}
 
-.react-chatbot-kit-chat-container {
-  width: 100% !important;
-  max-width: 100%;
-  box-sizing: border-box;
-  position: relative;          /* ensures it's not absolute/fixed */
-  margin-top: .7rem;            /* gives it breathing room from what's above */
-}
-
-.react-chatbot-kit-chat-message-container {
-  background-color: #393834 !important;
-  overflow-y: auto; /* make sure it's scrollable */
+  border-radius: 0px;
 }
 
 .react-chatbot-kit-chat-message-container::-webkit-scrollbar {
@@ -66,10 +47,10 @@
 }
 
 .react-chatbot-kit-chat-bot-message-container {
-  display: flex !important;
-  justify-content: flex-start !important;
-  margin-left: 0 !important;
-  margin-right: auto !important;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .react-chatbot-kit-user-chat-message {
@@ -89,6 +70,13 @@
   text-align: left;
   max-width: 75%;
   width: 100%;
+  background-color: #1d1b19 !important;
+}
+
+.react-chatbot-kit-chat-bot-message-arrow {
+  border-top-color: transparent !important;
+  border-right-color: #1d1b19 !important;
+  border-bottom-color: transparent !important;
 }
 
 /* Search button styles */
@@ -118,5 +106,43 @@
 }
 
 .search-button.active:hover {
-  background-color: #3730a3; 
+  background-color: #3730a3;
+}
+
+.react-chatbot-kit-chat-message-container {
+  background-color: #393834 !important;
+  overflow-y: auto; /* make sure it's scrollable */
+}
+
+.react-chatbot-kit-chat-container {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative; /* ensures it's not absolute/fixed */
+}
+
+/* Inner wrapper (header + messages + input) also a flex‐column */
+.react-chatbot-kit-chat-inner-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0px;
+}
+
+.react-chatbot-kit-chat-header {
+  background-color: #393834 !important;
+  border-bottom: 1px solid white;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0px;
+}
+
+.react-chatbot-kit-chat-message-list {
+  /* flex‐1 so it fills the remaining space after the header/input */
+  flex: 1 1 auto;
+  overflow-y: auto;
 }

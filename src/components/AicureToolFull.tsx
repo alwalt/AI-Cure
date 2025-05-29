@@ -12,16 +12,18 @@ export default function AicureToolFull() {
   );
 
   return (
-    <div className="flex h-screen grid-cols-3 bg-primaryBlack">
-      <div className="min-w-[300px] max-w-[300px] 2xl:min-w-[450px] 2xl:max-w-[450px]">
+    <div className="outline-4 outline-teal-400 flex h-screen grid-cols-3 bg-primaryBlack">
+      <div className="overflow-hidden min-w-[300px] max-w-[300px] 2xl:min-w-[450px] 2xl:max-w-[450px]">
         <LeftColumn />
       </div>
       {/* flex-grow has to be here to allow right col to collapse */}
-      <div className="flex flex-col h-screen grow min-w-[300px]">
-        <div className="h-1/2">
+      <div className=" flex flex-col h-screen grow min-w-[300px] overflow-hidden">
+        {/* Top half: fixed 50% height */}
+        <div className="flex-none basis-1/2 flex flex-col overflow-hidden">
           <MiddleTopColumn />
         </div>
-        <div className="flex-1">
+        {/* Bottom: fills rest, but can shrink internally */}
+        <div className="flex-1 min-h-0 overflow-auto">
           <MiddleBottomColumn />
         </div>
       </div>
