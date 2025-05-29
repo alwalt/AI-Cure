@@ -1,18 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
-import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { apiBase } from '@/lib/api';
+import { apiBase } from "@/lib/api";
 
 const fetchTableAnalysis = async ({
   queryKey,
-}: {
-  queryKey: any[];
-}): Promise<AnalysisResponse> => {
-  const [_key, csvFilename] = queryKey;
+}: QueryFunctionContext<[string, string?]>): Promise<AnalysisResponse> => {
+  const [, csvFilename] = queryKey;
 
   if (!csvFilename) {
     return { summary: "", keywords: [] };
@@ -23,26 +19,20 @@ const fetchTableAnalysis = async ({
   formData.append("csv_name", csvFilename);
   // Use default model (llama3)
 
-  const response = await axios.post(
-    `${apiBase}/api/analyze_table`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true,
-    }
-  );
+  const response = await axios.post(`${apiBase}/api/analyze_table`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
+  });
 
   return response.data;
 };
 
 const fetchImageAnalysis = async ({
   queryKey,
-}: {
-  queryKey: any[];
-}): Promise<AnalysisResponse> => {
-  const [_key, fileName] = queryKey;
+}: QueryFunctionContext<[string, string?]>): Promise<AnalysisResponse> => {
+  const [, fileName] = queryKey;
 
   if (!fileName) {
     return { summary: "", keywords: [] };
@@ -53,40 +43,35 @@ const fetchImageAnalysis = async ({
   // Use default model (llama3)
   console.log(formData);
   console.log(fileName);
-  const response = await axios.post(
-    `${apiBase}/api/analyze_image`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true,
-    }
-  );
+  const response = await axios.post(`${apiBase}/api/analyze_image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
+  });
 
   return response.data;
 };
 
 const fetchPDFAnalysis = async ({
   queryKey,
-}: {
-  queryKey: any[];
-}): Promise<AnalysisResponse> => {
-  const [_key, fileName] = queryKey;
+}: QueryFunctionContext<[string, string?]>): Promise<AnalysisResponse> => {
+  const [, fileName] = queryKey;
+
+  if (!fileName) {
+    return { summary: "", keywords: [] };
+  }
+
   const formData = new FormData();
   formData.append("pdf_file_name", fileName);
   // Use default model (llava)
   console.log(fileName);
-  const response = await axios.post(
-    `${apiBase}/api/analyze_pdf`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true,
-    }
-  );
+  const response = await axios.post(`${apiBase}/api/analyze_pdf`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
+  });
 
   return response.data;
 };
