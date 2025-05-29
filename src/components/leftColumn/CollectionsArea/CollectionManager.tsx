@@ -127,7 +127,7 @@ export default function CollectionManager() {
         <h2 className="text-2xl font-bold text-primaryWhite">Collections</h2>
         <SaveButton />
       </div>
-      <div className="min-h-[200px] border-grey border rounded bg-unSelectedBlack pt-2 pr-2 pl-2 pb-0">
+      <div className="min-h-[200px] border-grey border rounded bg-unSelectedBlack pt-2 pr-2 pl-2 pb-2">
         {collections.length === 0 && !isLoading ? (
           <p className="p-2 text-gray-400">
             No collections yet. Add files to create your first collection.

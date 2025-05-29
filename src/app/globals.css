@@ -40,8 +40,6 @@ body {
   background-color: rgba(160, 160, 160, 0.8);
 }
 
-/* globals.css */
-
 @layer base {
   /* Make paddings/borders included in height math */
   *,
@@ -50,20 +48,3 @@ body {
     box-sizing: border-box;
   }
 }
-
-/* 1️⃣ Make sure html/body/#__next can actually hit 100% height 
-@layer base {
-  html,
-  body,
-  #__next {
-    height: 100%;
-  }
-}
-
- 2️⃣ Temporary “outline everything” to see exactly who’s spilling over 
-@layer base {
-  * {
-    outline: 1px solid rgba(255, 0, 0, 0.3);
-  }
-}
-*/
