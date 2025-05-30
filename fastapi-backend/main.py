@@ -906,9 +906,6 @@ def _generic_rag_summarizer(
         "Do NOT include any text before or after the JSON."
     )
 
-    print("!!!!! ---- !!!!!")
-    print(prompt)
-
     # 4) Call the LLM
     res_text = ollama.chat(
         model=model,
@@ -917,7 +914,6 @@ def _generic_rag_summarizer(
     )
     raw = res_text["message"]["content"]
 
-    print("!!!! --- !!!!", raw)
     # using Pydantic check shape that LLM generate, if not correct try up to five times
     for attempt in range(1, 6):
         try:
@@ -925,7 +921,7 @@ def _generic_rag_summarizer(
             break   
         except ValidationError as e:
             print(f"Attempt {attempt} failed: {e}")
-            if attempt == 5:
+            if attempt == 6:
                 raise HTTPException(500, f"LLM returned invalid schema: {e}")
             # retry—ask the model again, or you could modify `raw` via a repair prompt:
             response = ollama.chat(
