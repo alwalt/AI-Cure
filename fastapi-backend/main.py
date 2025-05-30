@@ -48,6 +48,7 @@ from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
 from config.rag_templates import TEMPLATES
+from pydantic import ValidationError
 
 import torch
 if hasattr(torch, "mps") and torch.backends.mps.is_available():
@@ -870,6 +871,11 @@ def _generic_rag_summarizer(
 
     print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
 
+    class Biophysics(BaseModel):
+            description: str
+            title: str
+            keywords: List[str]
+    
     # 1) Collect top_k chunks for each CSV
     all_chunks = []
     for name in file_names:
@@ -891,43 +897,46 @@ def _generic_rag_summarizer(
     schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
 
     # 3) Prepend any extra instructions
-    prompt = "You are a scientific assistant. Respond ONLY with JSON, with no explanation or extra text.\n"
-    if extra_instructions:
-        prompt += extra_instructions.strip() + "\n\n"
-    prompt += f"""Based only on the data snippets below, produce valid JSON output strictly following this format:
- 
-    Output format:
-    {schema_block}
+    prompt = (
+        "You are a scientific assistant. Respond ONLY with JSON, with no extra text.\n"
+        "Based only on the data snippets below, produce valid JSON output strictly following this format:\n\n"
+        f"{Biophysics.model_json_schema()}\n\n"  # ← injects the JSON-Schema directly
+        "Data snippets:\n"
+        f"{context}\n\n"
+        "Do NOT include any text before or after the JSON."
+    )
 
-    Data snippets:
-    {context}
-    
-    Do NOT include any text before or after the JSON.
-    Do NOT explain the output.
-    Return a JSON object that can be parsed directly
-    """
     print("!!!!! ---- !!!!!")
     print(prompt)
 
     # 4) Call the LLM
     res_text = ollama.chat(
         model=model,
-        messages=[{"role":"user","content": prompt}]
-    )["message"]["content"]
+        messages=[{"role":"user","content": prompt}],
+        format=Biophysics.model_json_schema(),
+    )
+    raw = res_text["message"]["content"]
 
-    # 5) Extract the JSON blob
-    import re, json
-    m = re.search(r'\{[\s\S]*\}', res_text)
-    print("JSON!!!!! -",  m)
-    print("!!!! --- !!!!, res_text", res_text)
-    if not m:
-        return JSONResponse({"error": "No JSON found", "raw": res_text}, status_code=500)
-    try:
-        payload = json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return JSONResponse({"error": "Invalid JSON", "raw": res_text}, status_code=500)
+    print("!!!! --- !!!!", raw)
+    # using Pydantic check shape that LLM generate, if not correct try up to five times
+    for attempt in range(1, 6):
+        try:
+            result = Biophysics.model_validate_json(raw)
+            break   
+        except ValidationError as e:
+            print(f"Attempt {attempt} failed: {e}")
+            if attempt == 5:
+                raise HTTPException(500, f"LLM returned invalid schema: {e}")
+            # retry—ask the model again, or you could modify `raw` via a repair prompt:
+            response = ollama.chat(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                format=Biophysics.model_json_schema(),
+            )
+            raw = response["message"]["content"]
 
-    return JSONResponse(payload)
+# At this point `result` is a Biophysics instance
+    return JSONResponse(result.model_dump())
 
 class BranchRequest(BaseModel):
     file_names:         List[str]
