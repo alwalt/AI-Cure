@@ -2,7 +2,6 @@
 import { UploadedFile } from "@/types/files";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { UploadedFilesProps } from "@/types/files";
-import axios from "axios";
 import { apiBase } from "@/lib/api";
 
 export default function UploadedFiles({

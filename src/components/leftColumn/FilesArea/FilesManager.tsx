@@ -43,8 +43,7 @@ export default function FilesManager() {
     fetchSessionFiles();
   }, []);
 
-  const [currentPreviewFile, setCurrentPreviewFile] =
-    useState<UploadedFile | null>(null);
+  const [currentPreviewFile] = useState<UploadedFile | null>(null);
 
   const handleTablesUpdate = (tables: TableType[]) => {
     setUploadedTables(tables);

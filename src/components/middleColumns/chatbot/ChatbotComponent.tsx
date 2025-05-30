@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Chatbot from "react-chatbot-kit";
 import "react-chatbot-kit/build/main.css";
 import "./chatbot.css";
-// @ts-ignore
 import config from "./config.tsx";
 import MessageParser from "./MessageParser.ts";
 import ActionProvider from "./ActionProvider.ts";

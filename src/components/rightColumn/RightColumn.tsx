@@ -8,7 +8,6 @@ import FilePreviewer from "./FilePreviewer";
 
 export default function RightColumn() {
   const previewFile = useSessionFileStore((state) => state.previewFile);
-  const sessionId = useSessionFileStore((state) => state.sessionId);
   const previewCsv = useSessionFileStore((state) => state.previewCsv);
   const [objectUrl, setObjectUrl] = useState<string>("");
 

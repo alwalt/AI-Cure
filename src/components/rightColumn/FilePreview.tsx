@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { FilePreviewProps } from "@/types/files";
+import Image from "next/image";
 
 export default function FilePreview({ file, onClose }: FilePreviewProps) {
   const [objectUrl, setObjectUrl] = useState<string>("");
@@ -43,11 +44,14 @@ export default function FilePreview({ file, onClose }: FilePreviewProps) {
           ) : file.type === "png" ||
             file.type === "jpg" ||
             file.type === "jpeg" ? (
-            <div className="flex items-center justify-center h-[70vh]">
-              <img
+            <div className="relative w-full h-[70vh]">
+              <Image
                 src={objectUrl}
                 alt={file.name}
-                className="max-h-full max-w-full object-contain"
+                fill
+                unoptimized
+                style={{ objectFit: "contain" }}
+                sizes="(max-width: 1024px) 100vw, 1024px"
               />
             </div>
           ) : (
