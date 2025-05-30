@@ -30,12 +30,7 @@ export default function StudyComponent() {
     (state: SessionFileStoreState) => state.updateRagSection
   );
 
-  const CollapsibleSectionTitles = [
-    "description",
-    "studies",
-    "subjects/biospecimens",
-    "hardware",
-  ];
+  const CollapsibleSectionTitles = ["description", "title", "keywords"];
 
   const onGenerate = async (sectionToLoad: string) => {
     if (!sessionId) {
