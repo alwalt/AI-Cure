@@ -13,6 +13,8 @@ import {
   BeakerIcon,
   ListBulletIcon,
   ChartBarSquareIcon,
+  Bars3CenterLeftIcon,
+  ChatBubbleBottomCenterIcon,
 } from "@heroicons/react/24/outline";
 
 export const sectionIcons: Record<
@@ -21,7 +23,7 @@ export const sectionIcons: Record<
 > = {
   description: InformationCircleIcon,
   studies: SquaresPlusIcon,
-  Ppayloads: ArrowUpCircleIcon,
+  payloads: ArrowUpCircleIcon,
   "subjects/biospecimens": BugAntIcon, // must be wrapped in quotes due to /
   hardware: RectangleStackIcon,
   publications: BookOpenIcon,
@@ -33,4 +35,6 @@ export const sectionIcons: Record<
   samples: BeakerIcon,
   assays: ListBulletIcon,
   vizualization: ChartBarSquareIcon,
+  keywords: Bars3CenterLeftIcon,
+  title: ChatBubbleBottomCenterIcon,
 };
