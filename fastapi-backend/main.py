@@ -891,17 +891,23 @@ def _generic_rag_summarizer(
     schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
 
     # 3) Prepend any extra instructions
-    prompt = "You are a scientific assistant.\n"
+    prompt = "You are a scientific assistant. Respond ONLY with JSON, with no explanation or extra text.\n"
     if extra_instructions:
         prompt += extra_instructions.strip() + "\n\n"
-    prompt += f"""Based only on the data snippets below, produce valid JSON with:
-
+    prompt += f"""Based only on the data snippets below, produce valid JSON output strictly following this format:
+ 
     Output format:
     {schema_block}
 
     Data snippets:
     {context}
+    
+    Do NOT include any text before or after the JSON.
+    Do NOT explain the output.
+    Return a JSON object that can be parsed directly
     """
+    print("!!!!! ---- !!!!!")
+    print(prompt)
 
     # 4) Call the LLM
     res_text = ollama.chat(
@@ -912,6 +918,8 @@ def _generic_rag_summarizer(
     # 5) Extract the JSON blob
     import re, json
     m = re.search(r'\{[\s\S]*\}', res_text)
+    print("JSON!!!!! -",  m)
+    print("!!!! --- !!!!, res_text", res_text)
     if not m:
         return JSONResponse({"error": "No JSON found", "raw": res_text}, status_code=500)
     try:
@@ -925,7 +933,7 @@ class BranchRequest(BaseModel):
     file_names:         List[str]
     template:           Literal["biophysics","geology"]
     model:              str = "llama3.1"
-    top_k:              int = 5
+    top_k:              int = 3
     extra_instructions: Optional[str] = None
 
 @app.post("/api/generate_rag_with_template")
@@ -945,6 +953,7 @@ def generate_rag_with_template(
         instructions       = instructions,
         extra_instructions = payload.extra_instructions
     )
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
