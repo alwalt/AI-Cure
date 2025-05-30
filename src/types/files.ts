@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 export interface UploadedFile {
   name: string;
   type: string;
@@ -61,7 +59,7 @@ export interface AnalysisResponse {
 
 export interface PreviewResponse {
   columns: string[];
-  preview: Array<Record<string, any>>;
+  preview: Array<Record<string, string | number>>;
 }
 
 export interface UploadedFilesProps {
