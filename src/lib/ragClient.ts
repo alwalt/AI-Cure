@@ -1,4 +1,5 @@
 import { RagResponse } from "@/types/files";
+import { apiBase } from "@/lib/api";
 
 export async function generateWithTemplate(
   fileNames: string[],
@@ -8,7 +9,7 @@ export async function generateWithTemplate(
   extra_instructions: string | null = null
 ): Promise<RagResponse> {
   const res = await fetch(
-    "http://localhost:8000/api/generate_rag_with_template",
+    `${apiBase}/api/generate_rag_with_template`,
     {
       method: "POST",
       credentials: "include",
