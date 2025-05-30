@@ -13,7 +13,7 @@ import {
   Paper,
   CircularProgress,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { useSessionFileStore } from "@/store/useSessionFileStore"; // Import the store
 import { PreviewResponse } from "@/types/files";
 import resolveConfig from "tailwindcss/resolveConfig";
@@ -28,10 +28,8 @@ const unSelectedBlack = fullConfig.theme.colors.unSelectedBlack;
 
 const fetchTablePreview = async ({
   queryKey,
-}: {
-  queryKey: any[];
-}): Promise<PreviewResponse> => {
-  const [_key, previewCsv] = queryKey;
+}: QueryFunctionContext<[string, string?]>): Promise<PreviewResponse> => {
+  const [, previewCsv] = queryKey;
   // Build query parameters for the API call.
   const params = new URLSearchParams({
     // session_id: sessionId,
@@ -54,14 +52,17 @@ const fetchTablePreview = async ({
 };
 
 export default function TablePreviewer() {
-  // Access sessionId and previewCsv from Zustand store
-  // const sessionId = useSessionFileStore((state) => state.sessionId);
   const previewCsv = useSessionFileStore((state) => state.previewCsv);
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["tablePreview", previewCsv], // Use previewCsv here
+  const { data, error, isLoading } = useQuery<
+    PreviewResponse, // TData
+    Error, // TError
+    PreviewResponse, // TQueryFnData
+    [string, string] // TQueryKey
+  >({
+    queryKey: ["tablePreview", previewCsv!], // assert non-null
     queryFn: fetchTablePreview,
-    enabled: !!previewCsv, // Only fetch if previewCsv is available
+    enabled: !!previewCsv, // only runs when previewCsv is truthy
   });
   console.log("Preview button clicked????? in TablePreviewer func");
   if (!previewCsv) {
