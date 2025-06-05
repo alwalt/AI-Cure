@@ -893,8 +893,8 @@ def _generic_rag_summarizer(
     context = "\n\n".join(d.page_content for d in all_chunks)
 
     # 2) Build your dynamic schema block
-    schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
-    schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
+    # schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
+    # schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
 
     # 3) Prepend any extra instructions
     prompt = (
