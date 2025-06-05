@@ -36,7 +36,7 @@ export default function ChatbotComponent() {
             console.log("Vectorstore created with session ID:", d1.session_id);
             console.log("Creating chatbot...");
             await fetch(
-              `http://127.0.0.1:8000/api/create_chatbot/${d1.session_id}`,
+              `${apiBase}/api/create_chatbot/${d1.session_id}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
