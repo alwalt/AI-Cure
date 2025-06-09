@@ -37,7 +37,7 @@ describe("LeftColumn overflow audit", () => {
 
   it("should have no elements with scrollHeight > clientHeight", () => {
     // Target the LeftColumn container
-    cy.get("[data-cy=left-column]")
+    cy.get("[data-cy=root-app]")
       .find("*") // grab every descendant
       .each(($el) => {
         cy.wrap($el).then((el) => {
