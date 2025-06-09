@@ -1,5 +1,5 @@
 "use client";
-import { useState, Fragment } from "react";
+import { useState, Fragment, useRef } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -16,6 +16,7 @@ export default function UploadFileButton({
   onFilesUpdate,
 }: UploadFileButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null); // for testing with cy
 
   const handleTablesUpdate = (tables: Table[]) => {
     onTablesUpdate(tables);
@@ -28,17 +29,41 @@ export default function UploadFileButton({
 
   return (
     <div className="flex items-center justify-center relative group">
-      <Button
-        targetId="ArrowUpTrayIcon"
-        buttonDescription="Upload files"
-        Icon={ArrowUpTrayIcon}
-        iconClassName="h-6 w-6"
-        spanClassName="mt-2 left-1/2 -translate-x-1/2"
-        onClick={() => setIsOpen(true)}
-        aria-label="Upload files button" // Accessible label for screen readers
-        role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
-        className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
-      />
+      <div data-cy="open-upload-dialog" className="cursor-pointer">
+        <Button
+          targetId="ArrowUpTrayIcon"
+          buttonDescription="Upload files"
+          Icon={ArrowUpTrayIcon}
+          iconClassName="h-6 w-6"
+          spanClassName="mt-2 left-1/2 -translate-x-1/2"
+          onClick={() => setIsOpen(true)}
+          aria-label="Upload files button" // Accessible label for screen readers
+          role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
+          className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
+        />
+        <input
+          type="file"
+          multiple
+          // data-cy="file-input"
+          ref={inputRef}
+          className="hidden"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const fl = e.target.files;
+            if (!fl) return;
+            // Map FileList to your UploadedFile type
+            const uploads = Array.from(fl).map((file) => ({
+              name: file.name,
+              type: file.name.split(".").pop() || "",
+              dateCreated: new Date().toISOString(),
+              size: file.size,
+              file: file,
+              selected: false,
+            }));
+            // Call the original callback to update state
+            handleFilesUpdate(uploads);
+          }}
+        />
+      </div>
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog
