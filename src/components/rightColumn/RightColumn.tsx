@@ -33,7 +33,7 @@ export default function RightColumn() {
 
   return (
     <div className="bg-primaryBlack border-l-2 border-gray-700 pt-2 flex flex-col items-start w-full">
-      <div className="relative group">
+      <div className="relative group overflow-hidden">
         <button
           onClick={toggleRightColumn}
           className="text-primaryWhite rounded"

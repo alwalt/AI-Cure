@@ -123,7 +123,7 @@ export default function CollectionManager() {
 
   return (
     <div className="space-y-2 last:mb-0">
-      <div className="flex justify-between w-full">
+      <div className="flex justify-between w-full overflow-hidden">
         <h2 className="text-2xl font-bold text-primaryWhite">Collections</h2>
         <SaveButton />
       </div>

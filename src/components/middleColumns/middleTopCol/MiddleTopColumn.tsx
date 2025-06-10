@@ -20,13 +20,13 @@ export default function MiddleTopColumn() {
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-primaryBlack overflow-y-auto custom-scrollbar border-b border-gray-700">
-      <div className="sticky top-0 z-10 bg-primaryBlack">
+      <div className="sticky top-0 z-10 bg-primaryBlack overflow-hidden">
         <h2 className="font-bold text-xl p-2 capitalize">
           Scientific data curation
         </h2>
-        <div className="border-b border-grey mb-0 pl-2">
+        <div className="border-b border-grey mb-0 pl-2 overflow-hidden">
           {/* Tab Buttons */}
-          <div className="flex space-x-4 mb-4">
+          <div className="flex space-x-4 mb-4 overflow-auto">
             <TextButton
               label="Study"
               buttonDescription="Study tab"
