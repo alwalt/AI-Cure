@@ -20,14 +20,12 @@ describe("LeftColumn overflow audit", () => {
     // Upload the problematic file
     cy.get('[data-cy="file-input"]') // adjust selector to your file input
       .first()
-      .selectFile("cypress/fixtures/Watanabe_reimbursment_$225.50.xlsx", {
+      .selectFile("cypress/fixtures/overflowBugDoc.xlsx", {
         force: true,
       })
       .should(($input) => {
         const input = $input[0] as HTMLInputElement;
-        expect(input.files?.[0].name).to.equal(
-          "Watanabe_reimbursment_$225.50.xlsx"
-        );
+        expect(input.files?.[0].name).to.equal("overflowBugDoc.xlsx");
       });
     // Click the actual Upload Files button inside the dialog
     cy.get('[data-cy="upload-submit"]', { timeout: 10000 })
@@ -35,7 +33,7 @@ describe("LeftColumn overflow audit", () => {
       .click();
   });
 
-  it("should have no elements with scrollHeight > clientHeight", () => {
+  it("should have no elements where scrollHeight does not equal clientHeight", () => {
     // Target the LeftColumn container
     cy.get("[data-cy=left-column]")
       .find("*") // grab every descendant
