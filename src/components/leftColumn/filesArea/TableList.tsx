@@ -111,7 +111,7 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
       </div>
 
       {selectedTables.length > 0 && (
-        <div className=" mt-2 p-2 bg-blue-50 rounded bg-selectedBlack border-primaryWhite border">
+        <div className=" mt-2 p-2 rounded bg-selectedBlack border-primaryWhite border">
           <p className="text-sm bg-selectedBlack">
             {selectedTables.length} table
             {selectedTables.length !== 1 ? "s" : ""} selected

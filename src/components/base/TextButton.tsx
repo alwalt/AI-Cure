@@ -9,7 +9,7 @@ export default function TextButton({
   spanClassName = "",
 }: TextButtonProps) {
   return (
-    <div className="relative group flex flex-col items-center">
+    <div className="relative group flex flex-col items-center overflow-hidden">
       <button
         onClick={onClick}
         className={`px-2 text-sm rounded-none border-none outline-none focus:outline-none 

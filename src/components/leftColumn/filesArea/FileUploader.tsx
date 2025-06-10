@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import {
   Table,
@@ -140,6 +140,10 @@ export default function FileUploader({
     onFilesUpdate?.(uploadedFiles.filter((file) => file.name !== fileName));
   };
 
+  useEffect(() => {
+    console.log("🗂️  FileUploader files state:", files);
+  }, [files]);
+
   return (
     <section className="p-4 bg-selectedBlack rounded-lg">
       <div
@@ -157,6 +161,7 @@ export default function FileUploader({
           accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg"
           onChange={handleChange}
           multiple
+          data-cy="file-input"
           className="hidden"
         />
 
@@ -211,6 +216,7 @@ export default function FileUploader({
                   onClick={handleUpload}
                   disabled={isUploading}
                   className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
+                  data-cy="upload-submit"
                 >
                   {isUploading ? "Uploading..." : "Upload Files"}
                 </button>

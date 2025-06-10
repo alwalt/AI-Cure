@@ -871,12 +871,13 @@ def _generic_rag_summarizer(
 
     print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
 
+    # 1) Define structure of Schema Block
     class Biophysics(BaseModel):
             description: str
             title: str
             keywords: List[str]
     
-    # 1) Collect top_k chunks for each CSV
+    # 2) Collect top_k chunks for each file
     all_chunks = []
     for name in file_names:
         docs = vectorstore.similarity_search(
@@ -892,10 +893,6 @@ def _generic_rag_summarizer(
 
     context = "\n\n".join(d.page_content for d in all_chunks)
 
-    # 2) Build your dynamic schema block
-    # schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
-    # schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
-
     # 3) Prepend any extra instructions
     prompt = (
         "You are a scientific assistant. Respond ONLY with JSON, with no extra text.\n"
@@ -906,7 +903,7 @@ def _generic_rag_summarizer(
         "Do NOT include any text before or after the JSON."
     )
 
-    # 4) Call the LLM
+    # 4) Call the LLM and use 
     res_text = ollama.chat(
         model=model,
         messages=[{"role":"user","content": prompt}],
