@@ -17,8 +17,7 @@ export default function ClearFilesButton() {
         // Clear frontend state
         clearAllFiles();
         
-        // Refresh the page to ensure clean state
-        window.location.reload();
+        // State is already cleared using clearAllFiles()
       } else {
         alert("Failed to clear files");
       }
