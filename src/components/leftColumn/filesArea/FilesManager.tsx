@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
-import TableList from "./TableList";
-import UploadFileButton from "@/components/base/UploadFileButton";
+import ClearFilesButton from "@/components/base/ClearFilesButton";
 import FolderPlusButton from "@/components/base/FolderPlusButton";
 import PlayButton from "@/components/base/PlayButton";
-import UploadedFiles from "./UploadedFiles";
+import UploadFileButton from "@/components/base/UploadFileButton";
+import { apiBase } from "@/lib/api";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
-import { apiBase } from "@/lib/api";
+import { useEffect, useState } from "react";
+import TableList from "./TableList";
+import UploadedFiles from "./UploadedFiles";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
@@ -69,6 +70,7 @@ export default function FilesManager() {
             onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
+          <ClearFilesButton />
           <PlayButton />
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { create, StoreApi } from "zustand";
 import { UploadedFile } from "@/types/files";
+import { create, StoreApi } from "zustand";
 
 export interface Collection {
   id: string;
@@ -39,6 +39,8 @@ export interface SessionFileStoreState {
   // Deprecated - keeping for backward compatibility for now
   collectionFiles: UploadedFile[];
   addToCollectionFiles: (filesToAdd: UploadedFile[]) => void;
+
+  clearAllFiles: () => void;
 }
 
 const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
@@ -174,6 +176,13 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
         collections: [...state.collections, newCollection],
         collectionFiles: [...state.collectionFiles, ...newFiles],
       };
+    }),
+
+  clearAllFiles: () =>
+    set({
+      selectedFiles: [],
+      previewCsv: null,
+      previewFile: null,
     }),
 }));
 
