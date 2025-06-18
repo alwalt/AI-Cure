@@ -245,7 +245,24 @@ async def get_files(request: Request):
     except Exception as e:
         logging.error(f"Error during retrieval: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/api/clear_files")
+async def clear_files(request: Request):
+    session_id = request.state.session_id
     
+    # Clear tables reference (but keep vectorstore)
+    SESSION_TABLES[session_id] = []
+    
+    # Clear only FILES, preserve directories like chroma_db
+    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
+    if os.path.exists(UPLOAD_DIR):
+        for item in os.listdir(UPLOAD_DIR):
+            item_path = os.path.join(UPLOAD_DIR, item)
+            if os.path.isfile(item_path): 
+                os.remove(item_path)
+
+    return JSONResponse(content={"status": "success"})
+
 @app.post("/api/upload_file")
 async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
     """
@@ -404,7 +421,7 @@ async def mcp_query(
                     You are an AI agent that helps users understand NASA space biology datasets in the OSDR repository.
 
                     Your job is to:
-                    1. Detect if the user referenced an OSD study (e.g., “study 488”, “osd488”, “OSD-488”).
+                    1. Detect if the user referenced an OSD study (e.g., "study 488", "osd488", "OSD-488").
                     2. Normalize it to the correct dataset ID format: `OSD-###`.
                     3. Use the tool `osdr_fetch_metadata` to retrieve metadata from:
                     https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{dataset_id}/
@@ -837,7 +854,7 @@ async def ingest(
             data = await upload.read()
             # imagine we have `image_to_embedding` util
             emb, text = image_to_embedding(data)  
-            # add one “Document” wrapping both embedding + caption text
+            # add one "Document" wrapping both embedding + caption text
             vectorstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
 
         else:
@@ -871,12 +888,13 @@ def _generic_rag_summarizer(
 
     print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
 
+    # 1) Define structure of Schema Block
     class Biophysics(BaseModel):
             description: str
             title: str
             keywords: List[str]
     
-    # 1) Collect top_k chunks for each CSV
+    # 2) Collect top_k chunks for each file
     all_chunks = []
     for name in file_names:
         docs = vectorstore.similarity_search(
@@ -892,10 +910,6 @@ def _generic_rag_summarizer(
 
     context = "\n\n".join(d.page_content for d in all_chunks)
 
-    # 2) Build your dynamic schema block
-    schema_lines = [f'  "{k}": "{v}"' for k, v in instructions.items()]
-    schema_block = "{\n" + ",\n".join(schema_lines) + "\n}"
-
     # 3) Prepend any extra instructions
     prompt = (
         "You are a scientific assistant. Respond ONLY with JSON, with no extra text.\n"
@@ -906,7 +920,7 @@ def _generic_rag_summarizer(
         "Do NOT include any text before or after the JSON."
     )
 
-    # 4) Call the LLM
+    # 4) Call the LLM and use 
     res_text = ollama.chat(
         model=model,
         messages=[{"role":"user","content": prompt}],

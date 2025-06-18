@@ -1,0 +1,16 @@
+// cypress/tsconfig.json
+
+{
+  // we're always going to have a yellow line, here b/c the firewall won't let us go to the website to get ts schema.
+  //   it shouldn't effect the tests
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "types": ["cypress"], // load Cypress’s own type definitions
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"]
+}

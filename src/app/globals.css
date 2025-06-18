@@ -20,24 +20,44 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Custom vertical scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 10px;
-}
+@layer components {
+  /* Custom vertical scrollbar */
+  .custom-scrollbar {
+    @apply overflow-auto;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(128, 128, 128, 0.5); /* semi-transparent grey */
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(160, 160, 160, 0.8);
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.5); /* semi-transparent grey */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    /* hide when idle */
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Fade thumb in when hovering anywhere inside */
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    opacity: 0.8;
+    background-color: rgba(160, 160, 160, 0.8);
+  }
+  /* The little square where the X/Y meet */
+  .custom-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 @layer base {

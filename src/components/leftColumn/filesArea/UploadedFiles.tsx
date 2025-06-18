@@ -78,11 +78,12 @@ export default function UploadedFiles({
 
   return (
     <div className="bg-panelBlack border-grey border rounded p-2">
-      {/* <h3 className="text-lg font-semibold text-primaryWhite mb-2">
+      <h3 className="text-lg font-semibold text-primaryWhite mb-2">
         Uploaded Files
-      </h3> */}
+      </h3>
 
-      <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded">
+      <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded overflow-auto">
+        {/* ^^ overflow-auto add for overflow bug, we need to be able to scroll here */}
         <table className="w-full">
           <thead className="bg-unselectedBlack text-primaryWhite text-sm">
             <tr>

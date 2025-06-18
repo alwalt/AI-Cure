@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
-import TableList from "./TableList";
-import UploadFileButton from "@/components/base/UploadFileButton";
+import ClearFilesButton from "@/components/base/ClearFilesButton";
 import FolderPlusButton from "@/components/base/FolderPlusButton";
 import PlayButton from "@/components/base/PlayButton";
-import UploadedFiles from "./UploadedFiles";
+import UploadFileButton from "@/components/base/UploadFileButton";
+import { apiBase } from "@/lib/api";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
-import { apiBase } from "@/lib/api";
+import { useEffect, useState } from "react";
+import TableList from "./TableList";
+import UploadedFiles from "./UploadedFiles";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
@@ -60,15 +61,16 @@ export default function FilesManager() {
   };
 
   return (
-    <div className="space-y-2 last:mb-0">
-      <div className="flex justify-between w-full">
+    <div className="space-y-2 last:mb-0 overflow-hidden">
+      <div className="flex justify-between w-full overflow-hidden">
         <h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
-        <div className="flex justify-content">
+        <div className="flex justify-content overflow-hidden">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
             onFilesUpdate={handleFilesUpdate}
           />
           <FolderPlusButton />
+          <ClearFilesButton />
           <PlayButton />
         </div>
       </div>
