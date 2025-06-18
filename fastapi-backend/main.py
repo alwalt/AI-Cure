@@ -47,7 +47,7 @@ from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
-from config.rag_templates import TEMPLATES
+from rag_calls.rag_templates import TEMPLATES
 from pydantic import ValidationError
 
 import torch
