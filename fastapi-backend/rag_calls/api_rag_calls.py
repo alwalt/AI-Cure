@@ -15,6 +15,7 @@ async def generate_rag_with_description(
 ):
     #  placeholder
     # result = await llm.rag_describe(vs, payload) 
+    print("!!! HIT Description Route !!!")
     result = "description route hit"
     return {"description": result}
 

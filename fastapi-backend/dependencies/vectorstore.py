@@ -1,5 +1,8 @@
 # dependencies/vectorstore.py
 from fastapi import Request, HTTPException
+from rag_calls.models import BranchRequest
+from main import VECTOR_STORES
+
 
 def get_vectorstore(request: Request):
     """
