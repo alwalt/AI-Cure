@@ -13,7 +13,9 @@ async def generate_rag_with_description(
     llm = Depends(get_llm),
     vs  = Depends(get_vectorstore),
 ):
-    result = await llm.rag_describe(vs, payload)
+    #  placeholder
+    # result = await llm.rag_describe(vs, payload) 
+    result = "description route hit"
     return {"description": result}
 
 @router.post("/api/generate_rag_with_title")
@@ -23,7 +25,8 @@ async def generate_rag_with_title(
     llm = Depends(get_llm),
     vs  = Depends(get_vectorstore),
 ):
-    result = await llm.rag_title(vs, payload)
+    # result = await llm.rag_title(vs, payload)
+    result = "test title route hit"
     return {"title": result}
 
 @router.post("/api/generate_rag_with_keywords")
@@ -33,5 +36,6 @@ async def generate_rag_with_keywords(
     llm = Depends(get_llm),
     vs  = Depends(get_vectorstore),
 ):
-    result = await llm.rag_keywords(vs, payload)
+    # result = await llm.rag_keywords(vs, payload)
+    result = "keywords route hit"
     return {"keywords": result}

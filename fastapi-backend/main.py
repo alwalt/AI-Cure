@@ -48,6 +48,8 @@ from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
 from rag_calls.rag_templates import TEMPLATES
+from rag_calls.api_rag_calls import router as rag_router
+
 from pydantic import ValidationError
 
 import torch
@@ -115,6 +117,7 @@ async def lifespan(app: FastAPI):
         yield 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(rag_router) # Include single rag calls
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
