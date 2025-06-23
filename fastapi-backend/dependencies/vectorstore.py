@@ -1,23 +1,25 @@
 # dependencies/vectorstore.py
-from fastapi import Request, HTTPException
-from rag_calls.models import BranchRequest
-from main import VECTOR_STORES
+from fastapi import Request, Depends, HTTPException
+from rag_calls.models import SingleRagRequest
+# from main import VECTOR_STORES
 
 
-def get_vectorstore(request: Request):
+def get_vectorstore(payload: SingleRagRequest = Depends()):
     """
     FastAPI dependency that looks up the vectorstore instance for
     the current session_id.  We import VECTOR_STORES inside the
     function to avoid circular imports.
     """
-    # assumes you have middleware or earlier dependency that has done:
-    #    request.state.session_id = "<the user's session id>"
-    session_id = request.state.session_id
 
-    # now pull in the dict at runtime
-    from main import VECTOR_STORES  
+    session_id = payload.session_id
+    print("SESSION_ID FROM VECTORSTORE>PY !!!", session_id)
+    from main import SESSIONS
+    
+    # session = SESSIONS.get(session_id)
+    # vs = session.get("vectorstore")
+    vs = SESSIONS.get(session_id, {}).get("vectorstore")
 
-    vs = VECTOR_STORES.get(session_id)
+    print("Checking vector store!!!: ", vs)
     if vs is None:
         raise HTTPException(
             status_code=400,
