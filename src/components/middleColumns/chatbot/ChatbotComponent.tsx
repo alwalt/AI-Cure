@@ -1,64 +1,37 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { apiBase } from "@/lib/api";
+import { useChatbotStore } from "@/store/useChatbotStore";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
+import { useEffect, useState } from "react";
 import Chatbot from "react-chatbot-kit";
 import "react-chatbot-kit/build/main.css";
+import ActionProvider from "./ActionProvider.ts";
 import "./chatbot.css";
 import config from "./config.tsx";
 import MessageParser from "./MessageParser.ts";
-import ActionProvider from "./ActionProvider.ts";
-import { useChatbotStore } from "@/store/useChatbotStore";
-import { apiBase } from "@/lib/api";
 
 console.log("[DEBUG] apiBase:", apiBase);
 
 export default function ChatbotComponent() {
   const { sessionId, setSessionId } = useChatbotStore();
+  const mainSessionId = useSessionFileStore((state) => state.sessionId);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const init = async () => {
-      if (!sessionId) {
-        try {
-          console.log("No session ID found, creating vectorstore...");
-          const res1 = await fetch(`${apiBase}/api/create_vectorstore`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              embedding_model: "nomic-ai/nomic-embed-text-v1.5",
-              documents: JSON.stringify([
-                { page_content: "Test doc", metadata: {} },
-              ]),
-            }),
-          });
-          const d1 = await res1.json();
-          if (d1.session_id) {
-            console.log("Vectorstore created with session ID:", d1.session_id);
-            console.log("Creating chatbot...");
-            await fetch(
-              `${apiBase}/api/create_chatbot/${d1.session_id}`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  model_name: "llama3.1",
-                  chat_prompt: "You are a helpful assistant.",
-                }),
-              }
-            );
-            setSessionId(d1.session_id);
-            console.log("Chatbot created and session ID set.");
-          }
-        } catch (e) {
-          console.error("Error initializing chatbot:", e);
-        }
+      // Sync chatbot session with main session
+      if (mainSessionId && sessionId !== mainSessionId) {
+        console.log("Syncing chatbot session with main session:", mainSessionId);
+        setSessionId(mainSessionId);
+      } else if (!mainSessionId) {
+        console.log("No main session ID found, chatbot will wait for collections to be created");
       } else {
-        console.log("Using existing session ID:", sessionId);
+        console.log("Using synced session ID:", sessionId);
       }
       setLoading(false);
     };
     init();
-  }, [sessionId, setSessionId]);
+  }, [sessionId, setSessionId, mainSessionId]);
 
   if (loading) {
     return (

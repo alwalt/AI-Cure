@@ -6,6 +6,7 @@ import axios from "axios";
 
 export default function ClearFilesButton() {
   const clearAllFiles = useSessionFileStore((state) => state.clearAllFiles);
+  const fetchCollections = useSessionFileStore((state) => state.fetchCollections);
   
   const handleClick = async () => {
     try {
@@ -17,7 +18,8 @@ export default function ClearFilesButton() {
         // Clear frontend state
         clearAllFiles();
         
-        // State is already cleared using clearAllFiles()
+        // Refresh collections to sync with backend
+        await fetchCollections();
       } else {
         alert("Failed to clear files");
       }
