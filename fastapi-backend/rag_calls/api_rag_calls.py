@@ -38,7 +38,9 @@ async def generate_rag_with_description(
 
         # 2 Prepare the instructions - use Char's insrtuctions
         prompt = (
-            "You are a scientific assistant. Respond ONLY with JSON, with no extra text.\n"
+            "You are an expert at reading scientific articles.  Your task is to write a comprehensive one paragraph summary of the scientific article. The summary should include the scientific assays used, factors studied, results.\n"
+            "Based only on the data snippets below, produce valid JSON output strictly following this format:\n\n"
+            "Respond ONLY with JSON, with no extra text.\n"
             "Based only on the data snippets below, produce valid JSON output strictly following this format:\n\n"
             f"{DescriptionResponse.model_json_schema()}\n\n"  # ← injects the JSON-Schema directly
             "Data snippets:\n"
