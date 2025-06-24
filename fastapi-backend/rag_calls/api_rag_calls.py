@@ -100,5 +100,62 @@ async def generate_rag_with_keywords(
     vs  = Depends(get_vectorstore),
 ):
     # result = await llm.rag_keywords(vs, payload)
-    result = "keywords route hit"
+    #  logic for getting description
+    file_names = payload.file_names
+
+    def rag_description(vs, payload):
+        # 1  Collect top_k chunks for each file
+        all_chunks = []
+        for name in file_names:
+            docs = vs.similarity_search(
+                query=f"Fetch context for '{name}'",
+                k=payload.top_k,
+                filter={"source": name}
+            )
+            if docs:
+                all_chunks.extend(docs)
+
+        if not all_chunks:
+            raise HTTPException(404, "No data chunks found for any requested files")
+
+        context = "\n\n".join(d.page_content for d in all_chunks)
+
+        # 2 Prepare the instructions - use Char's insrtuctions
+        prompt = (
+           "Summarize the text given. Output in a JSON with the following format: {\"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {context}"
+            "Do NOT include any text before or after the JSON."
+        )
+
+        # 4 Call the LLM and use
+        res_text = llm.chat(
+            model=payload.model,
+            messages=[{"role":"user","content": prompt}],
+            format=KeywordsResponse.model_json_schema(),
+        )
+        raw = res_text["message"]["content"]
+        # 5 Compare shape that LLM gens, if not correct try again, 5 attempts
+        for attempt in range(1, 6):
+            try:
+                result = KeywordsResponse.model_validate_json(raw)
+                break   
+            except ValidationError as e:
+                print(f"Attempt {attempt} failed: {e}")
+                if attempt == 6:
+                    raise HTTPException(500, f"LLM returned invalid schema: {e}")
+                # retry—ask the model again, or you could modify `raw` via a repair prompt:
+                response = llm.chat(
+                    model=payload.model,
+                    messages=[{"role":"user","content": prompt}],
+                    format=KeywordsResponse.model_json_schema(),
+                )
+                raw = response["message"]["content"]
+
+        # 6 Return JSON res
+        return result.model_dump()
+
+
+    rag_result = rag_description(vs, payload) 
+    print("!!! HIT Description Route !!!")
+   
+    return rag_result
     return {"keywords": result}
