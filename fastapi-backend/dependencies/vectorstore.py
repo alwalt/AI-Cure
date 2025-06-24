@@ -1,10 +1,10 @@
 # dependencies/vectorstore.py
-from fastapi import Request, Depends, HTTPException
+from fastapi import Body, Request, Depends, HTTPException
 from rag_calls.models import SingleRagRequest
 # from main import VECTOR_STORES
 
 
-def get_vectorstore(payload: SingleRagRequest = Depends()):
+def get_vectorstore(payload: SingleRagRequest = Body(...)):
     """
     FastAPI dependency that looks up the vectorstore instance for
     the current session_id.  We import VECTOR_STORES inside the

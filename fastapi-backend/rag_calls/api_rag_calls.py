@@ -11,8 +11,8 @@ async def generate_rag_with_description(
     # request: Request,
     # raw_body: dict = Body(...),
     payload: SingleRagRequest = Body(...),
-    # llm = Depends(get_llm),
-    # vs  = Depends(get_vectorstore),
+    llm = Depends(get_llm),
+    vs  = Depends(get_vectorstore),
 ):
     #  placeholder
     # result = await llm.rag_describe(vs, payload) 
