@@ -21,7 +21,6 @@ export default function ClearFilesButton() {
         // Clear frontend state
         clearAllFiles();
 
-        // State is already cleared using clearAllFiles()
       } else {
         alert("Failed to clear files");
       }

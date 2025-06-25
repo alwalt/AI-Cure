@@ -3,6 +3,7 @@ import FolderPlusButton from "@/components/base/FolderPlusButton";
 import PlayButton from "@/components/base/PlayButton";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import { apiBase } from "@/lib/api";
+import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -14,6 +15,9 @@ export default function FilesManager() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Subscribe to the store's lastClearedTimestamp to detect when files are cleared
+  const lastClearedTimestamp = useSessionFileStore((state) => state.lastClearedTimestamp);
 
   useEffect(() => {
     const fetchSessionFiles = async () => {
@@ -43,6 +47,17 @@ export default function FilesManager() {
 
     fetchSessionFiles();
   }, []);
+
+  // Clear local state when files are cleared in the store
+  useEffect(() => {
+    if (lastClearedTimestamp > 0) {
+      // Files were cleared, reset local state
+      setUploadedFiles([]);
+      setUploadedTables([]);
+      setLoading(false);
+      setError(null);
+    }
+  }, [lastClearedTimestamp]);
 
   const [currentPreviewFile] = useState<UploadedFile | null>(null);
 
