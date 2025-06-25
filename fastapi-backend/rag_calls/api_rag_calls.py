@@ -30,11 +30,15 @@ async def generate_rag_with_description(
             )
             if docs:
                 all_chunks.extend(docs)
+                print("!!!! docs", docs)
+                print()
 
         if not all_chunks:
             raise HTTPException(404, "No data chunks found for any requested files")
 
         context = "\n\n".join(d.page_content for d in all_chunks)
+
+        print("!!!! CONTEXT !!!", context)
 
         # 2 Prepare the instructions - use Char's insrtuctions
         prompt = (
