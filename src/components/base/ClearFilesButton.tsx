@@ -36,7 +36,7 @@ export default function ClearFilesButton() {
       targetId="ClearFilesButton"
       buttonDescription="Clear All Files"
       Icon={TrashIcon}
-      iconClassName="h-6 w-6 translate-y-1"
+      iconClassName="h-6 w-6 translate-y-1" // We made a change here
       onClick={handleClick}
       aria-label="Clear all files" // Accessible label for screen readers
       role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
