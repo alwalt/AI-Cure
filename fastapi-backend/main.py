@@ -16,7 +16,7 @@ import numpy as np
 
 from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from contextlib import asynccontextmanager
 api_router = APIRouter()
 
@@ -30,6 +30,8 @@ from io import BytesIO
 import uvicorn
 import ollama
 import tempfile
+import zipfile
+from io import BytesIO
 
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -146,8 +148,62 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # { session_id -> [ (csv_file, name), ... ] }
 SESSION_TABLES = {}
+
+# Session structure for collection-based vectorstores
 SESSIONS = {}
-VECTOR_STORES = {}
+
+def initialize_session(session_id: str):
+    """Initialize a new session with a default empty collection"""
+    if session_id not in SESSIONS:
+        # Create default empty vectorstore
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2", 
+            model_kwargs={'trust_remote_code': True}
+        )
+        
+        # Create collection directory for default collection
+        default_collection_dir = os.path.join(USER_DIRS, session_id, "collections", "default")
+        os.makedirs(default_collection_dir, exist_ok=True)
+        
+        # Create empty vectorstore
+        default_vectorstore = Chroma(
+            embedding_function=embeddings,
+            persist_directory=default_collection_dir
+        )
+        
+        # Create LLM and chatbot chain for default collection
+        llm = ChatOllama(model="llama3.1", temperature=0)
+        qa_prompt = PromptTemplate(
+            input_variables=["context", "question"],
+            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+        )
+        
+        # Create retriever (will be empty initially)
+        retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+        
+        # Create chain
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm, 
+            retriever=retriever, 
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": qa_prompt},
+            verbose=True
+        )
+        
+        SESSIONS[session_id] = {
+            "collections": {
+                "default": {
+                    "vectorstore": default_vectorstore,
+                    "name": "Default Chat",
+                    "files": [],
+                    "created_at": time.time(),
+                    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+                }
+            },
+            "active_collection_id": "default",
+            "history": [],
+            "chain": chain
+        }
 
 # MCP server var init
 mcp_server = None
@@ -528,14 +584,19 @@ async def create_chatbot(
 ):
     """
     Create a chatbot with a specified model, chat prompt, and embedding model.
+    Uses the active collection's vectorstore.
     """
-    if session_id not in SESSIONS:
-        SESSIONS[session_id] = {"vectorstore": None, "chain": None}  # Initialize session
+    initialize_session(session_id)
 
-    vectorstore = SESSIONS[session_id].get("vectorstore")
+    if (not SESSIONS[session_id].get("active_collection_id") or
+        SESSIONS[session_id]["active_collection_id"] not in SESSIONS[session_id]["collections"]):
+        raise HTTPException(400, detail="No active collection found. Please load a collection first.")
+
+    active_collection_id = SESSIONS[session_id]["active_collection_id"]
+    vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
 
     if vectorstore is None:
-        raise HTTPException(status_code=400, detail="Vectorstore not initialized for this session")
+        raise HTTPException(status_code=400, detail="Active collection has no vectorstore. Please reingest the collection.")
     
     # Create LLM
     llm = ChatOllama(model="llama3.1", temperature=0)
@@ -562,7 +623,7 @@ async def create_chatbot(
     # Store chain in session
     SESSIONS[session_id]["chain"] = chain
     
-    return JSONResponse(content={"status": "success"})
+    return JSONResponse(content={"status": "success", "active_collection_id": active_collection_id})
 
 # Get Chat Response 
 @app.post("/api/get_chat_response/{session_id}")
@@ -572,12 +633,39 @@ async def get_chat_response(
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
+    Uses the active collection's context, or default vectorstore if no active collection.
     """
+    print(f"CHATRESPONSE  called with session_id={session_id}")
+    
     if session_id not in SESSIONS:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    if "chain" not in SESSIONS[session_id]:
-        raise HTTPException(status_code=400, detail="Chatbot not created yet")
+    initialize_session(session_id)
+    
+    if "chain" not in SESSIONS[session_id] or SESSIONS[session_id]["chain"] is None:
+        # No chain exists, ensure we have the default chain
+        active_collection_id = SESSIONS[session_id].get("active_collection_id")
+        if not active_collection_id or active_collection_id not in SESSIONS[session_id]["collections"]:
+            # Set to default if no valid active collection
+            SESSIONS[session_id]["active_collection_id"] = "default"
+            active_collection_id = "default"
+        
+        # Create/recreate chain for the active collection
+        vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
+        llm = ChatOllama(model="llama3.1", temperature=0)
+        qa_prompt = PromptTemplate(
+            input_variables=["context", "question"],
+            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+        )
+        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm, 
+            retriever=retriever, 
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": qa_prompt},
+            verbose=True
+        )
+        SESSIONS[session_id]["chain"] = chain
     
     chain = SESSIONS[session_id]["chain"]
     history = SESSIONS[session_id].get("history", [])
@@ -585,7 +673,23 @@ async def get_chat_response(
     result = chain({"question": query, "chat_history": history})
     SESSIONS[session_id]["history"] = history + [(query, result["answer"])]
     
-    return JSONResponse(content={"answer": result["answer"]})
+    # Determine context info for response
+    active_collection_id = SESSIONS[session_id].get("active_collection_id")
+    if active_collection_id and active_collection_id in SESSIONS[session_id]["collections"] and active_collection_id != "default":
+        # Using a specific collection (not default)
+        collection_name = SESSIONS[session_id]["collections"][active_collection_id]["name"]
+        return JSONResponse(content={
+            "answer": result["answer"],
+            "active_collection": collection_name,
+            "active_collection_id": active_collection_id
+        })
+    else:
+        # Using default vectorstore (general chat) - either active_collection_id is "default" or None
+        return JSONResponse(content={
+            "answer": result["answer"],
+            "active_collection": "General Chat",
+            "active_collection_id": None
+        })
 
 # Image Analyzer
 @app.post("/api/analyze_image")
@@ -807,69 +911,308 @@ def analyze_table(
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
-# Ingest raw list of files into vector store
 @app.post("/api/ingest")
-async def ingest(
+async def ingest_collection(
     request: Request,
     files: List[UploadFile] = File(...),
-    embedding_model: str    = Form("sentence-transformers/all-MiniLM-L6-v2"),
+    collection_id: str = Form(...),
+    collection_name: str = Form(...),
+    embedding_model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
 ):
     """
-    Ingest any mix of CSV, PDF, and image files into a new vectorstore batch.
-    Returns a vectorstore_id for this batch.
+    Create a new vectorstore for a specific collection.
+    Each collection gets its own isolated vectorstore.
     """
     session_id = request.state.session_id
-
-    save_dir = os.path.join(USER_DIRS, session_id, "chroma_db")
-    os.makedirs(save_dir, exist_ok=True)
-
-    vectorstore  = SESSIONS[session_id]["vectorstore"]
-
-    df = None
+    
+    # Initialize session if needed
+    initialize_session(session_id)
+    
+    # Create collection-specific directory
+    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
+    os.makedirs(collection_dir, exist_ok=True)
+    
+    # Process files and create documents
+    all_docs = []
+    file_info_list = []
+    
     for upload in files:
         ext = Path(upload.filename).suffix.lower()
         metadata = {"source": upload.filename, "filetype": ext}
-
-        print("What is the current file's ext, ", ext)
-        # 1) Handle CSV files
+        
+        # Store file info for frontend
+        file_info = {
+            "name": upload.filename,
+            "type": ext.lstrip('.'), 
+            "size": upload.size if hasattr(upload, 'size') else 0,
+            "dateCreated": time.strftime("%m/%d/%Y")
+        }
+        file_info_list.append(file_info)
+        
+        # Handle different file types
         if ext == ".csv":
             df = pd.read_csv(BytesIO(await upload.read()))
+            df = clean_dataframe(df)
+            for _, row in df.iterrows():
+                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
+                doc = Document(page_content=text, metadata=metadata)
+                all_docs.append(doc)
+                
         elif ext in {".xlsx", ".xls"}:
-            # Handle Excel files
             df = pd.read_excel(BytesIO(await upload.read()), engine="openpyxl")
-
-        # 2) PDF → PyMuPDFLoader
+            df = clean_dataframe(df)
+            for _, row in df.iterrows():
+                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
+                doc = Document(page_content=text, metadata=metadata)
+                all_docs.append(doc)
+                
         elif ext == ".pdf":
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-            tmp.write(await upload.read()); tmp.flush()
+            tmp.write(await upload.read())
+            tmp.flush()
             docs = PyMuPDFLoader(tmp.name).load()
             for doc in docs:
                 doc.metadata.update(metadata)
-            vectorstore.add_documents(docs)
-
-        # 3) Images → (example) CLIP or other image embedder
+                all_docs.append(doc)
+            os.unlink(tmp.name)  # Clean up temp file
+            
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
-                # TODO: implement image embedding, can use HugginFace's CLIP model
+            # TODO: implement image embedding with CLIP
             continue
-            data = await upload.read()
-            # imagine we have `image_to_embedding` util
-            emb, text = image_to_embedding(data)  
-            # add one "Document" wrapping both embedding + caption text
-            vectorstore.add_texts([text], embeddings=[emb], metadatas=[metadata])
+    
+    if not all_docs:
+        raise HTTPException(400, "No processable files found")
+    
+    # Create embeddings and vectorstore
+    embeddings = HuggingFaceEmbeddings(
+        model_name=embedding_model, 
+        model_kwargs={'trust_remote_code': True}
+    )
+    
+    # Create text splitter
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+    split_docs = text_splitter.split_documents(all_docs)
+    
+    # Create vectorstore for this collection
+    vectorstore = Chroma.from_documents(
+        documents=split_docs,
+        embedding=embeddings,
+        persist_directory=collection_dir
+    )
+    
+    # Store collection info in session
+    SESSIONS[session_id]["collections"][collection_id] = {
+        "vectorstore": vectorstore,
+        "name": collection_name,
+        "files": file_info_list,
+        "created_at": time.time(),
+        "embedding_model": embedding_model
+    }
+    
+    # Set as active collection
+    SESSIONS[session_id]["active_collection_id"] = collection_id
+    
+    # Automatically create a chatbot for this collection
+    try:
+        # Create LLM
+        llm = ChatOllama(model="llama3.1", temperature=0)
+        
+        # Create prompt template
+        qa_prompt = PromptTemplate(
+            input_variables=["context", "question"],
+            template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+        )
+        
+        # Create retriever
+        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+        
+        # Create chain
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm, 
+            retriever=retriever, 
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": qa_prompt},
+            verbose=True
+        )
+        
+        # Store chain in session
+        SESSIONS[session_id]["chain"] = chain
+        print(f"DEBUG: Chatbot automatically created for collection {collection_id} in session {session_id}")
+        
+    except Exception as e:
+        print(f"ERROR: Failed to create chatbot automatically: {str(e)}")
+        # Don't fail the ingestion if chatbot creation fails
+    
+    return JSONResponse({
+        "session_id": session_id,
+        "collection_id": collection_id,
+        "collection_name": collection_name,
+        "files_processed": len(files),
+        "chatbot_created": "chain" in SESSIONS[session_id] and SESSIONS[session_id]["chain"] is not None
+    })
 
-        else:
-            # skip unknown types
+
+# Collection Management Endpoints
+@app.get("/api/collections")
+async def list_collections(request: Request):
+    """List all collections for the current session (excluding default)"""
+    session_id = request.state.session_id
+    
+    # Initialize session if needed
+    initialize_session(session_id)
+    
+    collections_data = []
+    for coll_id, coll_info in SESSIONS[session_id]["collections"].items():
+        # Skip the default collection (for background general chat)
+        if coll_id == "default":
             continue
+            
+        collections_data.append({
+            "id": coll_id,
+            "name": coll_info["name"],
+            "files": coll_info["files"],
+            "created_at": coll_info["created_at"],
+            "is_active": coll_id == SESSIONS[session_id].get("active_collection_id")
+        })
+    
+    return JSONResponse({
+        "collections": collections_data,
+        "session_id": session_id
+    })
 
-    # Now you have a DataFrame for both CSV and Excel, add embeddings to vectorstore
-    if df is not None:
-        df = clean_dataframe(df)
-        for _, row in df.iterrows():
-            text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
-            print("TEXT We are about to store in Chroma:", text)
-            vectorstore.add_texts([text], metadatas=[metadata])
 
-    return JSONResponse({"session_id": session_id}) 
+@app.post("/api/collections/{collection_id}/load")
+async def load_collection(collection_id: str, request: Request):
+    """Switch chatbot context to this collection"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    # Set as active collection
+    SESSIONS[session_id]["active_collection_id"] = collection_id
+    
+    # Clear existing chatbot chain (will be recreated with new vectorstore)
+    SESSIONS[session_id]["chain"] = None
+    
+    collection_name = SESSIONS[session_id]["collections"][collection_id]["name"]
+    
+    return JSONResponse({
+        "message": f"Collection '{collection_name}' loaded successfully",
+        "active_collection_id": collection_id
+    })
+
+
+@app.get("/api/collections/{collection_id}/export")
+async def export_collection(collection_id: str, request: Request):
+    """Download collection as zip file"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    collection_info = SESSIONS[session_id]["collections"][collection_id]
+    collection_name = collection_info["name"]
+    
+    # Collection directory path
+    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
+    
+    if not os.path.exists(collection_dir):
+        raise HTTPException(404, "Collection directory not found")
+    
+    # Create zip file in memory
+    zip_buffer = BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Add all files from the collection directory
+        for root, dirs, files in os.walk(collection_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arc_name = os.path.relpath(file_path, collection_dir)
+                zip_file.write(file_path, arc_name)
+    
+    zip_buffer.seek(0)
+    
+    # Clean filename for download
+    safe_name = re.sub(r'[^\w\-_.]', '_', collection_name)
+    filename = f"{safe_name}_{collection_id}.zip"
+    
+    return Response(
+        content=zip_buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@app.delete("/api/collections/{collection_id}")
+async def delete_collection(collection_id: str, request: Request):
+    """Delete collection and its vectorstore"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    collection_name = SESSIONS[session_id]["collections"][collection_id]["name"]
+    
+    # Remove from session
+    del SESSIONS[session_id]["collections"][collection_id]
+    
+    # If this was the active collection, reset to default
+    if SESSIONS[session_id].get("active_collection_id") == collection_id:
+        SESSIONS[session_id]["active_collection_id"] = "default"
+        # Reset to default chain (already exists from initialize_session)
+        default_vectorstore = SESSIONS[session_id]["collections"]["default"]["vectorstore"]
+        llm = ChatOllama(model="llama3.1", temperature=0)
+        qa_prompt = PromptTemplate(
+            input_variables=["context", "question"],
+            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+        )
+        retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm, 
+            retriever=retriever, 
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": qa_prompt},
+            verbose=True
+        )
+        SESSIONS[session_id]["chain"] = chain
+    
+    # Delete collection directory
+    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
+    if os.path.exists(collection_dir):
+        shutil.rmtree(collection_dir)
+    
+    return JSONResponse({
+        "message": f"Collection '{collection_name}' deleted successfully"
+    })
+
+
+@app.put("/api/collections/{collection_id}")
+async def rename_collection(
+    collection_id: str, 
+    new_name: str = Body(..., embed=True),
+    request: Request = None
+):
+    """Rename a collection"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    # Update collection name
+    SESSIONS[session_id]["collections"][collection_id]["name"] = new_name
+    
+    return JSONResponse({
+        "message": f"Collection renamed to '{new_name}' successfully"
+    })
 
 
 # Magic Wand / Sparkles Description tables route
@@ -884,9 +1227,17 @@ def _generic_rag_summarizer(
 ) -> JSONResponse:
     
     session_id = request.state.session_id
-    vectorstore  = SESSIONS[session_id]["vectorstore"]
+    
+    initialize_session(session_id)
+    
+    if (not SESSIONS[session_id].get("active_collection_id") or
+        SESSIONS[session_id]["active_collection_id"] not in SESSIONS[session_id]["collections"]):
+        raise HTTPException(400, "No active collection found. Please load a collection first.")
+    
+    active_collection_id = SESSIONS[session_id]["active_collection_id"]
+    vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
 
-    print("!! generate_rag_with_template - session_id:", session_id, "has vectorstore?", bool(vectorstore))
+    print(f"!! generate_rag_with_template - session_id: {session_id}, active_collection: {active_collection_id}, has vectorstore: {bool(vectorstore)}")
 
     # 1) Define structure of Schema Block
     class Biophysics(BaseModel):
