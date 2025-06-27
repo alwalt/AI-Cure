@@ -26,8 +26,8 @@ async def generate_rag_with_description(
         f"{DescriptionResponse.model_json_schema()}\n\n"
     )
 
-    # 2) (Optional) Let the LLM refine that into a focused search query
-    #    e.g. “Generate a 2-5 word query to fetch relevant context:” 
+    # 2) Let the LLM refine that into a focused search query
+    #    Let the LLM build the query in terms it understands 
     refined_query_resp = await run_in_threadpool(
         llm.chat,
         model=payload.model,
@@ -47,8 +47,13 @@ async def generate_rag_with_description(
         docs = vs.similarity_search(
             query=search_query,
             k=payload.top_k,
-            filter={"source": name}   # here `name` is each file in your list
-        )
+            filter={"source": name},   # here `name` is each file in your list
+            score_threshold=0.65,
+            search_kwargs={
+                "metric": "cosine",  # for Chroma, best for text embeddings
+                "ef_search": 150     # Chroma uses HNSW under the hood
+            },
+        )   
         if docs:
             all_docs.extend(docs)
 
