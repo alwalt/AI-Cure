@@ -26,6 +26,9 @@ export interface UploadResponse {
 
 export interface IngestResponse {
   session_id: string;
+  collection_id?: string;
+  collection_name?: string;
+  files_processed?: number;
 }
 
 export interface UploadFileButtonProps {
@@ -103,10 +106,11 @@ export interface FilePreviewerProps {
 
 export interface CollapsibleSectionProps {
   title: string;
-  onGenerate: () => Promise<void>;
+  onGenerate: () => void;
   value: string;
-  onChange: (txt: string) => void;
+  onChange: (text: string) => void;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 export interface EditableTextAreaProps {
@@ -116,6 +120,15 @@ export interface EditableTextAreaProps {
   rows?: number;
 }
 
-export interface RagResponse {
-  [key: string]: string | string[];
+export interface RagResponse extends Record<string, string | string[]> {
+  description: string;
+  title: string;
+  keywords: string[];
+}
+
+export interface BackendCollection {
+  id: string;
+  name: string;
+  files?: UploadedFile[];
+  is_active: boolean;
 }
