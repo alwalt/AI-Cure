@@ -120,8 +120,15 @@ export interface EditableTextAreaProps {
   rows?: number;
 }
 
-export interface RagResponse {
+export interface RagResponse extends Record<string, string | string[]> {
   description: string;
   title: string;
   keywords: string[];
+}
+
+export interface BackendCollection {
+  id: string;
+  name: string;
+  files?: UploadedFile[];
+  is_active: boolean;
 }
