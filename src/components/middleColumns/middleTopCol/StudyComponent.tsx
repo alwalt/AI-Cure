@@ -17,9 +17,6 @@ export default function StudyComponent() {
   const activeCollectionId = useSessionFileStore(
     (state: SessionFileStoreState) => state.activeCollectionId
   );
-  const getAllCollectionFiles = useSessionFileStore(
-    (state: SessionFileStoreState) => state.getAllCollectionFiles
-  );
   const sessionId = useSessionFileStore(
     (state: SessionFileStoreState) => state.sessionId
   );
@@ -35,7 +32,7 @@ export default function StudyComponent() {
 
   const CollapsibleSectionTitles = ["description", "title", "keywords"];
 
-  const activeCollection = collections.find(c => c.id === activeCollectionId);
+  const activeCollection = collections.find((c) => c.id === activeCollectionId);
 
   const onGenerate = async (sectionToLoad: string) => {
     if (!sessionId) {
@@ -58,7 +55,9 @@ export default function StudyComponent() {
       return;
     }
 
-    const fileNamesForRAG = activeCollection.files.map((file: UploadedFile) => file.name);
+    const fileNamesForRAG = activeCollection.files.map(
+      (file: UploadedFile) => file.name
+    );
     console.log(
       "StudyComponent: Calling RAG generation for section:",
       sectionToLoad,
@@ -98,10 +97,13 @@ export default function StudyComponent() {
         <div className="mb-4 p-3 bg-selectedBlack border border-selectedBlue rounded">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-selectedBlue">Active Collection</h3>
+              <h3 className="text-sm font-semibold text-selectedBlue">
+                Active Collection
+              </h3>
               <p className="text-primaryWhite">{activeCollection.name}</p>
               <p className="text-xs text-brightGrey">
-                {activeCollection.files.length} file{activeCollection.files.length !== 1 ? 's' : ''} loaded
+                {activeCollection.files.length} file
+                {activeCollection.files.length !== 1 ? "s" : ""} loaded
               </p>
             </div>
             <div className="text-xs bg-selectedBlue px-2 py-1 rounded text-primaryWhite">
@@ -111,7 +113,9 @@ export default function StudyComponent() {
         </div>
       ) : (
         <div className="mb-4 p-3 bg-selectedBlack border border-grey rounded">
-          <h3 className="text-sm font-semibold text-brightGrey">No Active Collection</h3>
+          <h3 className="text-sm font-semibold text-brightGrey">
+            No Active Collection
+          </h3>
           <p className="text-primaryWhite text-sm">
             Please ingest and load a collection to generate study content.
           </p>
