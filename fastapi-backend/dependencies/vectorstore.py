@@ -15,9 +15,19 @@ def get_vectorstore(payload: SingleRagRequest = Body(...)):
     print("SESSION_ID FROM VECTORSTORE>PY !!!", session_id)
     from main import SESSIONS
     
-    # session = SESSIONS.get(session_id)
-    # vs = session.get("vectorstore")
-    vs = SESSIONS.get(session_id, {}).get("vectorstore")
+    session = SESSIONS.get(session_id)
+    if session is None:
+        raise HTTPException(400, f"Unknown session {session_id}")
+
+    # 1) Which collection is currently active?
+    coll_id = session.get("active_collection_id")
+    collections = session.get("collections", {})
+    coll = collections.get(coll_id)
+    if coll is None:
+        raise HTTPException(400, f"No collection '{coll_id}' in session {session_id}")
+
+    # 2) Pull the vectorstore out of that collection
+    vs = coll.get("vectorstore")
 
     print("Checking vector store!!!: ", vs)
     if vs is None:

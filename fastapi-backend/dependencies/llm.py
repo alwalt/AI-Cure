@@ -1,7 +1,5 @@
 # dependencies/llm.py
 import ollama
-
-
 # will configure llm to users choices, default is llama3.1
 def get_llm():
     """

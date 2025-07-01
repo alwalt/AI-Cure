@@ -44,24 +44,24 @@ async def generate_rag_with_description(
     # 3) Do your similarity search using the refined query
     all_docs = []
     for name in payload.file_names:
-        docs = vs.similarity_search(
+        docs_and_scores = vs.similarity_search_with_score(
             query=search_query,
             k=payload.top_k,
-            filter={"source": name},   # here `name` is each file in your list
-            score_threshold=0.65,
-            search_kwargs={
-                "metric": "cosine",  # for Chroma, best for text embeddings
-                "ef_search": 150     # Chroma uses HNSW under the hood
-            },
-        )   
+            filter={"source": name},  # if you’re filtering by source
+        )
+        # unpack raw docs
+        docs = [doc for doc, _ in docs_and_scores]
         if docs:
             all_docs.extend(docs)
 
-    if not all_docs:
-        raise HTTPException(404, "No relevant document chunks found")
+        # 3a) apply your threshold
+        filtered_docs = [doc for doc, score in docs_and_scores if score >= 0.65]
+        # 3b) fallback to at least something if none pass
+        if not filtered_docs:
+            filtered_docs = [doc for doc, _ in docs_and_scores]
 
-    # 4) Build your context string
-    context = "\n\n".join(d.page_content for d in docs)
+    # 4) build context
+    context = "\n\n".join(d.page_content for d in filtered_docs)
     print("!!!! !!!! Context: ", context)
 
     # 5) Now call the LLM one final time to produce your JSON summary

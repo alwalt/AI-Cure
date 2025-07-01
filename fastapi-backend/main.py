@@ -41,6 +41,8 @@ from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
+from chromadb.config import Settings as ChromaSettings # hyperparams
+from langchain_community.vectorstores import Chroma # hyperparams
 
 import asyncio, yaml
 from mcp_agent.app import MCPApp
@@ -140,6 +142,13 @@ app.add_middleware(
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 USER_DIRS = "user_uploads"
 JSON_DIRS = "cached_jsons"
+
+# Chroma / HNSW Defaults for hyperparams
+chroma_settings = ChromaSettings(anonymized_telemetry=False)
+hnsw_metadata = {
+    "hnsw:space": "cosine",
+    "hnsw:search_ef": 150,
+}
 
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
@@ -544,7 +553,9 @@ async def generate_vectors(
     vectorstore = Chroma.from_documents(
         documents=split_docs, 
         embedding=embeddings,
-        persist_directory=save_directory
+        persist_directory=save_directory,
+        client_settings=chroma_settings,
+        collection_metadata=hnsw_metadata,
     )
     
     # Check if cookie exists in SESSIONS, if not create one
@@ -1000,7 +1011,9 @@ async def ingest_collection(
     vectorstore = Chroma.from_documents(
         documents=split_docs,
         embedding=embeddings,
-        persist_directory=collection_dir
+        persist_directory=collection_dir,
+        client_settings=chroma_settings,
+        collection_metadata=hnsw_metadata,
     )
     
     # Store collection info in session
