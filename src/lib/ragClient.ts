@@ -1,6 +1,44 @@
 import { RagResponse } from "@/types/files";
 import { apiBase } from "@/lib/api";
 
+// Single RAG call
+export type SingleRagResponse = {
+  description?: string;
+  title?: string;
+  keywords?: string[];
+};
+
+// call `/api/generate_rag_with_description` or `/generate_rag_with_title` etc.
+export async function generateSingleRag(
+  section: "description" | "title" | "keywords",
+  fileNames: string[],
+  sessionId: string
+): Promise<string | string[]> {
+  const payload = {
+    session_id: sessionId,
+    file_names: fileNames,
+    model: "llama3.1", // match your backend default
+    top_k: 3, // or push this through from UI if you like
+  };
+  console.log("single RAG call, section,", section);
+  console.log("single RAG call, cookie,", sessionId);
+  const res = await fetch(`${apiBase}/api/generate_rag_with_${section}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`RAG ${section} call failed: ${res.statusText}`);
+  }
+  const data: SingleRagResponse = await res.json();
+  const value = data[section];
+  if (value === undefined) {
+    throw new Error(`No "${section}" field in response`);
+  }
+  return value;
+}
+
+// Old whole obj 1 shot api call
 export async function generateWithTemplate(
   fileNames: string[],
   template: "biophysics",

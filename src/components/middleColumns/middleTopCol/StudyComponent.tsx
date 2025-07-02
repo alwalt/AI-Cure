@@ -5,7 +5,7 @@ import {
   useSessionFileStore,
   SessionFileStoreState,
 } from "@/store/useSessionFileStore";
-import { generateWithTemplate } from "@/lib/ragClient";
+import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
 import { RagResponse, UploadedFile } from "@/types/files";
 
 export default function StudyComponent() {
@@ -14,8 +14,8 @@ export default function StudyComponent() {
   const collections = useSessionFileStore(
     (state: SessionFileStoreState) => state.collections
   );
-  const getAllCollectionFiles = useSessionFileStore(
-    (state: SessionFileStoreState) => state.getAllCollectionFiles
+  const activeCollectionId = useSessionFileStore(
+    (state: SessionFileStoreState) => state.activeCollectionId
   );
   const sessionId = useSessionFileStore(
     (state: SessionFileStoreState) => state.sessionId
@@ -32,6 +32,8 @@ export default function StudyComponent() {
 
   const CollapsibleSectionTitles = ["description", "title", "keywords"];
 
+  const activeCollection = collections.find((c) => c.id === activeCollectionId);
+
   const onGenerate = async (sectionToLoad: string) => {
     if (!sessionId) {
       console.error(
@@ -43,37 +45,53 @@ export default function StudyComponent() {
       return;
     }
 
-    const allFiles = getAllCollectionFiles();
-    if (!allFiles || allFiles.length === 0) {
-      console.error(
-        "StudyComponent: No files in any collection for RAG data generation."
-      );
-      alert("No files in collections. Please add and ingest files first.");
+    if (!activeCollectionId) {
+      alert("No active collection found. Please load a collection first.");
       return;
     }
 
-    const fileNamesForRAG = allFiles.map((file: UploadedFile) => file.name);
+    if (!activeCollection) {
+      alert("Active collection not found. Please reload the page.");
+      return;
+    }
+
+    const fileNamesForRAG = activeCollection.files.map(
+      (file: UploadedFile) => file.name
+    );
     console.log(
       "StudyComponent: Calling RAG generation for section:",
       sectionToLoad,
-      "with fileNames:",
+      "with fileNames from active collection:",
       fileNamesForRAG
     );
     console.log(
-      "StudyComponent: Using files from",
-      collections.length,
-      "collection(s)"
+      "StudyComponent: Using active collection:",
+      activeCollection.name
     );
 
     setLoadingSection(sectionToLoad);
     try {
-      const ragResponse: RagResponse = await generateWithTemplate(
+      // const ragResponse: RagResponse = await generateWithTemplate(
+      //   fileNamesForRAG,
+      //   "biophysics"
+      // );
+      // console.log("StudyComponent: RAG data received:", ragResponse);
+      // setFullRagData(ragResponse);
+
+      // 🔥 new per-section call
+      const result = await generateSingleRag(
+        sectionToLoad as "description" | "title" | "keywords",
         fileNamesForRAG,
-        "biophysics"
+        sessionId
       );
 
-      console.log("StudyComponent: RAG data received:", ragResponse);
-      setFullRagData(ragResponse);
+      // normalize keywords array into a string for editableTextArea
+      const textResult =
+        sectionToLoad === "keywords" && Array.isArray(result)
+          ? result.join(", ")
+          : (result as string);
+
+      updateRagSection(sectionToLoad, textResult);
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);
       alert(
@@ -88,6 +106,39 @@ export default function StudyComponent() {
 
   return (
     <div className="w-full overflow-auto">
+      {/* Active Collection Info */}
+      {activeCollection ? (
+        <div className="mb-4 p-3 bg-selectedBlack border border-selectedBlue rounded">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-selectedBlue">
+                Active Collection
+              </h3>
+              <p className="text-primaryWhite">{activeCollection.name}</p>
+              <p className="text-xs text-brightGrey">
+                {activeCollection.files.length} file
+                {activeCollection.files.length !== 1 ? "s" : ""} loaded
+              </p>
+            </div>
+            <div className="text-xs bg-selectedBlue px-2 py-1 rounded text-primaryWhite">
+              READY FOR RAG
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-4 p-3 bg-selectedBlack border border-grey rounded">
+          <h3 className="text-sm font-semibold text-brightGrey">
+            No Active Collection
+          </h3>
+          <p className="text-primaryWhite text-sm">
+            Please ingest and load a collection to generate study content.
+          </p>
+          <p className="text-xs text-brightGrey mt-1">
+            You can still chat with the bot using general knowledge below.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col overflow-hidden">
         {CollapsibleSectionTitles.map((sectionTitle) => (
           <CollapsibleSection
@@ -97,6 +148,7 @@ export default function StudyComponent() {
             value={ragData[sectionTitle] || ""}
             onChange={(txt) => updateRagSection(sectionTitle, txt)}
             isLoading={loadingSection === sectionTitle}
+            disabled={!activeCollection} // Disable if no active collection
           />
         ))}
       </div>
