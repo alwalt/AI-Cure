@@ -3,6 +3,7 @@
 .react-chatbot-kit-chat-input {
   background-color: #393834 !important;
   border-radius: 0px;
+  color: #fff !important;
 }
 
 .react-chatbot-kit-chat-input::placeholder {
