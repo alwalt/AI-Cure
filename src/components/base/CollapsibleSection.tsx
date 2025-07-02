@@ -63,13 +63,13 @@ export default function CollapsibleSection({
       {isOpen && (
         <div id={`section-content-${title}`} className="p-2">
           <div className="flex items-center gap-2">
-            <AiGenerateButton 
-              onClick={onGenerate} 
-              disabled={isLoading || disabled} 
+            <AiGenerateButton
+              onClick={onGenerate}
+              disabled={isLoading || disabled}
             />
             {isLoading && (
               <ArrowPathIcon
-                className="loader h-6 w-6 animate-spin"
+                className="loader h-6 w-6 animate-spin text-primaryWhite"
                 aria-label="Loading…"
               />
             )}
