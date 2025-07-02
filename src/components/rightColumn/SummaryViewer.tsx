@@ -149,7 +149,7 @@ export default function SummaryViewer({
   }
 
   if (isLoading) {
-    const dots = ".".repeat(dotCount); // or ".".repeat(dotCount)
+    const dots = ".".repeat(dotCount);
     return (
       <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
