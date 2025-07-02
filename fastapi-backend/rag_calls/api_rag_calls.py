@@ -105,9 +105,79 @@ async def generate_rag_with_title(
     llm = Depends(get_llm),
     vs  = Depends(get_vectorstore),
 ):
-    # result = await llm.rag_title(vs, payload)
-    result = "test title route hit"
-    return {"title": result}
+    # 1) Define your extraction job and JSON schema up front
+    instruction_block = (
+        "Your task is to extract the article's exact title as it appears at the top of the paper. "
+        "Respond ONLY with JSON, following this schema:\n\n"
+        f"{TitleResponse.model_json_schema()}\n\n"
+    )
+
+    # 2) Let the LLM refine that into a concise search query
+    refine_resp = await run_in_threadpool(
+        llm.chat,
+        model=payload.model,
+        messages=[{
+            "role": "user",
+            "content": (
+                instruction_block
+            )
+        }],
+    )
+    search_query = refine_resp["message"]["content"].strip().strip('"')
+
+    # 3) Pull top-k chunks (with scores) for each file
+    docs_and_scores = []
+    for src in payload.file_names:
+        docs_and_scores.extend(
+            vs.similarity_search_with_score(
+                query=search_query,
+                k=payload.top_k,
+                filter={"source": src},
+            )
+        )
+
+    if not docs_and_scores:
+        raise HTTPException(404, "No document chunks found to extract a title")
+
+    # 3a) Pick the best chunk (highest score) as the likeliest title snippet
+    docs_and_scores.sort(key=lambda pair: pair[1], reverse=True)
+    best_doc = docs_and_scores[0][0]
+
+    # 4) Build context using just that one snippet (which should contain the title)
+    context = best_doc.page_content
+
+    # 5) Final LLM call to format the JSON title
+    final_prompt = (
+        instruction_block +
+        "Data snippet:\n" + context + "\n\n"
+        "Do NOT include any text before or after the JSON."
+    )
+    res = await run_in_threadpool(
+        llm.chat,
+        model=payload.model,
+        messages=[{"role": "user", "content": final_prompt}],
+        format=TitleResponse.model_json_schema(),
+    )
+    raw = res["message"]["content"]
+
+    # 6) Validate & retry up to 5× on malformed JSON
+    for attempt in range(1, 6):
+        try:
+            result = TitleResponse.model_validate_json(raw)
+            break
+        except ValidationError as e:
+            if attempt == 5:
+                raise HTTPException(500, f"LLM returned invalid title schema: {e}")
+            retry = await run_in_threadpool(
+                llm.chat,
+                model=payload.model,
+                messages=[{"role": "user", "content": final_prompt}],
+                format=TitleResponse.model_json_schema(),
+            )
+            raw = retry["message"]["content"]
+
+    return result.model_dump()
+
 
 @router.post("/api/generate_rag_with_keywords", response_model=KeywordsResponse)
 async def generate_rag_with_keywords(
