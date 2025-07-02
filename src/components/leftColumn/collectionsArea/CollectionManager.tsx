@@ -242,6 +242,18 @@ export default function CollectionManager() {
     collectionId: string,
     newName: string
   ) => {
+    // Check if collection is ingested
+    const collection = collections.find(c => c.id === collectionId);
+    
+    if (!collection?.isIngested) {
+      // For non-ingested collections, rename locally only
+      renameCollection(collectionId, newName);
+      setStatusMessage(`Collection renamed to "${newName}" (will sync after ingestion).`);
+      setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
+
+    // For ingested collections, update backend
     try {
       await axios.put(
         `${apiBase}/api/collections/${collectionId}`,
