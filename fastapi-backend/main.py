@@ -639,17 +639,24 @@ async def create_chatbot(
     
     return JSONResponse(content={"status": "success", "active_collection_id": active_collection_id})
 
+
+class ChatReq(BaseModel):
+    query: str
+    model: str
+    
 # Get Chat Response 
 @app.post("/api/get_chat_response/{session_id}")
 async def get_chat_response(
     session_id: str,
-    query: str = Body(..., embed=True)
+    request: ChatReq
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
     Uses the active collection's context, or default vectorstore if no active collection.
     """
     print(f"CHATRESPONSE  called with session_id={session_id}")
+    query = request.query
+    model = request.model
     
     if session_id not in SESSIONS:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -666,7 +673,7 @@ async def get_chat_response(
         
         # Create/recreate chain for the active collection
         vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
-        llm = ChatOllama(model="llama3.1", temperature=0)
+        llm = ChatOllama(model=model, temperature=0)
         qa_prompt = PromptTemplate(
             input_variables=["context", "question"],
             template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
