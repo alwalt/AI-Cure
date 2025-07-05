@@ -629,7 +629,8 @@ async def create_chatbot(
 @app.post("/api/get_chat_response/{session_id}")
 async def get_chat_response(
     session_id: str,
-    query: str = Body(..., embed=True)
+    query: str = Body(..., embed=True),
+    model: str = Body(..., embed=True)
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
@@ -652,7 +653,7 @@ async def get_chat_response(
         
         # Create/recreate chain for the active collection
         vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
-        llm = ChatOllama(model="llama3.1", temperature=0)
+        llm = ChatOllama(model=model, temperature=0)
         qa_prompt = PromptTemplate(
             input_variables=["context", "question"],
             template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
