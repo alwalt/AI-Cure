@@ -41,7 +41,9 @@ export default function ChatbotEnhanced() {
       content: input.trim(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
@@ -50,7 +52,7 @@ export default function ChatbotEnhanced() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          messages: [...messages, userMessage], 
+          messages: newMessages, 
           isSearchMode,
           model: selectedModel
         }),
