@@ -1,4 +1,4 @@
-# config/rag_templates.py
+# rag_calls/rag_templates.py
 from typing import Dict
 
 TEMPLATES: Dict[str, Dict[str, str]] = {

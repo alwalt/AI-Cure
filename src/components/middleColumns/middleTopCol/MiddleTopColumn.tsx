@@ -3,6 +3,7 @@ import { useState } from "react";
 import PDFExtractor from "./PDFExtractorComponent";
 import StudyComponent from "./StudyComponent";
 import TextButton from "../../base/TextButton";
+import PowerPointExtractor from "./PowerPointExtractor";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");
@@ -13,6 +14,8 @@ export default function MiddleTopColumn() {
         return <PDFExtractor />;
       case "study":
         return <StudyComponent />;
+      case "PowerPointExtractor":
+        return <PowerPointExtractor />;
       default:
         return null;
     }
@@ -38,6 +41,12 @@ export default function MiddleTopColumn() {
               buttonDescription="PDF Extractor tab"
               isActive={activeTab === "pdfextractor"}
               onClick={() => setActiveTab("pdfextractor")}
+            />
+            <TextButton
+              label="Power Point Extractor"
+              buttonDescription="Power Point Extractor tab"
+              isActive={activeTab === "PowerPointExtractor"}
+              onClick={() => setActiveTab("PowerPointExtractor")}
             />
           </div>
         </div>

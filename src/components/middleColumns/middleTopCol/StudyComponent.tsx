@@ -1,12 +1,12 @@
 "use client";
-import CollapsibleSection from "@/components/base/CollapsibleSection";
-import { generateWithTemplate } from "@/lib/ragClient";
-import {
-  SessionFileStoreState,
-  useSessionFileStore,
-} from "@/store/useSessionFileStore";
-import { RagResponse, UploadedFile } from "@/types/files";
 import { useState } from "react";
+import CollapsibleSection from "@/components/base/CollapsibleSection";
+import {
+  useSessionFileStore,
+  SessionFileStoreState,
+} from "@/store/useSessionFileStore";
+import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
+import { RagResponse, UploadedFile } from "@/types/files";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -71,13 +71,27 @@ export default function StudyComponent() {
 
     setLoadingSection(sectionToLoad);
     try {
-      const ragResponse: RagResponse = await generateWithTemplate(
+      // const ragResponse: RagResponse = await generateWithTemplate(
+      //   fileNamesForRAG,
+      //   "biophysics"
+      // );
+      // console.log("StudyComponent: RAG data received:", ragResponse);
+      // setFullRagData(ragResponse);
+
+      // 🔥 new per-section call
+      const result = await generateSingleRag(
+        sectionToLoad as "description" | "title" | "keywords",
         fileNamesForRAG,
-        "biophysics"
+        sessionId
       );
 
-      console.log("StudyComponent: RAG data received:", ragResponse);
-      setFullRagData(ragResponse);
+      // normalize keywords array into a string for editableTextArea
+      const textResult =
+        sectionToLoad === "keywords" && Array.isArray(result)
+          ? result.join(", ")
+          : (result as string);
+
+      updateRagSection(sectionToLoad, textResult);
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);
       alert(

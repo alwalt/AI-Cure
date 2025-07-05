@@ -45,7 +45,7 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
       <h3 className="text-lg font-semibold text-primaryWhite bg-panelBlack mb-2">
         Available Tables
       </h3>
-      <div className="max-h-[400px] overflow-y-auto bg-unSelectedBlack rounded">
+      <div className="max-h-[200px] overflow-y-auto bg-unSelectedBlack rounded">
         {tables.map((table, idx) => (
           <div
             key={table.csv_filename}

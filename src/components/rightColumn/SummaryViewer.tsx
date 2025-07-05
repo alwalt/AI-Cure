@@ -4,6 +4,7 @@ import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { apiBase } from "@/lib/api";
+import { useState, useEffect } from "react";
 
 const fetchTableAnalysis = async ({
   queryKey,
@@ -82,6 +83,7 @@ export default function SummaryViewer({
   file,
   fileName,
 }: SummaryViewerProps) {
+  const [dotCount, setDotCount] = useState(1);
   const isImage =
     file &&
     (file.type.startsWith("image/") ||
@@ -127,6 +129,16 @@ export default function SummaryViewer({
     window.URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setDotCount((prev) => (prev % 5) + 1);
+      }, 500); // every 500ms: 1 → 2 → 3 → 1 …
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
   if (!csvFilename && !isImage && !isPDF) {
     return (
       <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white">
@@ -137,11 +149,12 @@ export default function SummaryViewer({
   }
 
   if (isLoading) {
+    const dots = ".".repeat(dotCount);
     return (
       <div className="p-2 bg-unSelectedBlack border-grey border rounded-lg text-white">
         <h2 className="text-xl font-bold mb-4">Analysis</h2>
         <p className="text-gray-400">
-          Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data...
+          Analyzing {isImage ? "image" : isPDF ? "pdf" : "table"} data{dots}
         </p>
       </div>
     );
