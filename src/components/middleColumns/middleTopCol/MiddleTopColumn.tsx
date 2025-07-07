@@ -8,6 +8,25 @@ import PowerPointExtractor from "./PowerPointExtractor";
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");
 
+  type Tab = {
+    id: string;
+    label: string;
+    description: string;
+  };
+
+  const tabs: Tab[] = [
+    { id: "study", label: "Study", description: "Study tab" },
+    {
+      id: "pdfextractor",
+      label: "PDF Extractor",
+      description: "PDF Extractor tab",
+    },
+    {
+      id: "PowerPointExtractor",
+      label: "Power Point Extractor",
+      description: "Power Point Extractor tab",
+    },
+  ];
   const renderContent = () => {
     switch (activeTab) {
       case "pdfextractor":
@@ -27,27 +46,20 @@ export default function MiddleTopColumn() {
         <h2 className="font-bold text-primaryWhite text-xl p-2 capitalize">
           Scientific data curation
         </h2>
-        <div className="border-b border-grey mb-0 pl-2 overflow-hidden">
+        <div className="border-b border-grey mb-0 overflow-hidden">
           {/* Tab Buttons */}
-          <div className="flex space-x-4 mb-4 overflow-auto">
-            <TextButton
-              label="Study"
-              buttonDescription="Study tab"
-              isActive={activeTab === "study"}
-              onClick={() => setActiveTab("study")}
-            />
-            <TextButton
-              label="PDF Extractor"
-              buttonDescription="PDF Extractor tab"
-              isActive={activeTab === "pdfextractor"}
-              onClick={() => setActiveTab("pdfextractor")}
-            />
-            <TextButton
-              label="Power Point Extractor"
-              buttonDescription="Power Point Extractor tab"
-              isActive={activeTab === "PowerPointExtractor"}
-              onClick={() => setActiveTab("PowerPointExtractor")}
-            />
+          <div className="flex gap-x-4 mb-4 overflow-auto items-center">
+            {tabs.map(({ id, label, description }) => (
+              <div key={id} className="flex-1 h-full">
+                <TextButton
+                  label={label}
+                  buttonDescription={description}
+                  isActive={activeTab === id}
+                  onClick={() => setActiveTab(id)}
+                  buttonClassName="w-full text-center h-full flex items-center justify-center"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
