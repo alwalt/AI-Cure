@@ -4,17 +4,11 @@ import PDFExtractor from "./PDFExtractorComponent";
 import StudyComponent from "./StudyComponent";
 import TextButton from "../../base/TextButton";
 import PowerPointExtractor from "./PowerPointExtractor";
+import { TabButtons } from "@/types/files";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");
-
-  type Tab = {
-    id: string;
-    label: string;
-    description: string;
-  };
-
-  const tabs: Tab[] = [
+  const tabs: TabButtons[] = [
     { id: "study", label: "Study", description: "Study tab" },
     {
       id: "pdfextractor",
@@ -27,6 +21,7 @@ export default function MiddleTopColumn() {
       description: "Power Point Extractor tab",
     },
   ];
+
   const renderContent = () => {
     switch (activeTab) {
       case "pdfextractor":

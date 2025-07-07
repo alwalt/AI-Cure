@@ -132,3 +132,9 @@ export interface BackendCollection {
   files?: UploadedFile[];
   is_active: boolean;
 }
+
+export interface TabButtons {
+  id: string;
+  label: string;
+  description: string;
+}
