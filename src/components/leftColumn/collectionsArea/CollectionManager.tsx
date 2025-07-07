@@ -377,12 +377,6 @@ export default function CollectionManager() {
                           {collection.files.length} file
                           {collection.files.length !== 1 ? "s" : ""}
                         </span>
-
-                        {collection.isIngested && (
-                          <span className="text-xs bg-green-600 px-2 py-1 rounded text-primaryWhite">
-                            INGESTED
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-1">
