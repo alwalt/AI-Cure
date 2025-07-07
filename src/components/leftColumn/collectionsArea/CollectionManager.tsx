@@ -243,12 +243,14 @@ export default function CollectionManager() {
     newName: string
   ) => {
     // Check if collection is ingested
-    const collection = collections.find(c => c.id === collectionId);
-    
+    const collection = collections.find((c) => c.id === collectionId);
+
     if (!collection?.isIngested) {
       // For non-ingested collections, rename locally only
       renameCollection(collectionId, newName);
-      setStatusMessage(`Collection renamed to "${newName}" (will sync after ingestion).`);
+      setStatusMessage(
+        `Collection renamed to "${newName}" (will sync after ingestion).`
+      );
       setTimeout(() => setStatusMessage(null), 3000);
       return;
     }
@@ -368,11 +370,6 @@ export default function CollectionManager() {
                         ) : (
                           <span className="flex-1 font-medium">
                             {collection.name}
-                            {activeCollectionId === collection.id && (
-                              <span className="ml-2 text-xs bg-selectedBlue px-2 py-1 rounded text-primaryWhite">
-                                ACTIVE
-                              </span>
-                            )}
                           </span>
                         )}
 
