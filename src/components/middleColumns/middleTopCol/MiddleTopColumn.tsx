@@ -24,7 +24,7 @@ export default function MiddleTopColumn() {
   return (
     <div className="flex flex-col h-full min-h-0 bg-primaryBlack overflow-y-auto custom-scrollbar border-b border-gray-700">
       <div className="sticky top-0 z-10 bg-primaryBlack overflow-hidden">
-        <h2 className="font-bold text-xl p-2 capitalize">
+        <h2 className="font-bold text-primaryWhite text-xl p-2 capitalize">
           Scientific data curation
         </h2>
         <div className="border-b border-grey mb-0 pl-2 overflow-hidden">
