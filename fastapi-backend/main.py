@@ -39,6 +39,7 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
+from langchain.memory import ConversationBufferMemory
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
 from chromadb.config import Settings as ChromaSettings # hyperparams
@@ -50,6 +51,8 @@ from mcp_agent.config import Settings
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
+
+from chat_memory import get_session_history, add_chat_message
 
 from rag_calls.rag_templates import TEMPLATES
 from rag_calls.api_rag_calls import router as rag_router
@@ -617,8 +620,11 @@ async def create_chatbot(
     
     # Create prompt template
     qa_prompt = PromptTemplate(
-    input_variables=["context", "question"],  # Ensure "context" is included
-    template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:")
+    input_variables=["context", "question"], 
+    template="""You are a helpful AI. Use the following context to answer the question:\n\n
+    Context: {context}\n\n
+    Question: {question}\n\n
+    Answer:""")
 
     llm_chain = LLMChain(llm=llm, prompt=qa_prompt)
 
@@ -662,7 +668,27 @@ async def get_chat_response(
         raise HTTPException(status_code=404, detail="Session not found")
     
     initialize_session(session_id)
-    
+
+    # Get history from Redis
+    history = get_session_history(session_id)
+    chat_history = []
+    messages = history.messages
+
+    # Convert Redis history to LangChain format
+    i = 0
+    while i < len(messages) - 1:
+        if (hasattr(messages[i], 'type') and messages[i].type == "human" and
+            hasattr(messages[i + 1], 'type') and messages[i + 1].type == "ai"):
+            
+            human_content = messages[i].content
+            ai_content = messages[i + 1].content
+            chat_history.append((human_content, ai_content))
+            i += 2  
+        else:
+            i += 1
+
+    add_chat_message(history, query, "user")
+
     if "chain" not in SESSIONS[session_id] or SESSIONS[session_id]["chain"] is None:
         # No chain exists, ensure we have the default chain
         active_collection_id = SESSIONS[session_id].get("active_collection_id")
@@ -674,30 +700,59 @@ async def get_chat_response(
         # Create/recreate chain for the active collection
         vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
         llm = ChatOllama(model=model, temperature=0)
+
+
+        
         qa_prompt = PromptTemplate(
             input_variables=["context", "question"],
-            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+            template="""You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\n
+            Context: {context}\n\n
+            Question: {question}\n\n
+            Answer:"""
         )
+        
         retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
         chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
-            retriever=retriever, 
+            retriever=retriever,
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": qa_prompt},
-            verbose=True
+            verbose=True,
         )
         SESSIONS[session_id]["chain"] = chain
     
     chain = SESSIONS[session_id]["chain"]
-    history = SESSIONS[session_id].get("history", [])
+
+    # Get documents manually and add chat history
+    docs = chain.retriever.get_relevant_documents(query)
+
+    # Add chat history as first document if it exists
+    if chat_history:
+        chat_history_str = ""
+        for human, ai in chat_history:
+            chat_history_str += f"Human: {human}\nAssistant: {ai}\n\n"
+        
+        from langchain_core.documents import Document
+        history_doc = Document(
+            page_content=f"Previous conversation:\n{chat_history_str}",
+            metadata={"source": "chat_history"}
+        )
+        docs = [history_doc] + docs
+
+    # Manually create the context and call the chain's combine_docs_chain
+    context = "\n\n".join([doc.page_content for doc in docs])
+
+    # Call the LLM chain directly with the context
+    result_text = chain.combine_docs_chain.run(input_documents=docs, question=query)
+
+    # Create result in expected format
+    result = {"answer": result_text}
     
-    result = chain({"question": query, "chat_history": history})
-    SESSIONS[session_id]["history"] = history + [(query, result["answer"])]
-    
+    add_chat_message(history, result["answer"], "assistant")
+
     # Determine context info for response
     active_collection_id = SESSIONS[session_id].get("active_collection_id")
     if active_collection_id and active_collection_id in SESSIONS[session_id]["collections"] and active_collection_id != "default":
-        # Using a specific collection (not default)
         collection_name = SESSIONS[session_id]["collections"][active_collection_id]["name"]
         return JSONResponse(content={
             "answer": result["answer"],
@@ -705,7 +760,6 @@ async def get_chat_response(
             "active_collection_id": active_collection_id
         })
     else:
-        # Using default vectorstore (general chat) - either active_collection_id is "default" or None
         return JSONResponse(content={
             "answer": result["answer"],
             "active_collection": "General Chat",

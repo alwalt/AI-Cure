@@ -26,9 +26,7 @@ export default function ChatbotEnhanced() {
   const availableModels = [
     { value: 'llama3.1', label: 'Llama 3.1' },
     { value: 'llama3.2', label: 'Llama 3.2' },
-    { value: 'mistral', label: 'Mistral' },
-    { value: 'codellama', label: 'Code Llama' },
-    { value: 'phi3', label: 'Phi-3' },
+    { value: 'llava', label: 'Llava' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
