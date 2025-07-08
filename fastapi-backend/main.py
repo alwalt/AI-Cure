@@ -39,7 +39,6 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain.memory import ConversationBufferMemory
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
 from chromadb.config import Settings as ChromaSettings # hyperparams
