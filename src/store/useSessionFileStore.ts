@@ -1,4 +1,4 @@
-import { UploadedFile, BackendCollection } from "@/types/files";
+import { BackendCollection, UploadedFile } from "@/types/files";
 import { create, StoreApi } from "zustand";
 
 export interface Collection {
@@ -12,11 +12,13 @@ export interface Collection {
 
 export interface SessionFileStoreState {
   sessionId: string | null;
+  loadingSession: boolean;
   previewCsv: string | null;
   previewFile: UploadedFile | null;
   selectedFiles: UploadedFile[];
   lastClearedTimestamp: number;
   setSessionId: (id: string | null) => void;
+  setLoadingSession: (loading: boolean) => void;
   setPreviewCsv: (filename: string | null) => void;
   setPreviewFile: (file: UploadedFile | null) => void;
   setSelectedFiles: (
@@ -51,6 +53,8 @@ export interface SessionFileStoreState {
 
 const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
   sessionId: null,
+  loadingSession: false,
+  setLoadingSession: (loading) => set({ loadingSession: loading }),
   previewCsv: null,
   previewFile: null,
   selectedFiles: [],
@@ -191,6 +195,7 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
     }),
   fetchCollections: async () => {
     try {
+      set({ loadingSession: true });
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"
@@ -235,6 +240,8 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to fetch collections:", error);
+    } finally {
+      set({ loadingSession: false });
     }
   },
 
