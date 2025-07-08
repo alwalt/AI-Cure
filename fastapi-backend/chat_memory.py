@@ -23,16 +23,16 @@ def clear_chat_history_in_redis():
     try:
         # Assuming the keys for chat entries follow APP_PREFIX
         keys = redis_client.keys(f"{APP_PREFIX}*")  # Get all chat keys
-        print('what are the keys:', keys)
+        logger.debug(f'Keys found: {keys}')
         if keys:
             redis_client.delete(*keys)  # Delete only chat keys
-            print(f"Deleted {len(keys)} chat-related keys for OSDR app.")
+            logger.info(f"Deleted {len(keys)} chat-related keys for OSDR app.")
         else:
-            print("No chat-related keys found for OSDR.")
+            logger.info("No chat-related keys found for OSDR.")
     except Exception as e:
-        print(f"Error clearing chat-related entries in Redis: {e}")
+        logger.error(f"Error clearing chat-related entries in Redis: {e}")
 
-print('Clearing chat history in Redis at startup...')
+logger.info('Clearing chat history in Redis at startup...')
 clear_chat_history_in_redis()
 
 
