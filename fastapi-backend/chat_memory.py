@@ -1,13 +1,16 @@
 # memory.py
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 from langchain_redis import RedisChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 import os
 import redis
+import logging
 
 # Use the environment variable if set, otherwise default to localhost
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
-print(f"Connecting to Redis at: {REDIS_URL}")
+logging.info(f"Connecting to Redis at: {REDIS_URL}")
 
 # Initialize a Redis client
 redis_client = redis.StrictRedis.from_url(REDIS_URL)
