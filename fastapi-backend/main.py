@@ -621,10 +621,10 @@ async def create_chatbot(
     # Create prompt template
     qa_prompt = PromptTemplate(
     input_variables=["context", "question"], 
-    template="""You are a helpful AI. Use the following context to answer the question:\n\n
-    Context: {context}\n\n
-    Question: {question}\n\n
-    Answer:""")
+    template=textwrap.dedent("""You are a helpful AI. Use the following context to answer the question:
+    Context: {context}
+    Question: {question}
+    Answer:"""))
 
     llm_chain = LLMChain(llm=llm, prompt=qa_prompt)
 
