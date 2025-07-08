@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSessionFileStore } from '@/store/useSessionFileStore';
 import { AlertCircle, ChevronDown, MessageCircle, Search, Send, Settings } from 'lucide-react';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -15,7 +16,7 @@ interface Message {
   isError?: boolean;
 }
 
-export default function ChatbotEnhanced() {
+export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,7 @@ export default function ChatbotEnhanced() {
   const [selectedModel, setSelectedModel] = useState('llama3.1');
   const [showSettings, setShowSettings] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const { loadingSession, setLoadingSession } = useSessionFileStore();
+  const { loadingSession } = useSessionFileStore();
   const availableModels = [
     { value: 'llama3.1', label: 'Llama 3.1' },
     { value: 'llama3.2', label: 'Llama 3.2' },
@@ -289,9 +290,18 @@ export default function ChatbotEnhanced() {
                     Error
                   </div>
                 )}
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {message.content}
-                </p>
+                {message.role === 'user' ? (
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                ) : (
+                  <div className="text-sm leading-relaxed prose prose-invert max-w-none">
+
+                  <ReactMarkdown>
+                    {message.content}
+                  </ReactMarkdown>
+                  </div>
+                )}
                 {message.isSearchResult && (
                   <div className="flex items-center gap-1 mt-2 text-xs text-green-400">
                     <Search className="w-3 h-3" />
