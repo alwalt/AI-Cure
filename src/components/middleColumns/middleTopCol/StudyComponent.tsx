@@ -1,12 +1,14 @@
 "use client";
-import { useState } from "react";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
+import { generateSingleRag } from "@/lib/ragClient";
 import {
-  useSessionFileStore,
   SessionFileStoreState,
+  useSessionFileStore,
 } from "@/store/useSessionFileStore";
-import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
-import { RagResponse, UploadedFile } from "@/types/files";
+import { useState } from "react";
+// import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
+// import { RagResponse, UploadedFile } from "@/types/files";
+import { UploadedFile } from "@/types/files";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -20,9 +22,9 @@ export default function StudyComponent() {
   const sessionId = useSessionFileStore(
     (state: SessionFileStoreState) => state.sessionId
   );
-  const setFullRagData = useSessionFileStore(
-    (state: SessionFileStoreState) => state.setFullRagData
-  );
+  // const setFullRagData = useSessionFileStore(
+  //   (state: SessionFileStoreState) => state.setFullRagData
+  // );
   const ragData = useSessionFileStore(
     (state: SessionFileStoreState) => state.ragData
   );

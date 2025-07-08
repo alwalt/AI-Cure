@@ -3,8 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSessionFileStore } from '@/store/useSessionFileStore';
 import { AlertCircle, ChevronDown, MessageCircle, Search, Send, Settings } from 'lucide-react';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -14,7 +16,7 @@ interface Message {
   isError?: boolean;
 }
 
-export default function ChatbotEnhanced() {
+export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,13 +24,11 @@ export default function ChatbotEnhanced() {
   const [selectedModel, setSelectedModel] = useState('llama3.1');
   const [showSettings, setShowSettings] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-
+  const { loadingSession } = useSessionFileStore();
   const availableModels = [
     { value: 'llama3.1', label: 'Llama 3.1' },
     { value: 'llama3.2', label: 'Llama 3.2' },
-    { value: 'mistral', label: 'Mistral' },
-    { value: 'codellama', label: 'Code Llama' },
-    { value: 'phi3', label: 'Phi-3' },
+    { value: 'llava', label: 'Llava' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +83,79 @@ export default function ChatbotEnhanced() {
     setMessages([]);
   };
 
-
+  if (loadingSession) {
+    return (
+      <div className="flex flex-col h-full bg-gray-900/50 border border-gray-700/50 rounded-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-800/30 rounded-t-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-600/20 rounded-lg">
+              <MessageCircle className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-100">AI Curation Bot</h3>
+              <p className="text-sm text-gray-400">Initializing session...</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled
+              className="text-gray-600 cursor-not-allowed"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled
+              className="text-gray-600 cursor-not-allowed"
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+  
+        {/* Chat Messages Area with Loading Indicator */}
+        <ScrollArea className="flex-1 p-4">
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-700 border-t-blue-400" />
+              <div className="text-center">
+                <p className="text-gray-300 font-medium">Initializing Session</p>
+                <p className="text-gray-500 text-sm mt-1">Setting up your AI assistant...</p>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+  
+        {/* Input Form - Disabled */}
+        <div className="p-4 border-t border-gray-700/50 bg-gray-800/20">
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Input
+                placeholder="Initializing..."
+                disabled
+                className="pr-12 bg-gray-800/30 border-gray-700 text-gray-500 placeholder-gray-600 cursor-not-allowed"
+              />
+            </div>
+            <Button 
+              disabled
+              className="bg-gray-700 text-gray-500 cursor-not-allowed"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-gray-600">Preparing chat environment...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-900/50 border border-gray-700/50 rounded-xl">
@@ -218,9 +290,18 @@ export default function ChatbotEnhanced() {
                     Error
                   </div>
                 )}
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {message.content}
-                </p>
+                {message.role === 'user' ? (
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                ) : (
+                  <div className="text-sm leading-relaxed prose prose-invert max-w-none">
+
+                  <ReactMarkdown>
+                    {message.content}
+                  </ReactMarkdown>
+                  </div>
+                )}
                 {message.isSearchResult && (
                   <div className="flex items-center gap-1 mt-2 text-xs text-green-400">
                     <Search className="w-3 h-3" />
