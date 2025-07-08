@@ -1,3 +1,3 @@
 export default function PowerPointExtractor() {
-  return <p>Power Point Extractor</p>;
+  return <p className="text-primaryWhite">Power Point Extractor</p>;
 }
