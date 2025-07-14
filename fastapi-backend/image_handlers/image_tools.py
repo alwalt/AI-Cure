@@ -5,98 +5,89 @@ from dependencies.llm import get_llm
 from dependencies.vectorstore import get_vectorstore
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
-from langchain_community.document_loaders import PyMuPDFLoader
 import os
 import ollama
 import json
-import tempfile
 from file_handlers.file_tools import USER_DIRS, JSON_DIRS
-from utils import get_magic_wand_suggestions
+
+router = APIRouter(tags=["image"])
 
 
-
-
-router = APIRouter(tags=["pdf"])
-
-
-# PDF Analyzer
-@router.post("/api/analyze_pdf")
-async def analyze_pdf(
+# Image Analyzer
+@router.post("/api/analyze_image")
+async def analyze_image(
     request: Request,
-    pdf_file_name: str = Form(...),
     model: str = Form("llava"),
-    ):
+    file_name: str = Form(...),
+):
     """
-    Analyze a PDF and return a json object with a summary.
+    Analyze an image and return a json object with a summary.
     """
-    # logged received file
-    print(f"received: {pdf_file_name}")
     session_id = request.state.session_id
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
     CACHED_DIR = os.path.join(JSON_DIRS, session_id)
     os.makedirs(CACHED_DIR, exist_ok=True)
-    json_path = os.path.join(CACHED_DIR, f"{pdf_file_name}.json")
+    json_path = os.path.join(CACHED_DIR, f"{file_name}.json")
     if os.path.exists(json_path):
         with open(json_path, 'r') as f:
             loaded_output = json.load(f)
-        
+
         return JSONResponse(content=loaded_output)
     
-    # Get pdf file
-    pdf_path = os.path.join(UPLOAD_DIR, f"{pdf_file_name}")
-    with open(pdf_path, "rb") as pdf_file:        
-        # We'll use PyMuPDF to load the PDF
-        def format_docs(docs):
-            return "\n\n".join(doc.page_content for doc in docs)
+    print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
 
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(pdf_file.read())
-            tmp_file_path = tmp_file.name
+    # get the image from the session
+    image_path = os.path.join(UPLOAD_DIR, f"{file_name}")
+    with open(image_path, "rb") as image_file:
+        contents = image_file.read()
 
-        loader = PyMuPDFLoader(file_path=tmp_file_path)
-        data = loader.load()
-    
-    # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
-    print(data[0].page_content)
-    # Call model to get summary in json format
-    prompt = "Summarize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
+    prompt = "Describe the image and extract key words relevant to space experiments. Output in a JSON with the following format: {\"Summary\":\"This is your description of the image\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}"
     res = ollama.chat(
         model=model,
         messages=[
             {
-                "role":"user",
+                "role": "user",
                 "content": prompt,
+                "images": [contents]
             }
         ]
     )
+    # Parse the JSON response
     json_output = {}
     res_text = res['message']['content']
-    print(res_text)
-
-    try: 
+    # First try to parse directly
+    try:
         clean_text = res_text.replace("```json", "").replace("```", "").strip()
         json_output = json.loads(clean_text)
     except json.decoder.JSONDecodeError:
-        return "json:error"
-    
+        # If that fails, try regex extraction
+        json_match = re.search(r'(?i)\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
+        if json_match:
+            json_text = json_match.group(0)
+            try:
+                json_output = json.loads(json_text)
+            except json.decoder.JSONDecodeError:
+                json_output['Error'] = res_text
+        else:
+            json_output['Error'] = res_text 
+
     # Normalize the keys
     normalized_output = {
         "summary": json_output.get("Summary") or json_output.get("summary", ""),
         "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
     }
 
-    normalized_output.update(get_magic_wand_suggestions(data[0].page_content, model))
 
     if "Error" in json_output or "error" in json_output:
         normalized_output["error"] = json_output.get("Error") or json_output.get("error")
     else:
-        try:
+        # Save normalized output to cached json file
+        try: 
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(normalized_output, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"Error saving file: {str(e)}")
 
     return JSONResponse(content=normalized_output)
-    # return JSONResponse(content={
-    #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
-    # })
+
+
