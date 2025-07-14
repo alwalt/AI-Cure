@@ -56,7 +56,7 @@ from chat_memory import get_session_history, add_chat_message
 from rag_calls.rag_templates import TEMPLATES
 from rag_calls.api_rag_calls import router as rag_router
 
-from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES
+from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES, router as file_router
 from pdf_handlers.pdf_tools import router as pdf_router
 from image_handlers.image_tools import router as image_router
 from table_handlers.table_tools import router as table_router
@@ -133,6 +133,7 @@ app.include_router(rag_router) # Include single rag calls
 app.include_router(pdf_router) # Include pdf end points
 app.include_router(table_router) # Include table end points
 app.include_router(image_router) # Include image end points
+app.include_router(file_router) # Include file end points
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -269,141 +270,6 @@ async def session_manager(request: Request, call_next):
     )
 
     return new_response
-
-
-
-###############################################################################
-# API Routes
-###############################################################################
-@app.get("/api/get_file/{filename}")
-async def get_file(filename: str, request: Request):
-    session_id = request.state.session_id
-    file_path = os.path.join(USER_DIRS, session_id, filename)
-    print(file_path)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    return FileResponse(file_path)
-
-@app.get("/api/get_session_files")
-async def get_files(request: Request):
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    
-    if not os.path.exists(UPLOAD_DIR):
-        return JSONResponse(content={"files": []})
-    
-    try:
-        files = []
-        for filename in os.listdir(UPLOAD_DIR):
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            file_ext = filename.split(".")[-1]
-            if os.path.isfile(file_path):
-                files.append({
-                    "name": filename,
-                    "type": file_ext,
-                    "dateCreated": datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%-m/%-d/%Y'),
-                    "size": os.path.getsize(file_path),
-                })
-
-            if file_ext == "excel" or file_ext == "xlsx":
-                table_info = segment_and_export_tables(file_path, session_id)
-                
-                # Store the table info in the SESSION_TABLES dictionary in main.py
-                SESSION_TABLES[session_id] = table_info
-                
-                # response_data = {
-                #     "tables": [{"csv_filename": csv_name, "display_name": filename} for _, csv_name in table_info],
-                # }
-        
-        return JSONResponse(content={"files": files})
-
-    except Exception as e:
-        logging.error(f"Error during retrieval: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-@app.post("/api/clear_files")
-async def clear_files(request: Request):
-    session_id = request.state.session_id
-    
-    # Clear tables reference (but keep vectorstore)
-    SESSION_TABLES[session_id] = []
-    
-    # Clear only FILES, preserve directories like chroma_db
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    if os.path.exists(UPLOAD_DIR):
-        for item in os.listdir(UPLOAD_DIR):
-            item_path = os.path.join(UPLOAD_DIR, item)
-            if os.path.isfile(item_path): 
-                os.remove(item_path)
-
-    return JSONResponse(content={"status": "success"})
-
-@app.post("/api/upload_file")
-async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
-    """
-    Upload a file and return a session id. Unless sessionid is present.
-    """
-  
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    
-    try:
-        # if session_id is not None or session_id == "":
-        #     session_id = uuid.uuid4().hex
-        logging.info(f"Starting upload for session: {session_id}")
-
-        if file_type == "excel" or file_type == "xlsx":
-            file_ext = file.filename.split(".")[-1]
-            
-
-            unique_name = f"{file.filename}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-        
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
-            logging.info("File saved, processing tables...")
-            table_info = segment_and_export_tables(file_path, session_id)
-            
-            # Store the table info in the SESSION_TABLES dictionary in main.py
-            SESSION_TABLES[session_id] = table_info
-            
-            response_data = {
-                "tables": [{"csv_filename": csv_name, "display_name": file.filename} for _, csv_name in table_info],
-            }
-        elif file.content_type == "application/pdf":
-            file_ext = "pdf"
-            file_name = file.filename
-            unique_name = f"{file_name}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
-            response_data = {
-                "file_name": file_name
-            }
-        elif file.content_type == "image/jpeg" or file.content_type == "image/png":
-            file_ext = file.filename.split(".")[-1]
-            file_name = file.filename
-            unique_name = f"{file_name}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-
-            response_data = {
-                "file_name": file_name
-            }
-        else:
-            return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
-        logging.info("Upload complete")
-        return JSONResponse(content=response_data)
-
-    except Exception as e:
-        logging.error(f"Error during upload: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 ###############################################################################
 # AI and Vector Routes
