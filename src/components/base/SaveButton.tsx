@@ -17,6 +17,7 @@ export default function SaveButton() {
       role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
       className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
       spanClassName="left-1/2 -translate-x-1/2"
+      tooltipId="tooltip-save"
     />
   );
 }
