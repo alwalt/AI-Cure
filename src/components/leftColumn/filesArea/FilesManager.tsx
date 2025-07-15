@@ -1,6 +1,4 @@
 import ClearFilesButton from "@/components/base/ClearFilesButton";
-import FolderPlusButton from "@/components/base/FolderPlusButton";
-import PlayButton from "@/components/base/PlayButton";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import { apiBase } from "@/lib/api";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
