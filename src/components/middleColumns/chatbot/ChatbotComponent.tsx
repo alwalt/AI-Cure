@@ -10,7 +10,6 @@ import {
   MessageCircle,
   Search,
   Send,
-  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
