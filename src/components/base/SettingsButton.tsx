@@ -1,16 +1,6 @@
-// components/base/SettingsButton.tsx
-
 import Button from "./Button";
-import { Settings } from "lucide-react"; // or from heroicons if you prefer
-
-interface SettingsButtonProps {
-  onClick: () => void | Promise<void>;
-  className?: string;
-  tooltipId?: string;
-  ariaLabel?: string;
-  iconClassName?: string;
-  spanClassName?: string;
-}
+import { Settings } from "lucide-react";
+import { SettingsButtonProps } from "@/types/files";
 
 export default function SettingsButton({
   onClick,

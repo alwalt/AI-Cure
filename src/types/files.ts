@@ -139,3 +139,12 @@ export interface TabButtons {
   label: string;
   description: string;
 }
+
+export interface SettingsButtonProps {
+  onClick: () => void | Promise<void>;
+  className?: string;
+  tooltipId?: string;
+  ariaLabel?: string;
+  iconClassName?: string;
+  spanClassName?: string;
+}
