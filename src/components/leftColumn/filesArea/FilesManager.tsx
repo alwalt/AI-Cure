@@ -17,7 +17,9 @@ export default function FilesManager() {
   const [error, setError] = useState<string | null>(null);
 
   // Subscribe to the store's lastClearedTimestamp to detect when files are cleared
-  const lastClearedTimestamp = useSessionFileStore((state) => state.lastClearedTimestamp);
+  const lastClearedTimestamp = useSessionFileStore(
+    (state) => state.lastClearedTimestamp
+  );
 
   useEffect(() => {
     const fetchSessionFiles = async () => {
@@ -84,9 +86,7 @@ export default function FilesManager() {
             onTablesUpdate={handleTablesUpdate}
             onFilesUpdate={handleFilesUpdate}
           />
-          <FolderPlusButton />
           <ClearFilesButton />
-          <PlayButton />
         </div>
       </div>
       {!loading && !error && (

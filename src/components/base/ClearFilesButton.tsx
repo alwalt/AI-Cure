@@ -1,7 +1,7 @@
 import Button from "@/components/base/Button";
 import { apiBase } from "@/lib/api";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { Trash } from "lucide-react";
 import axios from "axios";
 
 export default function ClearFilesButton() {
@@ -35,7 +35,7 @@ export default function ClearFilesButton() {
     <Button
       targetId="ClearFilesButton"
       buttonDescription="Clear All Files"
-      Icon={TrashIcon}
+      Icon={Trash}
       iconClassName="h-6 w-6 translate-y-1"
       onClick={handleClick}
       aria-label="Clear all files" // Accessible label for screen readers
