@@ -110,14 +110,12 @@ export default function Chatbot() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled
-              className="text-gray-600 cursor-not-allowed"
-            >
-              <SettingsButton onClick={() => setShowSettings(!showSettings)} />
-            </Button>
+            <SettingsButton
+              onClick={() => setShowSettings(!showSettings)}
+              iconClassName="w-4 h-4"
+              spanClassName="left-1/2 -translate-x-1/2 mt-2"
+              tooltipId="chatbot-settings-tooltip"
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -193,14 +191,12 @@ export default function Chatbot() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          <SettingsButton
             onClick={() => setShowSettings(!showSettings)}
-            className="text-gray-400 hover:text-gray-200 hover:bg-gray-700/50"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+            iconClassName="w-4 h-4"
+            spanClassName="left-1/2 -translate-x-1/2 mt-2"
+            tooltipId="chatbot-settings-tooltip"
+          />
           <Button
             variant="ghost"
             size="sm"
