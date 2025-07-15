@@ -18,11 +18,11 @@ export default function Button({
       <button
         onClick={handleClick}
         className="flex"
-        aria-label={ariaLabel}
+        aria-label={ariaLabel || buttonDescription}
         role={role}
       >
         <Icon
-          className={`stroke-primaryWhite stroke-1 text-primaryBlack hover:stroke-redFill transition-colors duration-300 ${iconClassName}`}
+          className={`focus-visible:ring-2 focus-visible:ring-white stroke-primaryWhite stroke-1 text-primaryBlack hover:stroke-redFill transition-colors duration-300 ${iconClassName}`}
         />
       </button>
 
