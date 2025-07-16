@@ -8,6 +8,7 @@ export default function Button({
   spanClassName = "",
   "aria-label": ariaLabel,
   tooltipId,
+  className = "",
 }: ButtonProps) {
   const handleClick = async () => {
     if (onClick) await onClick();
@@ -17,11 +18,11 @@ export default function Button({
     <div className="relative group">
       <button
         onClick={handleClick}
-        className="flex"
+        className={`flex ${className}`}
         aria-label={ariaLabel || buttonDescription}
       >
         <Icon
-          className={`focus-visible:ring-2 focus-visible:ring-white stroke-primaryWhite stroke-1 text-primaryBlack hover:stroke-redFill transition-colors duration-300 ${iconClassName}`}
+          className={`focus-visible:ring-2 focus-visible:ring-white ${iconClassName}`}
         />
       </button>
 

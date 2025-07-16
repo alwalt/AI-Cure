@@ -111,9 +111,10 @@ export default function Chatbot() {
           <div className="flex items-center gap-2">
             <SettingsButton
               onClick={() => setShowSettings(!showSettings)}
-              iconClassName="w-4 h-4"
+              iconClassName="w-4 h-4 text-gray-400 hover:text-gray-200"
               spanClassName="left-1/2 -translate-x-1/2 mt-2"
               tooltipId="chatbot-settings-tooltip"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
             <Button
               variant="ghost"
@@ -155,9 +156,10 @@ export default function Chatbot() {
             </div>
             <SettingsButton
               onClick={() => setShowSettings(!showSettings)}
-              iconClassName="w-4 h-4"
+              iconClassName="w-4 h-4 text-gray-400 hover:text-gray-200"
               spanClassName="left-1/2 -translate-x-1/2 mt-2"
               tooltipId="chatbot-settings-tooltip"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
 
@@ -192,9 +194,10 @@ export default function Chatbot() {
         <div className="flex items-center gap-2">
           <SettingsButton
             onClick={() => setShowSettings(!showSettings)}
-            iconClassName="w-4 h-4"
+            iconClassName="w-4 h-4 text-gray-400 hover:text-gray-200"
             spanClassName="left-1/2 -translate-x-1/2 mt-2"
             tooltipId="chatbot-settings-tooltip"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <Button
             variant="ghost"

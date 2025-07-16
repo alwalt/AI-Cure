@@ -38,7 +38,7 @@ export default function UploadFileButton({
           targetId="ArrowUpTrayIcon"
           buttonDescription="Upload files"
           Icon={Upload}
-          iconClassName="h-6 w-6"
+          iconClassName="h-6 w-6 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
           spanClassName="mt-2 left-1/2 -translate-x-1/2"
           onClick={() => setIsOpen(true)}
           aria-label="Upload files button" // Accessible label for screen readers

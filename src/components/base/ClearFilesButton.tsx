@@ -36,7 +36,7 @@ export default function ClearFilesButton() {
       targetId="ClearFilesButton"
       buttonDescription="Clear All Files"
       Icon={Trash}
-      iconClassName="h-6 w-6 translate-y-1"
+      iconClassName="h-6 w-6 translate-y-1 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
       onClick={handleClick}
       aria-label="Clear all files" // Accessible label for screen readers
       className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation

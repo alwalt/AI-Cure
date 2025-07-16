@@ -6,8 +6,9 @@ export default function SettingsButton({
   onClick,
   tooltipId = "settings-tooltip",
   ariaLabel = "Settings",
-  iconClassName = "w-5 h-5",
+  iconClassName = "",
   spanClassName = "left-1/2 -translate-x-1/2 mt-2",
+  className = "",
 }: SettingsButtonProps) {
   return (
     <Button
@@ -19,7 +20,7 @@ export default function SettingsButton({
       spanClassName={spanClassName}
       tooltipId={tooltipId}
       aria-label={ariaLabel}
-      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${className}`}
     />
   );
 }
