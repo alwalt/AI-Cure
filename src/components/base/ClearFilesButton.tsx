@@ -40,7 +40,7 @@ export default function ClearFilesButton() {
       onClick={handleClick}
       aria-label="Clear all files" // Accessible label for screen readers
       className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
-      spanClassName="left-1/2 -translate-x-1/2"
+      spanClassName="right-0"
       tooltipId="tooltip-clear-all-files"
     />
   );

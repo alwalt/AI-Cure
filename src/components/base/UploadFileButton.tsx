@@ -29,11 +29,8 @@ export default function UploadFileButton({
   };
 
   return (
-    <div className="flex items-center justify-center relative group overflow-hidden">
-      <div
-        data-cy="open-upload-dialog"
-        className="cursor-pointer overflow-hidden"
-      >
+    <div className="flex items-center justify-center relative group">
+      <div data-cy="open-upload-dialog" className="cursor-pointer">
         <Button
           targetId="ArrowUpTrayIcon"
           buttonDescription="Upload files"
