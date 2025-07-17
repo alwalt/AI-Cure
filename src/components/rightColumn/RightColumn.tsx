@@ -1,4 +1,5 @@
-import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+
 import TablePreviewer from "./TablePreviewer";
 import { useState, useEffect } from "react";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
@@ -39,9 +40,9 @@ export default function RightColumn() {
           className="text-primaryWhite rounded"
         >
           {isRightColumnVisible ? (
-            <ChevronRightIcon className="h-8 w-8" />
+            <ChevronRight className="h-8 w-8" />
           ) : (
-            <ChevronLeftIcon className="h-8 w-8" />
+            <ChevronLeft className="h-8 w-8" />
           )}
         </button>
         {/* Tooltip */}

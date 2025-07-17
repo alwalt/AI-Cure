@@ -45,10 +45,10 @@ export default function TableList({ tables, onTableSelect }: TableListProps) {
       <h3 className="text-lg font-semibold text-primaryWhite bg-panelBlack mb-2">
         Available Tables
       </h3>
-      <div className="max-h-[400px] overflow-y-auto bg-unSelectedBlack rounded">
+      <div className="max-h-[200px] overflow-y-auto bg-unSelectedBlack rounded">
         {tables.map((table, idx) => (
           <div
-            key={table.csv_filename}
+            key={`${table.csv_filename}-${idx}`}
             className={`
                 flex items-stretch justify-between w-full
                 p-2 cursor-pointer 

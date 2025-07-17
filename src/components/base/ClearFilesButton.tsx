@@ -1,7 +1,7 @@
 import Button from "@/components/base/Button";
 import { apiBase } from "@/lib/api";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { Trash } from "lucide-react";
 import axios from "axios";
 
 export default function ClearFilesButton() {
@@ -21,6 +21,7 @@ export default function ClearFilesButton() {
         // Clear frontend state
         clearAllFiles();
 
+        // State is already cleared using clearAllFiles()
       } else {
         alert("Failed to clear files");
       }
@@ -34,13 +35,13 @@ export default function ClearFilesButton() {
     <Button
       targetId="ClearFilesButton"
       buttonDescription="Clear All Files"
-      Icon={TrashIcon}
-      iconClassName="h-6 w-6 translate-y-1" // We made a change here
+      Icon={Trash}
+      iconClassName="h-6 w-6 translate-y-1 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
       onClick={handleClick}
       aria-label="Clear all files" // Accessible label for screen readers
-      role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
       className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
-      spanClassName="left-1/2 -translate-x-1/2"
+      spanClassName="right-0"
+      tooltipId="tooltip-clear-all-files"
     />
   );
 }

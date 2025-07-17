@@ -242,6 +242,21 @@ export default function CollectionManager() {
     collectionId: string,
     newName: string
   ) => {
+
+    // Check if collection is ingested
+    const collection = collections.find((c) => c.id === collectionId);
+
+    if (!collection?.isIngested) {
+      // For non-ingested collections, rename locally only
+      renameCollection(collectionId, newName);
+      setStatusMessage(
+        `Collection renamed to "${newName}" (will sync after ingestion).`
+      );
+      setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
+
+    // For ingested collections, update backend
     try {
       await axios.put(
         `${apiBase}/api/collections/${collectionId}`,
@@ -356,11 +371,6 @@ export default function CollectionManager() {
                         ) : (
                           <span className="flex-1 font-medium">
                             {collection.name}
-                            {activeCollectionId === collection.id && (
-                              <span className="ml-2 text-xs bg-selectedBlue px-2 py-1 rounded text-primaryWhite">
-                                ACTIVE
-                              </span>
-                            )}
                           </span>
                         )}
 
@@ -368,12 +378,6 @@ export default function CollectionManager() {
                           {collection.files.length} file
                           {collection.files.length !== 1 ? "s" : ""}
                         </span>
-
-                        {collection.isIngested && (
-                          <span className="text-xs bg-green-600 px-2 py-1 rounded text-primaryWhite">
-                            INGESTED
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-1">

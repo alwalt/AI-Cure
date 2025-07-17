@@ -78,7 +78,7 @@ export default function UploadedFiles({
 
   return (
     <div className="bg-panelBlack border-grey border rounded p-2">
-      <h3 className="text-lg font-semibold text-primaryWhite mb-2">
+      <h3 className="text-lg font-semibold text-primaryWhite">
         Uploaded Files
       </h3>
 
@@ -87,12 +87,12 @@ export default function UploadedFiles({
         <table className="w-full">
           <thead className="bg-unselectedBlack text-primaryWhite text-sm">
             <tr>
-              <th className="p-2 text-left w-12"></th>
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Type</th>
-              <th className="p-2 text-left">Date Created</th>
-              <th className="p-2 text-left">Actions</th>
+              <th className="px-2 text-left w-12"></th>
+              <th className="px-2 text-left">Name</th>
+              <th className="px-2 text-left">Status</th>
+              <th className="px-2 text-left">Type</th>
+              <th className="px-2 text-left">Date Created</th>
+              <th className="px-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>

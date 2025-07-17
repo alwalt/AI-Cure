@@ -1,6 +1,4 @@
 import ClearFilesButton from "@/components/base/ClearFilesButton";
-import FolderPlusButton from "@/components/base/FolderPlusButton";
-import PlayButton from "@/components/base/PlayButton";
 import UploadFileButton from "@/components/base/UploadFileButton";
 import { apiBase } from "@/lib/api";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
@@ -17,7 +15,9 @@ export default function FilesManager() {
   const [error, setError] = useState<string | null>(null);
 
   // Subscribe to the store's lastClearedTimestamp to detect when files are cleared
-  const lastClearedTimestamp = useSessionFileStore((state) => state.lastClearedTimestamp);
+  const lastClearedTimestamp = useSessionFileStore(
+    (state) => state.lastClearedTimestamp
+  );
 
   useEffect(() => {
     const fetchSessionFiles = async () => {
@@ -76,17 +76,15 @@ export default function FilesManager() {
   };
 
   return (
-    <div className="space-y-2 last:mb-0 overflow-hidden">
-      <div className="flex justify-between w-full overflow-hidden">
+    <div className="space-y-2 last:mb-0">
+      <div className="flex justify-between w-full">
         <h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
-        <div className="flex justify-content overflow-hidden">
+        <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}
             onFilesUpdate={handleFilesUpdate}
           />
-          <FolderPlusButton />
           <ClearFilesButton />
-          <PlayButton />
         </div>
       </div>
       {!loading && !error && (

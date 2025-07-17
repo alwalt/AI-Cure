@@ -41,6 +41,8 @@ from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
 from langchain.prompts import PromptTemplate
+from chromadb.config import Settings as ChromaSettings # hyperparams
+from langchain_community.vectorstores import Chroma # hyperparams
 
 import asyncio, yaml
 from mcp_agent.app import MCPApp
@@ -49,7 +51,17 @@ from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
 from mcp_agent.logging.logger import get_logger
 
-from config.rag_templates import TEMPLATES
+from chat_memory import get_session_history, add_chat_message
+
+from rag_calls.rag_templates import TEMPLATES
+from rag_calls.api_rag_calls import router as rag_router
+
+from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES, router as file_router
+from pdf_handlers.pdf_tools import router as pdf_router
+from image_handlers.image_tools import router as image_router
+from table_handlers.table_tools import router as table_router
+
+
 from pydantic import ValidationError
 
 import torch
@@ -117,6 +129,11 @@ async def lifespan(app: FastAPI):
         yield 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(rag_router) # Include single rag calls
+app.include_router(pdf_router) # Include pdf end points
+app.include_router(table_router) # Include table end points
+app.include_router(image_router) # Include image end points
+app.include_router(file_router) # Include file end points
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -135,8 +152,13 @@ app.add_middleware(
 
 # Add to config
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
-USER_DIRS = "user_uploads"
-JSON_DIRS = "cached_jsons"
+
+# Chroma / HNSW Defaults for hyperparams
+chroma_settings = ChromaSettings(anonymized_telemetry=False)
+hnsw_metadata = {
+    "hnsw:space": "cosine",
+    "hnsw:search_ef": 150,
+}
 
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
@@ -146,8 +168,7 @@ OUTPUT_DIR = "output_tables"
 # os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# { session_id -> [ (csv_file, name), ... ] }
-SESSION_TABLES = {}
+
 
 # Session structure for collection-based vectorstores
 SESSIONS = {}
@@ -250,214 +271,6 @@ async def session_manager(request: Request, call_next):
 
     return new_response
 
-
-
-###############################################################################
-# API Routes
-###############################################################################
-@app.get("/api/get_file/{filename}")
-async def get_file(filename: str, request: Request):
-    session_id = request.state.session_id
-    file_path = os.path.join(USER_DIRS, session_id, filename)
-    print(file_path)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    return FileResponse(file_path)
-
-@app.get("/api/get_session_files")
-async def get_files(request: Request):
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    
-    if not os.path.exists(UPLOAD_DIR):
-        return JSONResponse(content={"files": []})
-    
-    try:
-        files = []
-        for filename in os.listdir(UPLOAD_DIR):
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            file_ext = filename.split(".")[-1]
-            if os.path.isfile(file_path):
-                files.append({
-                    "name": filename,
-                    "type": file_ext,
-                    "dateCreated": datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%-m/%-d/%Y'),
-                    "size": os.path.getsize(file_path),
-                })
-
-            if file_ext == "excel" or file_ext == "xlsx":
-                table_info = segment_and_export_tables(file_path, session_id)
-                
-                # Store the table info in the SESSION_TABLES dictionary in main.py
-                SESSION_TABLES[session_id] = table_info
-                
-                # response_data = {
-                #     "tables": [{"csv_filename": csv_name, "display_name": filename} for _, csv_name in table_info],
-                # }
-        
-        return JSONResponse(content={"files": files})
-
-    except Exception as e:
-        logging.error(f"Error during retrieval: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-@app.post("/api/clear_files")
-async def clear_files(request: Request):
-    session_id = request.state.session_id
-    
-    # Clear tables reference (but keep vectorstore)
-    SESSION_TABLES[session_id] = []
-    
-    # Clear only FILES, preserve directories like chroma_db
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    if os.path.exists(UPLOAD_DIR):
-        for item in os.listdir(UPLOAD_DIR):
-            item_path = os.path.join(UPLOAD_DIR, item)
-            if os.path.isfile(item_path): 
-                os.remove(item_path)
-
-    return JSONResponse(content={"status": "success"})
-
-@app.post("/api/upload_file")
-async def upload_file(request: Request, file: UploadFile = File(...), file_type: str = Form(...)):
-    """
-    Upload a file and return a session id. Unless sessionid is present.
-    """
-  
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    
-    try:
-        # if session_id is not None or session_id == "":
-        #     session_id = uuid.uuid4().hex
-        logging.info(f"Starting upload for session: {session_id}")
-
-        if file_type == "excel" or file_type == "xlsx":
-            file_ext = file.filename.split(".")[-1]
-            
-
-            unique_name = f"{file.filename}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-        
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
-            logging.info("File saved, processing tables...")
-            table_info = segment_and_export_tables(file_path, session_id)
-            
-            # Store the table info in the SESSION_TABLES dictionary in main.py
-            SESSION_TABLES[session_id] = table_info
-            
-            response_data = {
-                "tables": [{"csv_filename": csv_name, "display_name": file.filename} for _, csv_name in table_info],
-            }
-        elif file.content_type == "application/pdf":
-            file_ext = "pdf"
-            file_name = file.filename
-            unique_name = f"{file_name}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
-            response_data = {
-                "file_name": file_name
-            }
-        elif file.content_type == "image/jpeg" or file.content_type == "image/png":
-            file_ext = file.filename.split(".")[-1]
-            file_name = file.filename
-            unique_name = f"{file_name}"
-            file_path = os.path.join(UPLOAD_DIR, unique_name)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-
-            response_data = {
-                "file_name": file_name
-            }
-        else:
-            return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
-        logging.info("Upload complete")
-        return JSONResponse(content=response_data)
-
-    except Exception as e:
-        logging.error(f"Error during upload: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-@app.get("/api/list_tables/{session_id}")
-def list_tables(session_id: str):
-    """
-    Return the tables found for a given session, if any.
-    """
-    table_info = SESSION_TABLES.get(session_id, [])
-    data = [
-        {
-            "csv_filename": csv_name,
-            "display_name": csv_name
-        }
-        for (path, csv_name) in table_info
-    ]
-    return JSONResponse(content={"tables": data})
-
-@app.get("/api/preview_table")
-def preview_table(request: Request, csv_filename: str):
-    """
-    Return a small preview of the CSV (first 5 rows, for example).
-    """
-    session_id = request.state.session_id
-    logging.info(f"Preview request received for session: {session_id}, file: {csv_filename}")
-    
-    # locate the path
-    table_info = SESSION_TABLES.get(session_id, [])
-    logging.info(f"Session tables: {table_info}")
-    
-    match = [p for (p, n) in table_info if n == csv_filename]
-    if not match:
-        logging.warning(f"Table not found: {csv_filename} for session: {session_id}")
-        return JSONResponse(content={"error": "Table not found"}, status_code=404)
-    
-    csv_path = match[0]
-    logging.info(f"Loading CSV from path: {csv_path}")
-    
-    try:
-        df = pd.read_csv(csv_path)
-        df = clean_dataframe(df)
-        preview = df.to_dict(orient="records")
-        columns = df.columns.tolist()
-        logging.info(f"Preview generated for file: {csv_filename}")
-        return JSONResponse(content={"columns": columns, "preview": preview})
-    except Exception as e:
-        logging.error(f"Error loading CSV for preview: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-@app.post("/api/export_subset")
-def export_subset(
-    session_id: str = Form(...),
-    csv_filename: str = Form(...),
-    columns: str = Form(...)
-):
-    """
-    Return a CSV file of the selected columns from the given table.
-    """
-    table_info = SESSION_TABLES.get(session_id, [])
-    match = [p for (p, n) in table_info if n == csv_filename]
-    if not match:
-        return JSONResponse(content={"error": "Table not found"}, status_code=404)
-    csv_path = match[0]
-
-    df = pd.read_csv(csv_path)
-    selected_cols = columns.split(",") if columns else []
-    for col in selected_cols:
-        if col not in df.columns:
-            return JSONResponse(content={"error": f"Column {col} not in table"}, status_code=400)
-    sub_df = df[selected_cols]
-    # We can create a temporary file
-    tmp_name = f"{uuid.uuid4().hex}_{csv_filename}"
-    tmp_path = os.path.join(OUTPUT_DIR, tmp_name)
-    sub_df.to_csv(tmp_path, index=False)
-    return FileResponse(tmp_path, media_type="text/csv", filename=tmp_name)
-    
 ###############################################################################
 # AI and Vector Routes
 ###############################################################################
@@ -541,7 +354,9 @@ async def generate_vectors(
     vectorstore = Chroma.from_documents(
         documents=split_docs, 
         embedding=embeddings,
-        persist_directory=save_directory
+        persist_directory=save_directory,
+        client_settings=chroma_settings,
+        collection_metadata=hnsw_metadata,
     )
     
     # Check if cookie exists in SESSIONS, if not create one
@@ -603,8 +418,11 @@ async def create_chatbot(
     
     # Create prompt template
     qa_prompt = PromptTemplate(
-    input_variables=["context", "question"],  # Ensure "context" is included
-    template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:")
+    input_variables=["context", "question"], 
+    template=textwrap.dedent("""You are a helpful AI. Use the following context to answer the question:
+    Context: {context}
+    Question: {question}
+    Answer:"""))
 
     llm_chain = LLMChain(llm=llm, prompt=qa_prompt)
 
@@ -625,23 +443,50 @@ async def create_chatbot(
     
     return JSONResponse(content={"status": "success", "active_collection_id": active_collection_id})
 
+
+class ChatReq(BaseModel):
+    query: str
+    model: str
+    
 # Get Chat Response 
 @app.post("/api/get_chat_response/{session_id}")
 async def get_chat_response(
     session_id: str,
-    query: str = Body(..., embed=True)
+    request: ChatReq
 ):
     """
     Get a chat response from a chatbot with a specified query and chain.
     Uses the active collection's context, or default vectorstore if no active collection.
     """
     print(f"CHATRESPONSE  called with session_id={session_id}")
+    query = request.query
+    model = request.model
     
     if session_id not in SESSIONS:
         raise HTTPException(status_code=404, detail="Session not found")
     
     initialize_session(session_id)
-    
+
+    # Get history from Redis
+    history = get_session_history(session_id)
+    chat_history = []
+    messages = history.messages
+
+    # Convert Redis history to LangChain format
+    i = 0
+    while i < len(messages) - 1:
+        if (hasattr(messages[i], 'type') and messages[i].type == "human" and
+            hasattr(messages[i + 1], 'type') and messages[i + 1].type == "ai"):
+            
+            human_content = messages[i].content
+            ai_content = messages[i + 1].content
+            chat_history.append((human_content, ai_content))
+            i += 2  
+        else:
+            i += 1
+
+    add_chat_message(history, query, "user")
+
     if "chain" not in SESSIONS[session_id] or SESSIONS[session_id]["chain"] is None:
         # No chain exists, ensure we have the default chain
         active_collection_id = SESSIONS[session_id].get("active_collection_id")
@@ -652,31 +497,60 @@ async def get_chat_response(
         
         # Create/recreate chain for the active collection
         vectorstore = SESSIONS[session_id]["collections"][active_collection_id]["vectorstore"]
-        llm = ChatOllama(model="llama3.1", temperature=0)
+        llm = ChatOllama(model=model, temperature=0)
+
+
+        
         qa_prompt = PromptTemplate(
             input_variables=["context", "question"],
-            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+            template="""You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\n
+            Context: {context}\n\n
+            Question: {question}\n\n
+            Answer:"""
         )
+        
         retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
         chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
-            retriever=retriever, 
+            retriever=retriever,
             return_source_documents=True,
             combine_docs_chain_kwargs={"prompt": qa_prompt},
-            verbose=True
+            verbose=True,
         )
         SESSIONS[session_id]["chain"] = chain
     
     chain = SESSIONS[session_id]["chain"]
-    history = SESSIONS[session_id].get("history", [])
+
+    # Get documents manually and add chat history
+    docs = chain.retriever.get_relevant_documents(query)
+
+    # Add chat history as first document if it exists
+    if chat_history:
+        chat_history_str = ""
+        for human, ai in chat_history:
+            chat_history_str += f"Human: {human}\nAssistant: {ai}\n\n"
+        
+        from langchain_core.documents import Document
+        history_doc = Document(
+            page_content=f"Previous conversation:\n{chat_history_str}",
+            metadata={"source": "chat_history"}
+        )
+        docs = [history_doc] + docs
+
+    # Manually create the context and call the chain's combine_docs_chain
+    context = "\n\n".join([doc.page_content for doc in docs])
+
+    # Call the LLM chain directly with the context
+    result_text = chain.combine_docs_chain.run(input_documents=docs, question=query)
+
+    # Create result in expected format
+    result = {"answer": result_text}
     
-    result = chain({"question": query, "chat_history": history})
-    SESSIONS[session_id]["history"] = history + [(query, result["answer"])]
-    
+    add_chat_message(history, result["answer"], "assistant")
+
     # Determine context info for response
     active_collection_id = SESSIONS[session_id].get("active_collection_id")
     if active_collection_id and active_collection_id in SESSIONS[session_id]["collections"] and active_collection_id != "default":
-        # Using a specific collection (not default)
         collection_name = SESSIONS[session_id]["collections"][active_collection_id]["name"]
         return JSONResponse(content={
             "answer": result["answer"],
@@ -684,231 +558,12 @@ async def get_chat_response(
             "active_collection_id": active_collection_id
         })
     else:
-        # Using default vectorstore (general chat) - either active_collection_id is "default" or None
         return JSONResponse(content={
             "answer": result["answer"],
             "active_collection": "General Chat",
             "active_collection_id": None
         })
 
-# Image Analyzer
-@app.post("/api/analyze_image")
-async def analyze_image(
-    request: Request,
-    model: str = Form("llava"),
-    file_name: str = Form(...),
-):
-    """
-    Analyze an image and return a json object with a summary.
-    """
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
-    os.makedirs(CACHED_DIR, exist_ok=True)
-    json_path = os.path.join(CACHED_DIR, f"{file_name}.json")
-    if os.path.exists(json_path):
-        with open(json_path, 'r') as f:
-            loaded_output = json.load(f)
-
-        return JSONResponse(content=loaded_output)
-    
-    print(f"Image analysis request received: filename={file_name}, session_id={session_id}")
-
-    # get the image from the session
-    image_path = os.path.join(UPLOAD_DIR, f"{file_name}")
-    with open(image_path, "rb") as image_file:
-        contents = image_file.read()
-
-    prompt = "Describe the image and extract key words relevant to space experiments. Output in a JSON with the following format: {\"Summary\":\"This is your description of the image\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}"
-    res = ollama.chat(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-                "images": [contents]
-            }
-        ]
-    )
-    # Parse the JSON response
-    json_output = {}
-    res_text = res['message']['content']
-    # First try to parse directly
-    try:
-        clean_text = res_text.replace("```json", "").replace("```", "").strip()
-        json_output = json.loads(clean_text)
-    except json.decoder.JSONDecodeError:
-        # If that fails, try regex extraction
-        json_match = re.search(r'(?i)\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
-        if json_match:
-            json_text = json_match.group(0)
-            try:
-                json_output = json.loads(json_text)
-            except json.decoder.JSONDecodeError:
-                json_output['Error'] = res_text
-        else:
-            json_output['Error'] = res_text 
-
-    # Normalize the keys
-    normalized_output = {
-        "summary": json_output.get("Summary") or json_output.get("summary", ""),
-        "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
-    }
-
-
-    if "Error" in json_output or "error" in json_output:
-        normalized_output["error"] = json_output.get("Error") or json_output.get("error")
-    else:
-        # Save normalized output to cached json file
-        try: 
-            with open(json_path, 'w', encoding='utf-8') as f:
-                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            print(f"Error saving file: {str(e)}")
-
-    return JSONResponse(content=normalized_output)
-
-
-# PDF Analyzer
-@app.post("/api/analyze_pdf")
-async def analyze_pdf(
-    request: Request,
-    pdf_file_name: str = Form(...),
-    model: str = Form("llava"),
-    ):
-    """
-    Analyze a PDF and return a json object with a summary.
-    """
-    # logged received file
-    print(f"received: {pdf_file_name}")
-    session_id = request.state.session_id
-    UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
-    CACHED_DIR = os.path.join(JSON_DIRS, session_id)
-    os.makedirs(CACHED_DIR, exist_ok=True)
-    json_path = os.path.join(CACHED_DIR, f"{pdf_file_name}.json")
-    if os.path.exists(json_path):
-        with open(json_path, 'r') as f:
-            loaded_output = json.load(f)
-        
-        return JSONResponse(content=loaded_output)
-    
-    # Get pdf file
-    pdf_path = os.path.join(UPLOAD_DIR, f"{pdf_file_name}")
-    with open(pdf_path, "rb") as pdf_file:        
-        # We'll use PyMuPDF to load the PDF
-        def format_docs(docs):
-            return "\n\n".join(doc.page_content for doc in docs)
-
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(pdf_file.read())
-            tmp_file_path = tmp_file.name
-
-        loader = PyMuPDFLoader(file_path=tmp_file_path)
-        data = loader.load()
-    
-    # Only analyzes first page now, enable list comprehension for all pages and aggregate the content when a better model is used.
-    print(data[0].page_content)
-    # Call model to get summary in json format
-    prompt = "Summarize the text given. Output in a JSON with the following format: {\"Summary\":\"This is your description of the pdf\", \"Keywords\":[\"keyword_1\", \"keyword_2\"]}" + f"Here is the text: {data[0].page_content}"
-    res = ollama.chat(
-        model=model,
-        messages=[
-            {
-                "role":"user",
-                "content": prompt,
-            }
-        ]
-    )
-    json_output = {}
-    res_text = res['message']['content']
-    print(res_text)
-
-    try: 
-        clean_text = res_text.replace("```json", "").replace("```", "").strip()
-        json_output = json.loads(clean_text)
-    except json.decoder.JSONDecodeError:
-        return "json:error"
-    
-    # Normalize the keys
-    normalized_output = {
-        "summary": json_output.get("Summary") or json_output.get("summary", ""),
-        "keywords": json_output.get("Keywords") or json_output.get("keywords", []),
-    }
-
-    normalized_output.update(get_magic_wand_suggestions(data[0].page_content, model))
-
-    if "Error" in json_output or "error" in json_output:
-        normalized_output["error"] = json_output.get("Error") or json_output.get("error")
-    else:
-        try:
-            with open(json_path, 'w', encoding='utf-8') as f:
-                json.dump(normalized_output, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            print(f"Error saving file: {str(e)}")
-
-    return JSONResponse(content=normalized_output)
-    # return JSONResponse(content={
-    #     "documents": [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in data]
-    # })
-
-@app.post("/api/analyze_table")
-def analyze_table(
-    request: Request,
-    csv_name: str = Form(...),
-    model: str = Form("llama3.1"),
-):
-    """
-    Analyze a table and provide a summary and keywords.
-    """
-    # Get the table from the session
-    session_id = request.state.session_id
-    table_info = SESSION_TABLES.get(session_id, [])
-    match = [p for (p, n) in table_info if n == csv_name]
-    if not match:
-        return JSONResponse(
-            content={"error": f"Table '{csv_name}' not found in session"}, 
-            status_code=404
-        )
-    csv_path = match[0]
-    try:
-        # Load the table with pandas 
-        df = pd.read_csv(csv_path)
-        table_df = clean_dataframe(df)
-        prompt = create_table_summary_prompt(table_df)
-        # Call Ollama API
-        res = ollama.chat(
-            model=model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
-        )
-        # Parse the JSON response
-        json_output = {}
-        res_text = res['message']['content']
-        # look for JSON objects within the text
-        json_match = re.search(r'\{[\s\S]*"summary"[\s\S]*"keywords"[\s\S]*\}', res_text)
-        if json_match:
-            json_text = json_match.group(0)
-            try:
-                json_output = json.loads(json_text)
-            except json.decoder.JSONDecodeError:
-                json_output['Error'] = res_text
-        else:
-            # If no JSON object found, try to clean the text and parse
-            res_text = res_text.replace("```json", "").replace("```", "")
-            try:
-                json_output = json.loads(res_text)
-            except json.decoder.JSONDecodeError:
-                json_output['Error'] = res_text
-        
-        json_output.update(get_magic_wand_suggestions(table_df.to_string(), model))
-        return JSONResponse(content=json_output)
-    except Exception as e:
-        logging.error(f"Error analyzing table: {str(e)}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.post("/api/ingest")
@@ -997,7 +652,9 @@ async def ingest_collection(
     vectorstore = Chroma.from_documents(
         documents=split_docs,
         embedding=embeddings,
-        persist_directory=collection_dir
+        persist_directory=collection_dir,
+        client_settings=chroma_settings,
+        collection_metadata=hnsw_metadata,
     )
     
     # Store collection info in session
