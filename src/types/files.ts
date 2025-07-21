@@ -86,6 +86,7 @@ export interface ButtonProps {
   role?: string; // Add role prop (optional)
   "aria-label"?: string; // Optional aria-label for accessibility
   className: string;
+  tooltipId: string;
 }
 
 export interface TextButtonProps {
@@ -138,3 +139,13 @@ export interface TabButtons {
   label: string;
   description: string;
 }
+
+export interface SettingsButtonProps {
+  onClick: () => void | Promise<void>;
+  className?: string;
+  tooltipId?: string;
+  ariaLabel?: string;
+  iconClassName?: string;
+  spanClassName?: string;
+}
+

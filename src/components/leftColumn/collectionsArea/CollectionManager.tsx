@@ -242,6 +242,7 @@ export default function CollectionManager() {
     collectionId: string,
     newName: string
   ) => {
+
     // Check if collection is ingested
     const collection = collections.find((c) => c.id === collectionId);
 
