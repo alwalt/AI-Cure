@@ -1,4 +1,3 @@
-import { BackendCollection, UploadedFile } from "@/types/files";
 import { UploadedFile, BackendCollection } from "@/types/files";
 import { create, StoreApi } from "zustand";
 
