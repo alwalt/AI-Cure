@@ -33,10 +33,9 @@ import tempfile
 import zipfile
 from io import BytesIO
 
-from langchain_community.document_loaders import PyMuPDFLoader
+# from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain_ollama import ChatOllama
@@ -62,6 +61,7 @@ from image_handlers.image_tools import router as image_router
 from table_handlers.table_tools import router as table_router
 
 from ingest.ingest_route import ingest_collection
+from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
 from pydantic import ValidationError
 
@@ -155,11 +155,11 @@ app.add_middleware(
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 
 # Chroma / HNSW Defaults for hyperparams
-chroma_settings = ChromaSettings(anonymized_telemetry=False)
-hnsw_metadata = {
-    "hnsw:space": "cosine",
-    "hnsw:search_ef": 150,
-}
+# chroma_settings = ChromaSettings(anonymized_telemetry=False)
+# hnsw_metadata = {
+#     "hnsw:space": "cosine",
+#     "hnsw:search_ef": 150,
+# }
 
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
@@ -172,7 +172,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # Session structure for collection-based vectorstores
-SESSIONS = {}
+# SESSIONS = {}
 
 def initialize_session(session_id: str):
     """Initialize a new session with a default empty collection"""

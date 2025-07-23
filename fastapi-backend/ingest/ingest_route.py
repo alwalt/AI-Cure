@@ -8,19 +8,19 @@ from typing import List
 import pandas as pd
 from fastapi import File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
-from langchain.document_loaders import PyMuPDFLoader
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.chat_models import ChatOllama
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.llms import ChatOllama
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
 
 # Import from their original locations
 from utils import clean_dataframe
 from file_handlers.file_tools import USER_DIRS
-from main import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
+from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
 
 async def ingest_collection(
