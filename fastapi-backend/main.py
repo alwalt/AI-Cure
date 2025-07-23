@@ -38,7 +38,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain_ollama import ChatOllama
+from langchain_community.chat_models import ChatOllama
 from langchain.prompts import PromptTemplate
 from chromadb.config import Settings as ChromaSettings # hyperparams
 from langchain_community.vectorstores import Chroma # hyperparams
@@ -174,58 +174,58 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # Session structure for collection-based vectorstores
 # SESSIONS = {}
 
-def initialize_session(session_id: str):
-    """Initialize a new session with a default empty collection"""
-    if session_id not in SESSIONS:
-        # Create default empty vectorstore
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2", 
-            model_kwargs={'trust_remote_code': True}
-        )
+# def initialize_session(session_id: str):
+#     """Initialize a new session with a default empty collection"""
+#     if session_id not in SESSIONS:
+#         # Create default empty vectorstore
+#         embeddings = HuggingFaceEmbeddings(
+#             model_name="sentence-transformers/all-MiniLM-L6-v2", 
+#             model_kwargs={'trust_remote_code': True}
+#         )
         
-        # Create collection directory for default collection
-        default_collection_dir = os.path.join(USER_DIRS, session_id, "collections", "default")
-        os.makedirs(default_collection_dir, exist_ok=True)
+#         # Create collection directory for default collection
+#         default_collection_dir = os.path.join(USER_DIRS, session_id, "collections", "default")
+#         os.makedirs(default_collection_dir, exist_ok=True)
         
-        # Create empty vectorstore
-        default_vectorstore = Chroma(
-            embedding_function=embeddings,
-            persist_directory=default_collection_dir
-        )
+#         # Create empty vectorstore
+#         default_vectorstore = Chroma(
+#             embedding_function=embeddings,
+#             persist_directory=default_collection_dir
+#         )
         
-        # Create LLM and chatbot chain for default collection
-        llm = ChatOllama(model="llama3.1", temperature=0)
-        qa_prompt = PromptTemplate(
-            input_variables=["context", "question"],
-            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
-        )
+#         # Create LLM and chatbot chain for default collection
+#         llm = ChatOllama(model="llama3.1", temperature=0)
+#         qa_prompt = PromptTemplate(
+#             input_variables=["context", "question"],
+#             template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+#         )
         
-        # Create retriever (will be empty initially)
-        retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+#         # Create retriever (will be empty initially)
+#         retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
         
-        # Create chain
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=llm, 
-            retriever=retriever, 
-            return_source_documents=True,
-            combine_docs_chain_kwargs={"prompt": qa_prompt},
-            verbose=True
-        )
+#         # Create chain
+#         chain = ConversationalRetrievalChain.from_llm(
+#             llm=llm, 
+#             retriever=retriever, 
+#             return_source_documents=True,
+#             combine_docs_chain_kwargs={"prompt": qa_prompt},
+#             verbose=True
+#         )
         
-        SESSIONS[session_id] = {
-            "collections": {
-                "default": {
-                    "vectorstore": default_vectorstore,
-                    "name": "Default Chat",
-                    "files": [],
-                    "created_at": time.time(),
-                    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
-                }
-            },
-            "active_collection_id": "default",
-            "history": [],
-            "chain": chain
-        }
+#         SESSIONS[session_id] = {
+#             "collections": {
+#                 "default": {
+#                     "vectorstore": default_vectorstore,
+#                     "name": "Default Chat",
+#                     "files": [],
+#                     "created_at": time.time(),
+#                     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+#                 }
+#             },
+#             "active_collection_id": "default",
+#             "history": [],
+#             "chain": chain
+#         }
 
 # MCP server var init
 mcp_server = None

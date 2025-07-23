@@ -2,6 +2,8 @@
 from fastapi import Body, Request, Depends, HTTPException
 from rag_calls.models import SingleRagRequest
 # from main import VECTOR_STORES
+from config.shared import SESSIONS
+
 
 
 def get_vectorstore(payload: SingleRagRequest = Body(...)):

@@ -11,7 +11,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.chat_models import ChatOllama
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from file_handlers.file_tools import USER_DIRS
+from fastapi import Body, HTTPException
+from rag_calls.models import SingleRagRequest
 
 # Global session storage
 SESSIONS: Dict[str, Dict[str, Any]] = {}
@@ -19,6 +20,9 @@ SESSIONS: Dict[str, Dict[str, Any]] = {}
 def initialize_session(session_id: str):
     """Initialize a new session with a default empty collection"""
     if session_id not in SESSIONS:
+        # Import USER_DIRS here to avoid circular imports
+        from file_handlers.file_tools import USER_DIRS
+        
         # Create default empty vectorstore
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2", 
@@ -32,7 +36,7 @@ def initialize_session(session_id: str):
         # Create empty vectorstore
         default_vectorstore = Chroma(
             embedding_function=embeddings,
-            persist_directory=default_collection_dir
+            persist_directory=default_collection_dir,
         )
         
         # Create LLM and chatbot chain for default collection
@@ -70,14 +74,43 @@ def initialize_session(session_id: str):
         }
         print(f"DEBUG: Initialized new session {session_id} with default collection")
 
-# Chroma settings - move these from main.py
+def get_vectorstore(payload: SingleRagRequest = Body(...)):
+    """
+    FastAPI dependency that looks up the vectorstore instance for
+    the current session_id.
+    """
+    session_id = payload.session_id
+    print("SESSION_ID FROM VECTORSTORE>PY !!!", session_id)
+    
+    session = SESSIONS.get(session_id)
+    if session is None:
+        raise HTTPException(400, f"Unknown session {session_id}")
+
+    # 1) Which collection is currently active?
+    coll_id = session.get("active_collection_id")
+    collections = session.get("collections", {})
+    coll = collections.get(coll_id)
+    if coll is None:
+        raise HTTPException(400, f"No collection '{coll_id}' in session {session_id}")
+
+    # 2) Pull the vectorstore out of that collection
+    vs = coll.get("vectorstore")
+
+    print("Checking vector store!!!: ", vs)
+    if vs is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Vector store not initialized for session {session_id}"
+        )
+    return vs
+
+# Chroma settings - updated for new Chroma version
 chroma_settings = Settings(
-    chroma_db_impl="duckdb+parquet",
     persist_directory="./chroma_db",
     anonymized_telemetry=False,
 )
 
-# HNSW metadata - move this from main.py  
+# HNSW metadata - updated for new Chroma version
 hnsw_metadata = {
     "hnsw:space": "cosine",
     "hnsw:construction_ef": 100,

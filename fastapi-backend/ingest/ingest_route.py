@@ -19,7 +19,6 @@ from langchain.prompts import PromptTemplate
 
 # Import from their original locations
 from utils import clean_dataframe
-from file_handlers.file_tools import USER_DIRS
 from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
 
@@ -38,6 +37,9 @@ async def ingest_collection(
     
     # Initialize session if needed
     initialize_session(session_id)
+    
+    # Import USER_DIRS here to avoid circular imports
+    from file_handlers.file_tools import USER_DIRS
     
     # Create collection-specific directory
     collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
@@ -109,8 +111,6 @@ async def ingest_collection(
         documents=split_docs,
         embedding=embeddings,
         persist_directory=collection_dir,
-        client_settings=chroma_settings,
-        collection_metadata=hnsw_metadata,
     )
     
     # Store collection info in session

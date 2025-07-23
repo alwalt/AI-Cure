@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from rag_calls.models import SingleRagRequest, DescriptionResponse, TitleResponse, KeywordsResponse 
 from dependencies.llm import get_llm
-from dependencies.vectorstore import get_vectorstore
+from config.shared import get_vectorstore
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
