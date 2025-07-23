@@ -8,7 +8,6 @@ import shutil
 from typing import Dict, List, Optional, Literal
 import logging
 import re
-import datetime
 
 
 import pandas as pd
@@ -16,7 +15,7 @@ import numpy as np
 
 from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import JSONResponse, Response
 from contextlib import asynccontextmanager
 api_router = APIRouter()
 
@@ -24,7 +23,6 @@ api_router = APIRouter()
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe, get_magic_wand_suggestions
 
 from pydantic import BaseModel
-import base64
 from io import BytesIO
 
 import uvicorn
@@ -33,7 +31,7 @@ import tempfile
 import zipfile
 from io import BytesIO
 
-# from langchain_community.document_loaders import PyMuPDFLoader
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
@@ -42,6 +40,7 @@ from langchain_community.chat_models import ChatOllama
 from langchain.prompts import PromptTemplate
 from chromadb.config import Settings as ChromaSettings # hyperparams
 from langchain_community.vectorstores import Chroma # hyperparams
+import textwrap
 
 import asyncio, yaml
 from mcp_agent.app import MCPApp
@@ -154,78 +153,12 @@ app.add_middleware(
 # Add to config
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 
-# Chroma / HNSW Defaults for hyperparams
-# chroma_settings = ChromaSettings(anonymized_telemetry=False)
-# hnsw_metadata = {
-#     "hnsw:space": "cosine",
-#     "hnsw:search_ef": 150,
-# }
-
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
 
-# UPLOAD_DIR = "uploaded_files"
+
 OUTPUT_DIR = "output_tables"
-# os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-
-
-# Session structure for collection-based vectorstores
-# SESSIONS = {}
-
-# def initialize_session(session_id: str):
-#     """Initialize a new session with a default empty collection"""
-#     if session_id not in SESSIONS:
-#         # Create default empty vectorstore
-#         embeddings = HuggingFaceEmbeddings(
-#             model_name="sentence-transformers/all-MiniLM-L6-v2", 
-#             model_kwargs={'trust_remote_code': True}
-#         )
-        
-#         # Create collection directory for default collection
-#         default_collection_dir = os.path.join(USER_DIRS, session_id, "collections", "default")
-#         os.makedirs(default_collection_dir, exist_ok=True)
-        
-#         # Create empty vectorstore
-#         default_vectorstore = Chroma(
-#             embedding_function=embeddings,
-#             persist_directory=default_collection_dir
-#         )
-        
-#         # Create LLM and chatbot chain for default collection
-#         llm = ChatOllama(model="llama3.1", temperature=0)
-#         qa_prompt = PromptTemplate(
-#             input_variables=["context", "question"],
-#             template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
-#         )
-        
-#         # Create retriever (will be empty initially)
-#         retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
-        
-#         # Create chain
-#         chain = ConversationalRetrievalChain.from_llm(
-#             llm=llm, 
-#             retriever=retriever, 
-#             return_source_documents=True,
-#             combine_docs_chain_kwargs={"prompt": qa_prompt},
-#             verbose=True
-#         )
-        
-#         SESSIONS[session_id] = {
-#             "collections": {
-#                 "default": {
-#                     "vectorstore": default_vectorstore,
-#                     "name": "Default Chat",
-#                     "files": [],
-#                     "created_at": time.time(),
-#                     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
-#                 }
-#             },
-#             "active_collection_id": "default",
-#             "history": [],
-#             "chain": chain
-#         }
 
 # MCP server var init
 mcp_server = None
