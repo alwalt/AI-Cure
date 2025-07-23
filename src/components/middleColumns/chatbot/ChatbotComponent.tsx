@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import SettingsButton from "@/components/base/SettingsButton";
+import { apiBase } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -55,7 +56,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
