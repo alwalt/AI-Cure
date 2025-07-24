@@ -14,7 +14,6 @@ import {
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import SettingsButton from "@/components/base/SettingsButton";
-import { apiBase } from "@/lib/api";
 
 interface Message {
   id: string;
