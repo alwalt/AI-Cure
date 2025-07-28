@@ -1,4 +1,6 @@
-import { BackendCollection, UploadedFile } from "@/types/files";
+import { apiBase } from "@/lib/api";
+import axios from "axios";
+import { UploadedFile, BackendCollection } from "@/types/files";
 import { create, StoreApi } from "zustand";
 
 export interface Collection {
@@ -196,16 +198,11 @@ const sessionFileStore = create<SessionFileStoreState>((set, get) => ({
   fetchCollections: async () => {
     try {
       set({ loadingSession: true });
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"
-        }/api/collections`,
-        {
-          credentials: "include",
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
+      const response = await axios.get(`${apiBase}/api/collections`, {
+        withCredentials: true,
+      });
+      if ([201, 200].includes(response.status)) {
+        const data = response.data;
         set((state) => {
           // Merge backend data with existing frontend state
           const existingCollections = state.collections;
