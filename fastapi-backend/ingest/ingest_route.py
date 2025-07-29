@@ -17,151 +17,81 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
 
-# PowerPoint processing imports
+# New processing imports
 from pptx import Presentation
 import pytesseract
 from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
 from docx import Document as DocxDocument
 
 # Import from their original locations
 from utils import clean_dataframe
 from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
-
-def extract_text_from_pptx(pptx_file_path):
-    """
-    Extract text from PPTX slides using OCR on generated images.
-    """
-    prs = Presentation(pptx_file_path)
-    all_text = ""
-    
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        
-        for i, slide in enumerate(prs.slides):
-            # Extract text from slide shapes first
-            slide_text = ""
-            for shape in slide.shapes:
-                if shape.has_text_frame:
-                    for paragraph in shape.text_frame.paragraphs:
-                        for run in paragraph.runs:
-                            slide_text += run.text + " "
-                    slide_text += "\n"
-                elif shape.has_table:
-                    for row in shape.table.rows:
-                        slide_text += "\t".join(cell.text for cell in row.cells) + "\n"
-            
-            # Create image from extracted text
-            image = Image.new("RGB", (1024, 768), "white")
-            draw = ImageDraw.Draw(image)
-            
-            try:
-                font = ImageFont.truetype("arial.ttf", 20)
-            except IOError:
-                font = ImageFont.load_default()
-            
-            current_y = 10
-            for line in slide_text.split("\n"):
-                draw.text((10, current_y), line, fill="black", font=font)
-                current_y += 25
-            
-            # Save image and apply OCR
-            image_path = temp_path / f"slide_{i + 1}.png"
-            image.save(image_path)
-            
-            try:
-                img = Image.open(image_path).convert("RGB")
-                ocr_text = pytesseract.image_to_string(img)
-                if ocr_text.strip():
-                    all_text += f"--- Slide {i + 1} ---\n"
-                    all_text += ocr_text.strip() + "\n\n"
-            except Exception as e:
-                all_text += f"[OCR error on slide {i + 1}: {e}]\n"
-    
-    return all_text.strip()
-
-
-def process_pptx_file(file_content, filename):
-    """
-    Process a single PPTX file using OCR-based text extraction.
-    """
-    docs = []
-    
-    # Create temporary file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pptx") as tmp:
-        tmp.write(file_content)
-        tmp_path = tmp.name
-
-    try:
-        text = extract_text_from_pptx(tmp_path)
-        
-        if text.strip():
-            # Split by slides and create separate documents for each slide
-            slides = text.split("--- Slide ")
-            for i, slide_content in enumerate(slides):
-                if slide_content.strip():
-                    # Clean up slide content
-                    if slide_content.startswith("1 ---"):
-                        slide_content = slide_content[5:]  # Remove "1 ---" from first slide
-                    elif " ---" in slide_content:
-                        slide_content = slide_content.split(" ---", 1)[1]
-                    
-                    slide_content = slide_content.strip()
-                    if slide_content:
-                        metadata = {
-                            "source": filename,
-                            "filetype": ".pptx",
-                            "slide_number": i + 1
-                        }
-                        doc = Document(page_content=slide_content, metadata=metadata)
-                        docs.append(doc)
-    
-    except Exception as e:
-        print(f"Error processing PPTX {filename} with OCR: {e}")
-    
-    finally:
-        # Clean up temporary file
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
-    
-    return docs
-
-
-def process_docx_file(file_content, filename):
-    """
-    Process a single DOCX file and return Document objects.
-    """
-    docs = []
-    
-    # Create temporary file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-        tmp.write(file_content)
-        tmp_path = tmp.name
-
-    try:
-        doc = DocxDocument(tmp_path)
-        full_text = ""
+def docx_read(docx_files):
+    full_text = ""
+    for docx_file in docx_files:
+        doc = DocxDocument(docx_file)
         for para in doc.paragraphs:
             full_text += para.text + "\n"
-        
-        if full_text.strip():
-            metadata = {
-                "source": filename,
-                "filetype": ".docx"
-            }
-            document = Document(page_content=full_text.strip(), metadata=metadata)
-            docs.append(document)
-    
-    except Exception as e:
-        print(f"Error processing DOCX {filename}: {e}")
-    
-    finally:
-        # Clean up temporary file
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
-    
-    return docs
+    return full_text.strip()
 
+def image_from_text(slide_content, image_size=(1024, 768), font_size=20):
+    image = Image.new("RGB", image_size, "white")
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    current_y = 10 
+    for line in slide_content.split("\n"):
+        draw.text((10, current_y), line, fill="black", font=font)
+        current_y += font_size + 5
+    return image
+
+def extract_text_from_slide(slide):
+    text = ""
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    text += run.text + " "
+            text += "\n"
+        elif shape.has_table:
+            for row in shape.table.rows:
+                text += "\t".join(cell.text for cell in row.cells) + "\n"
+    return text
+
+def pptx_to_images(pptx_path, output_folder):
+    prs = Presentation(pptx_path)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+    images = []
+    for i, slide in enumerate(prs.slides):
+        slide_text = extract_text_from_slide(slide)
+        image = image_from_text(slide_text)
+        image_path = output_folder / f"slide_{i + 1}.png"
+        image.save(image_path)
+        images.append(image_path)
+    return images
+
+def ocr_images(image_paths):
+    all_text = ""
+    for i, image_path in enumerate(image_paths):
+        try:
+            img = Image.open(image_path).convert("RGB")
+            ocr_text = pytesseract.image_to_string(img)
+            if ocr_text.strip():
+                all_text += f"--- Slide {i + 1} ---\n"
+                all_text += ocr_text.strip() + "\n\n"
+        except Exception as e:
+            all_text += f"[OCR error on slide {i + 1}: {e}]\n"
+    return all_text.strip()
+
+def pptx_read(pptx_file_path):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        slide_images = pptx_to_images(pptx_file_path, temp_dir)
+        return ocr_images(slide_images)
 
 async def ingest_collection(
     request: Request,
@@ -202,11 +132,10 @@ async def ingest_collection(
             "dateCreated": time.strftime("%m/%d/%Y")
         }
         file_info_list.append(file_info)
-        file_content = await upload.read()
         
         # Handle different file types
         if ext == ".csv":
-            df = pd.read_csv(BytesIO(file_content))
+            df = pd.read_csv(BytesIO(await upload.read()))
             df = clean_dataframe(df)
             for _, row in df.iterrows():
                 text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
@@ -214,7 +143,7 @@ async def ingest_collection(
                 all_docs.append(doc)
                 
         elif ext in {".xlsx", ".xls"}:
-            df = pd.read_excel(BytesIO(file_content), engine="openpyxl")
+            df = pd.read_excel(BytesIO(await upload.read()), engine="openpyxl")
             df = clean_dataframe(df)
             for _, row in df.iterrows():
                 text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
@@ -223,7 +152,7 @@ async def ingest_collection(
                 
         elif ext == ".pdf":
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-            tmp.write(file_content)
+            tmp.write(await upload.read())
             tmp.flush()
             docs = PyMuPDFLoader(tmp.name).load()
             for doc in docs:
@@ -231,14 +160,28 @@ async def ingest_collection(
                 all_docs.append(doc)
             os.unlink(tmp.name)  # Clean up temp file
 
-        elif ext == ".pptx":
-            docs = process_pptx_file(file_content, upload.filename)
-            all_docs.extend(docs)
-
         elif ext == ".docx":
-            docs = process_docx_file(file_content, upload.filename)
-            all_docs.extend(docs)
-                
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+            tmp.write(await upload.read())
+            tmp.flush()
+            tmp.close()
+            text_content = docx_read([tmp.name])
+            if text_content.strip():
+                doc = Document(page_content=text_content, metadata=metadata)
+                all_docs.append(doc)
+            os.unlink(tmp.name)  # Clean up temp file
+
+        elif ext in {".pptx", ".ppt"}:
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pptx")
+            tmp.write(await upload.read())
+            tmp.flush()
+            tmp.close()
+            text_content = pptx_read(tmp.name)
+            if text_content.strip():
+                doc = Document(page_content=text_content, metadata=metadata)
+                all_docs.append(doc)
+            os.unlink(tmp.name)
+            
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
             # TODO: implement image embedding with CLIP
             continue
