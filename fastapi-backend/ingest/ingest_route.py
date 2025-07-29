@@ -181,6 +181,12 @@ async def ingest_collection(
                 doc = Document(page_content=text_content, metadata=metadata)
                 all_docs.append(doc)
             os.unlink(tmp.name)
+        
+        elif ext in {".fastq", ".fq"}:
+            # TODO: implement FASTQ file processing
+            # FASTQ files contain nucleotide sequences with quality scores
+            # Could extract sequence IDs, sequences, and quality information
+            continue
             
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
             # TODO: implement image embedding with CLIP
