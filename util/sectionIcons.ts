@@ -34,7 +34,7 @@ export const sectionIcons: Record<
   protocols: Clipboard,
   samples: FlaskConical,
   assays: List,
-  vizualization: ChartColumn,
+  visualization: ChartColumn,
   keywords: KeyRound,
   title: ClipboardType,
 };

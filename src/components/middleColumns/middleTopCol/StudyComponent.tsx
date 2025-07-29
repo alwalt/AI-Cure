@@ -32,12 +32,7 @@ export default function StudyComponent() {
     (state: SessionFileStoreState) => state.updateRagSection
   );
 
-  const CollapsibleSectionTitles = [
-    "description",
-    "title",
-    "keywords",
-    "hardware",
-  ];
+  const CollapsibleSectionTitles = ["description", "title", "keywords", "ha"];
 
   const activeCollection = collections.find((c) => c.id === activeCollectionId);
 
@@ -78,14 +73,7 @@ export default function StudyComponent() {
 
     setLoadingSection(sectionToLoad);
     try {
-      // const ragResponse: RagResponse = await generateWithTemplate(
-      //   fileNamesForRAG,
-      //   "biophysics"
-      // );
-      // console.log("StudyComponent: RAG data received:", ragResponse);
-      // setFullRagData(ragResponse);
-
-      // 🔥 new per-section call
+      // new per-section call
       const result = await generateSingleRag(
         sectionToLoad as "description" | "title" | "keywords",
         fileNamesForRAG,
