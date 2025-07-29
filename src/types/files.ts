@@ -112,6 +112,7 @@ export interface CollapsibleSectionProps {
   onChange: (text: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  initiallyOpen?: boolean;
 }
 
 export interface EditableTextAreaProps {
@@ -148,4 +149,3 @@ export interface SettingsButtonProps {
   iconClassName?: string;
   spanClassName?: string;
 }
-

@@ -3,7 +3,7 @@ import { useState } from "react";
 import StudyComponent from "./StudyComponent";
 import TextButton from "../../base/TextButton";
 import { TabButtons } from "@/types/files";
-import Assays from "./Assays";
+import AssaysComponent from "./AssaysComponent";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");
@@ -21,7 +21,7 @@ export default function MiddleTopColumn() {
       case "study":
         return <StudyComponent />;
       case "assays":
-        return <Assays />;
+        return <AssaysComponent />;
       default:
         return null;
     }

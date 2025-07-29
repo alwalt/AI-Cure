@@ -6,11 +6,12 @@ export type SingleRagResponse = {
   description?: string;
   title?: string;
   keywords?: string[];
+  assays?: string;
 };
 
 // call `/api/generate_rag_with_description` or `/generate_rag_with_title` etc.
 export async function generateSingleRag(
-  section: "description" | "title" | "keywords",
+  section: "description" | "title" | "keywords" | "assays",
   fileNames: string[],
   sessionId: string
 ): Promise<string | string[]> {

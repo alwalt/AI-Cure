@@ -17,8 +17,9 @@ export default function CollapsibleSection({
   onChange,
   isLoading = false,
   disabled = false,
+  initiallyOpen = false,
 }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initiallyOpen);
   const Icon = sectionIcons[title] || DocumentIcon; // Dynamically get the correct icon | backup icon if not in Dict
 
   // Toggles the section visibility
