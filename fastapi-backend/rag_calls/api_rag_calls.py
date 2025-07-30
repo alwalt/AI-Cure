@@ -271,12 +271,18 @@ async def generate_rag_with_assays(
 ):
     # 1) Build the "job" instruction
     instruction_block = (
-        "You are an expert at reading scientific articles. "
-        "Your task is to identify and extract all experimental assays "
-        "used in the study."
-        "Respond ONLY with JSON, following this schema:\n\n"
-        f"{AssaysResponse.model_json_schema()}\n\n"
-    )
+    "You are an expert at reading scientific articles. "
+    "Your task is to identify and extract all experimental assays used in the study. "
+    "An assay is a laboratory procedure or test designed to measure, detect, or analyze "
+    "a specific biological component or process (e.g., Western Blotting, ELISA, PCR, "
+    "Calcium Uptake assay, Cell viability assay). "
+    "For each assay found, extract the key details into a structured format. "
+    "Look primarily in the Materials and Methods section. "
+    "Do NOT include sample preparation steps, statistical methods, or general procedures. "
+    "Return your findings as a JSON string that can be directly pasted into a text area. "
+    "Respond ONLY with JSON, following this schema:\n\n"
+    f"{AssaysResponse.model_json_schema()}\n\n"
+)
 
     # 2) Let the LLM refine that into a focused search query
     refine_resp = await run_in_threadpool(
