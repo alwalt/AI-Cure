@@ -148,4 +148,5 @@ export interface SettingsButtonProps {
   ariaLabel?: string;
   iconClassName?: string;
   spanClassName?: string;
+  strokeWidth?: number;
 }
