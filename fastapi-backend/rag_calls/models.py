@@ -18,6 +18,9 @@ class TitleResponse(BaseModel):
 class KeywordsResponse(BaseModel):
     keywords: List[str]
 
+class AssaysResponse(BaseModel):
+    assays: str
+
 class SingleRagRequest(BaseModel):
     session_id: str
     file_names: List[str]
