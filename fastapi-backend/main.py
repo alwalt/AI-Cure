@@ -10,8 +10,8 @@ import logging
 import re
 
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 
 from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
