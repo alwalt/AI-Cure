@@ -63,6 +63,12 @@ export default function FileUploader({
       case "jpg":
       case "jpeg":
         return "png";
+      case "ppt":
+      case "pptx":
+        return "pptx"; // or "ppt" depending on what your backend expects
+      case "doc":
+      case "docx":
+        return "doc";
       default:
         return extension;
     }
@@ -86,6 +92,15 @@ export default function FileUploader({
         const fileType = getFileType(file.name);
         formData.append("file", file);
         formData.append("file_type", fileType);
+
+        console.log(
+          `Uploading file: ${
+            file.name
+          }, type: ${fileType}, extension: ${file.name
+            .split(".")
+            .pop()
+            ?.toLowerCase()}`
+        ); // Debug log
 
         const response = await axios.post<UploadResponse>(
           `${apiBase}/api/upload_file`,
@@ -115,6 +130,11 @@ export default function FileUploader({
         }
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
+        // Log more details about the error
+        if (axios.isAxiosError(error)) {
+          console.error("Response data:", error.response?.data);
+          console.error("Response status:", error.response?.status);
+        }
         setUploadStatus(`Error uploading ${file.name}.`);
       }
     }
@@ -158,7 +178,7 @@ export default function FileUploader({
         <input
           ref={inputRef}
           type="file"
-          accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg"
+          accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.ppt,.pptx,.doc,.docx"
           onChange={handleChange}
           multiple
           data-cy="file-input"

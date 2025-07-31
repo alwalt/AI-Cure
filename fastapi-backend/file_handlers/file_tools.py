@@ -98,14 +98,10 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
     UPLOAD_DIR = os.path.join(USER_DIRS, session_id)
     
     try:
-        # if session_id is not None or session_id == "":
-        #     session_id = uuid.uuid4().hex
         logging.info(f"Starting upload for session: {session_id}")
 
         if file_type == "excel" or file_type == "xlsx":
             file_ext = file.filename.split(".")[-1]
-            
-
             unique_name = f"{file.filename}"
             file_path = os.path.join(UPLOAD_DIR, unique_name)
         
@@ -114,8 +110,6 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
             
             logging.info("File saved, processing tables...")
             table_info = segment_and_export_tables(file_path, session_id)
-            
-            # Store the table info in the SESSION_TABLES dictionary in main.py
             SESSION_TABLES[session_id] = table_info
             
             response_data = {
@@ -145,8 +139,32 @@ async def upload_file(request: Request, file: UploadFile = File(...), file_type:
             response_data = {
                 "file_name": file_name
             }
+        # ADD THESE NEW SECTIONS:
+        elif file_type == "pptx" or file.content_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+            file_name = file.filename
+            unique_name = f"{file_name}"
+            file_path = os.path.join(UPLOAD_DIR, unique_name)
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            response_data = {
+                "file_name": file_name
+            }
+        elif file_type == "doc" or file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" or file.content_type == "application/msword":
+            file_name = file.filename
+            unique_name = f"{file_name}"
+            file_path = os.path.join(UPLOAD_DIR, unique_name)
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            response_data = {
+                "file_name": file_name
+            }
         else:
             return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
+            
         logging.info("Upload complete")
         return JSONResponse(content=response_data)
 

@@ -52,9 +52,19 @@ export default function UploadedFiles({
   };
 
   const canPreview = (fileType: string) => {
-    return ["pdf", "png", "jpg", "jpeg", "xlsx", "xls", "csv"].includes(
-      fileType.toLowerCase()
-    );
+    return [
+      "pdf",
+      "png",
+      "jpg",
+      "jpeg",
+      "xlsx",
+      "xls",
+      "csv",
+      "ppt",
+      "pptx",
+      "doc",
+      "docx",
+    ].includes(fileType.toLowerCase());
   };
 
   const handleAddToCollectionClick = () => {
@@ -204,6 +214,20 @@ function getFileIcon(fileType: string) {
       return (
         <div className="w-5 h-5 flex items-center justify-center text-gray-500 text-xs">
           CSV
+        </div>
+      );
+    case "ppt":
+    case "pptx":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-orange-500 text-xs">
+          PPT
+        </div>
+      );
+    case "doc":
+    case "docx":
+      return (
+        <div className="w-5 h-5 flex items-center justify-center text-blue-600 text-xs">
+          DOC
         </div>
       );
     default:
