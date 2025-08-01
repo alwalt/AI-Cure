@@ -17,10 +17,81 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
 
+# New processing imports
+from pptx import Presentation
+import pytesseract
+from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
+from docx import Document as DocxDocument
+
 # Import from their original locations
 from utils import clean_dataframe
 from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
+def docx_read(docx_files):
+    full_text = ""
+    for docx_file in docx_files:
+        doc = DocxDocument(docx_file)
+        for para in doc.paragraphs:
+            full_text += para.text + "\n"
+    return full_text.strip()
+
+def image_from_text(slide_content, image_size=(1024, 768), font_size=20):
+    image = Image.new("RGB", image_size, "white")
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    current_y = 10 
+    for line in slide_content.split("\n"):
+        draw.text((10, current_y), line, fill="black", font=font)
+        current_y += font_size + 5
+    return image
+
+def extract_text_from_slide(slide):
+    text = ""
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    text += run.text + " "
+            text += "\n"
+        elif shape.has_table:
+            for row in shape.table.rows:
+                text += "\t".join(cell.text for cell in row.cells) + "\n"
+    return text
+
+def pptx_to_images(pptx_path, output_folder):
+    prs = Presentation(pptx_path)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+    images = []
+    for i, slide in enumerate(prs.slides):
+        slide_text = extract_text_from_slide(slide)
+        image = image_from_text(slide_text)
+        image_path = output_folder / f"slide_{i + 1}.png"
+        image.save(image_path)
+        images.append(image_path)
+    return images
+
+def ocr_images(image_paths):
+    all_text = ""
+    for i, image_path in enumerate(image_paths):
+        try:
+            img = Image.open(image_path).convert("RGB")
+            ocr_text = pytesseract.image_to_string(img)
+            if ocr_text.strip():
+                all_text += f"--- Slide {i + 1} ---\n"
+                all_text += ocr_text.strip() + "\n\n"
+        except Exception as e:
+            all_text += f"[OCR error on slide {i + 1}: {e}]\n"
+    return all_text.strip()
+
+def pptx_read(pptx_file_path):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        slide_images = pptx_to_images(pptx_file_path, temp_dir)
+        return ocr_images(slide_images)
 
 async def ingest_collection(
     request: Request,
@@ -88,6 +159,34 @@ async def ingest_collection(
                 doc.metadata.update(metadata)
                 all_docs.append(doc)
             os.unlink(tmp.name)  # Clean up temp file
+
+        elif ext == ".docx":
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+            tmp.write(await upload.read())
+            tmp.flush()
+            tmp.close()
+            text_content = docx_read([tmp.name])
+            if text_content.strip():
+                doc = Document(page_content=text_content, metadata=metadata)
+                all_docs.append(doc)
+            os.unlink(tmp.name)  # Clean up temp file
+
+        elif ext in {".pptx", ".ppt"}:
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pptx")
+            tmp.write(await upload.read())
+            tmp.flush()
+            tmp.close()
+            text_content = pptx_read(tmp.name)
+            if text_content.strip():
+                doc = Document(page_content=text_content, metadata=metadata)
+                all_docs.append(doc)
+            os.unlink(tmp.name)
+        
+        elif ext in {".fastq", ".fq"}:
+            # TODO: implement FASTQ file processing
+            # FASTQ files contain nucleotide sequences with quality scores
+            # Could extract sequence IDs, sequences, and quality information
+            continue
             
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
             # TODO: implement image embedding with CLIP
