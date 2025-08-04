@@ -16,6 +16,7 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
+from Bio import SeqIO
 
 # New processing imports
 from pptx import Presentation
@@ -92,6 +93,61 @@ def pptx_read(pptx_file_path):
     with tempfile.TemporaryDirectory() as temp_dir:
         slide_images = pptx_to_images(pptx_file_path, temp_dir)
         return ocr_images(slide_images)
+
+def fastq_read(fastq_files):
+    full_text = ""
+    for fastq_file in fastq_files:
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".fastq", mode='wb') as tmp:
+                fastq_file.seek(0)
+                tmp.write(fastq_file.read())
+                tmp.flush()
+                tmp_path = tmp.name
+            with open(tmp_path, "r", encoding='utf-8', errors='ignore') as handle:
+                sequence_count = 0
+                file_text = f"=== FASTQ File: {fastq_file.name} ===\n\n"
+                for record in SeqIO.parse(handle, "fastq"):
+                    sequence_count += 1
+                    # get sequence information
+                    sequence_id = record.id
+                    description = record.description
+                    nucleotide_sequence = str(record.seq)
+                    quality_scores = record.letter_annotations.get("phred_quality", [])
+                    # basic statistics
+                    seq_length = len(nucleotide_sequence)
+                    avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0
+                    # count nucleotides
+                    nucleotide_counts = {
+                        'A': nucleotide_sequence.count('A'),
+                        'T': nucleotide_sequence.count('T'),
+                        'G': nucleotide_sequence.count('G'),
+                        'C': nucleotide_sequence.count('C'),
+                    }
+                    # format sequence information as text for RAG
+                    file_text += f"Sequence {sequence_count}:\n"
+                    file_text += f"ID: {sequence_id}\n"
+                    file_text += f"Description: {description}\n"
+                    file_text += f"Length: {seq_length} nucleotides\n"
+                    file_text += f"Average Quality Score: {avg_quality:.2f}\n"
+                    file_text += f"Nucleotide Composition: A={nucleotide_counts['A']}, T={nucleotide_counts['T']}, G={nucleotide_counts['G']}, C={nucleotide_counts['C']}\n"
+                    # for shorter sequences, include the full sequence
+                    # for longer sequences, include just the first 100 and last 100 nucleotides
+                    if seq_length <= 200:
+                        file_text += f"Sequence: {nucleotide_sequence}\n"
+                    else:
+                        file_text += f"Sequence (first 100): {nucleotide_sequence[:100]}...\n"
+                        file_text += f"Sequence (last 100): ...{nucleotide_sequence[-100:]}\n"
+                    file_text += f"Quality Scores (first 10): {quality_scores[:10] if quality_scores else 'N/A'}\n"
+                    file_text += "\n" + "-" * 50 + "\n\n"
+                # add file summary
+                file_text += f"File Summary:\n"
+                file_text += f"Total sequences in {fastq_file.name}: {sequence_count}\n\n"
+                full_text += file_text
+            os.remove(tmp_path)
+        except Exception as e:
+            error_text = f"Error processing FASTQ file {fastq_file.name}: {str(e)}\n\n"
+            full_text += error_text
+    return full_text.strip()
 
 async def ingest_collection(
     request: Request,
@@ -183,10 +239,10 @@ async def ingest_collection(
             os.unlink(tmp.name)
         
         elif ext in {".fastq", ".fq"}:
-            # TODO: implement FASTQ file processing
-            # FASTQ files contain nucleotide sequences with quality scores
-            # Could extract sequence IDs, sequences, and quality information
-            continue
+            text_content = fastq_read([upload])
+            if text_content.strip():
+                doc = Document(page_content=text_content, metadata=metadata)
+                all_docs.append(doc)
             
         elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
             # TODO: implement image embedding with CLIP
