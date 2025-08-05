@@ -5,6 +5,8 @@ import {
   SessionFileStoreState,
   useSessionFileStore,
 } from "@/store/useSessionFileStore";
+import useAssaysStore from "@/store/useAssaysStore";
+
 import { useState } from "react";
 // import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
 // import { RagResponse, UploadedFile } from "@/types/files";
@@ -31,6 +33,8 @@ export default function StudyComponent() {
   const updateRagSection = useSessionFileStore(
     (state: SessionFileStoreState) => state.updateRagSection
   );
+
+  const setAssayTitles = useAssaysStore((state) => state.setAssayTitles);
 
   const CollapsibleSectionTitles = [
     "description",
@@ -80,7 +84,7 @@ export default function StudyComponent() {
     try {
       // new per-section call
       const result = await generateSingleRag(
-        sectionToLoad as "description" | "title" | "keywords",
+        sectionToLoad as "description" | "title" | "keywords" | "assays",
         fileNamesForRAG,
         sessionId
       );
@@ -91,7 +95,21 @@ export default function StudyComponent() {
           ? result.join(", ")
           : (result as string);
 
+      // Update the main RAG data store for the text area
       updateRagSection(sectionToLoad, textResult);
+
+      // Special handling for assays - also store titles in AssaysStore
+      if (sectionToLoad === "assays") {
+        // Parse the comma-separated titles and store them
+        const titles = (textResult as string)
+          .split(",")
+          .map((title) => title.trim());
+        setAssayTitles(titles);
+        console.log(
+          "StudyComponent: Stored assay titles in AssaysStore:",
+          titles
+        );
+      }
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);
       alert(
