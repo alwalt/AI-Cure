@@ -513,6 +513,170 @@ async def ingest_collection_endpoint(
     return await ingest_collection(request, files, collection_id, collection_name, embedding_model)
 
 
+# Collection Management Endpoints
+@app.get("/api/collections")
+async def list_collections(request: Request):
+    """List all collections for the current session (excluding default)"""
+    session_id = request.state.session_id
+    
+    # Initialize session if needed
+    initialize_session(session_id)
+    
+    collections_data = []
+    for coll_id, coll_info in SESSIONS[session_id]["collections"].items():
+        # Skip the default collection (for background general chat)
+        if coll_id == "default":
+            continue
+            
+        collections_data.append({
+            "id": coll_id,
+            "name": coll_info["name"],
+            "files": coll_info["files"],
+            "created_at": coll_info["created_at"],
+            "is_active": coll_id == SESSIONS[session_id].get("active_collection_id")
+        })
+    
+    return JSONResponse({
+        "collections": collections_data,
+        "session_id": session_id
+    })
+
+
+@app.post("/api/collections/{collection_id}/load")
+async def load_collection(collection_id: str, request: Request):
+    """Switch chatbot context to this collection"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    # Set as active collection
+    SESSIONS[session_id]["active_collection_id"] = collection_id
+    
+    # Clear existing chatbot chain (will be recreated with new vectorstore)
+    SESSIONS[session_id]["chain"] = None
+    
+    collection_name = SESSIONS[session_id]["collections"][collection_id]["name"]
+    
+    return JSONResponse({
+        "message": f"Collection '{collection_name}' loaded successfully",
+        "active_collection_id": collection_id
+    })
+
+
+@app.get("/api/collections/{collection_id}/export")
+async def export_collection(collection_id: str, request: Request):
+    """Download collection as zip file"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    collection_info = SESSIONS[session_id]["collections"][collection_id]
+    collection_name = collection_info["name"]
+    
+    # Collection directory path
+    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
+    
+    if not os.path.exists(collection_dir):
+        raise HTTPException(404, "Collection directory not found")
+    
+    # Create zip file in memory
+    zip_buffer = BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Add all files from the collection directory
+        for root, dirs, files in os.walk(collection_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arc_name = os.path.relpath(file_path, collection_dir)
+                zip_file.write(file_path, arc_name)
+    
+    zip_buffer.seek(0)
+    
+    # Clean filename for download
+    safe_name = re.sub(r'[^\w\-_.]', '_', collection_name)
+    filename = f"{safe_name}_{collection_id}.zip"
+    
+    return Response(
+        content=zip_buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@app.delete("/api/collections/{collection_id}")
+async def delete_collection(collection_id: str, request: Request):
+    """Delete collection and its vectorstore"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    collection_name = SESSIONS[session_id]["collections"][collection_id]["name"]
+    
+    # Remove from session
+    del SESSIONS[session_id]["collections"][collection_id]
+    
+    # If this was the active collection, reset to default
+    if SESSIONS[session_id].get("active_collection_id") == collection_id:
+        SESSIONS[session_id]["active_collection_id"] = "default"
+        # Reset to default chain (already exists from initialize_session)
+        default_vectorstore = SESSIONS[session_id]["collections"]["default"]["vectorstore"]
+        llm = ChatOllama(model="llama3.1", temperature=0)
+        qa_prompt = PromptTemplate(
+            input_variables=["context", "question"],
+            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+        )
+        retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm, 
+            retriever=retriever, 
+            return_source_documents=True,
+            combine_docs_chain_kwargs={"prompt": qa_prompt},
+            verbose=True
+        )
+        SESSIONS[session_id]["chain"] = chain
+    
+    # Delete collection directory
+    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
+    if os.path.exists(collection_dir):
+        shutil.rmtree(collection_dir)
+    
+    return JSONResponse({
+        "message": f"Collection '{collection_name}' deleted successfully"
+    })
+
+
+@app.put("/api/collections/{collection_id}")
+async def rename_collection(
+    collection_id: str, 
+    new_name: str = Body(..., embed=True),
+    request: Request = None
+):
+    """Rename a collection"""
+    session_id = request.state.session_id
+    
+    initialize_session(session_id)
+    
+    if collection_id not in SESSIONS[session_id]["collections"]:
+        raise HTTPException(404, f"Collection {collection_id} not found")
+    
+    # Update collection name
+    SESSIONS[session_id]["collections"][collection_id]["name"] = new_name
+    
+    return JSONResponse({
+        "message": f"Collection renamed to '{new_name}' successfully"
+    })
+
+
+
 # Magic Wand / Sparkles Description tables route
 # For main.py refactore, this to be moved to it's own folder/file, services/rag_services.py
 def _generic_rag_summarizer(
