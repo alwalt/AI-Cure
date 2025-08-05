@@ -32,7 +32,12 @@ export default function StudyComponent() {
     (state: SessionFileStoreState) => state.updateRagSection
   );
 
-  const CollapsibleSectionTitles = ["description", "title", "keywords"];
+  const CollapsibleSectionTitles = [
+    "description",
+    "title",
+    "keywords",
+    "assays",
+  ];
 
   const activeCollection = collections.find((c) => c.id === activeCollectionId);
 
