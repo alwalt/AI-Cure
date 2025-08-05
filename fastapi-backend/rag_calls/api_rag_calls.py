@@ -1,5 +1,5 @@
 # rag_calls/api_rag_calls.py
-from fastapi import APIRouter, Request, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from rag_calls.models import SingleRagRequest, DescriptionResponse, TitleResponse, KeywordsResponse 
 from dependencies.llm import get_llm

@@ -104,6 +104,7 @@ def get_vectorstore(payload: SingleRagRequest = Body(...)):
         )
     return vs
 
+
 # Chroma settings - updated for new Chroma version
 chroma_settings = Settings(
     persist_directory="./chroma_db",
