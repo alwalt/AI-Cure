@@ -1,86 +1,71 @@
-interface AssayEntry {
-  sample_name: string;
-  protein: string;
-  imaging_method: string;
-  blocking_duration: string;
-  block_concentration: string;
-}
+import { useState } from "react";
 
 interface AssaysTableProps {
-  assaysData: AssayEntry[] | null;
-  isLoading?: boolean;
+  // Remove the complex props - keep it simple
 }
 
-export const AssaysTable: React.FC<AssaysTableProps> = ({
-  assaysData,
-  isLoading = false,
-}) => {
-  if (isLoading) {
-    return (
-      <div className="w-full p-8 text-center">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto mb-4"></div>
-          <div className="space-y-2">
-            <div className="h-10 bg-gray-200 rounded"></div>
-            <div className="h-8 bg-gray-100 rounded"></div>
-            <div className="h-8 bg-gray-100 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+export const AssaysTable: React.FC<AssaysTableProps> = () => {
+  // Initialize a 4x5 grid for the data rows (4 rows, 5 columns)
+  const [tableData, setTableData] = useState<string[][]>([
+    ["", "", "", "", ""], // Row 1
+    ["", "", "", "", ""], // Row 2
+    ["", "", "", "", ""], // Row 3
+    ["", "", "", "", ""], // Row 4
+  ]);
 
-  if (!assaysData || assaysData.length === 0) {
-    return (
-      <div className="w-full p-8 text-center text-gray-500">
-        <p>
-          No assay data available. Click "Generate with AI" to extract assay
-          information.
-        </p>
-      </div>
-    );
-  }
+  const handleCellChange = (
+    rowIndex: number,
+    colIndex: number,
+    value: string
+  ) => {
+    const newData = [...tableData];
+    newData[rowIndex][colIndex] = value;
+    setTableData(newData);
+  };
+
+  const columnHeaders = [
+    "Sample Name",
+    "Protein",
+    "Imaging Method",
+    "Blocking Duration",
+    "Block Concentration",
+  ];
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-        <thead className="bg-gray-50">
+      <table className="min-w-full bg-gray border border-gray rounded-lg shadow-sm">
+        <thead className="bg-brightGray">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-              Sample Name
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-              Protein
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-              Imaging Method
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-              Blocking Duration
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-              Block Concentration
-            </th>
+            {columnHeaders.map((header, index) => (
+              <th
+                key={index}
+                className="px-4 py-3 text-left text-xs font-medium text-primaryWhite uppercase tracking-wider border-b"
+              >
+                {header}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {assaysData.map((entry, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                {entry.sample_name || "N/A"}
-              </td>
-              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                {entry.protein || "N/A"}
-              </td>
-              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                {entry.imaging_method || "N/A"}
-              </td>
-              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                {entry.blocking_duration || "N/A"}
-              </td>
-              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                {entry.block_concentration || "N/A"}
-              </td>
+          {tableData.map((row, rowIndex) => (
+            <tr key={rowIndex} className="hover:bg-unSelectedBlack">
+              {row.map((cell, colIndex) => (
+                <td
+                  key={colIndex}
+                  className="px-2 py-2 border-r border-gray-200 last:border-r-0"
+                >
+                  <textarea
+                    value={cell}
+                    onChange={(e) =>
+                      handleCellChange(rowIndex, colIndex, e.target.value)
+                    }
+                    className="w-full min-h-[60px] p-2 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-primaryBlue focus:border-transparent bg-selectedBlack text-primaryWhite"
+                    placeholder={`Enter ${columnHeaders[
+                      colIndex
+                    ].toLowerCase()}...`}
+                  />
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
