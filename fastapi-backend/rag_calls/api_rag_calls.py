@@ -273,9 +273,9 @@ async def generate_rag_with_assays(
     instruction_block = (
     "You are an expert at reading scientific articles. "
     "Your task is to identify and extract all experimental assays used in the study. "
-    "An assay is a laboratory procedure or test designed to measure, detect, or analyze a specific biological component or process (e.g., Western Blotting, ELISA, PCR,Calcium Uptake, Cell viability). "
+    "An assay is a laboratory procedure or test designed to measure, detect, or analyze a specific biological component or process (e.g., Western Blotting, ELISA, PCR, Calcium Uptake, Cell viability). "
     "Do NOT include sample preparation steps, statistical methods, general procedures, or descriptions. "
-    "Return your findings as a JSON string that can be directly pasted into a text area. "
+    "Return each assay name as a separate string in the 'assays' array. "
     "Respond ONLY with JSON, following this schema:\n\n"
     f"{AssaysResponse.model_json_schema()}\n\n"
 )

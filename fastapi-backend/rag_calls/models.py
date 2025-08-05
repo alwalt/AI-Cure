@@ -28,7 +28,7 @@ class AssayDetail(BaseModel):
     key_parameters: dict[str, str] = {}
 
 class AssaysResponse(BaseModel):
-    assays: str
+    assays: List[str]
 
 class SingleRagRequest(BaseModel):
     session_id: str
