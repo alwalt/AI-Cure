@@ -12,7 +12,7 @@ export default function TextButton({
     <div className="relative group flex flex-col items-center overflow-hidden">
       <button
         onClick={onClick}
-        className={`px-2 text-sm rounded-none border-none outline-none focus:outline-none 
+        className={`px-2 text-sm rounded-none border-none focus-visible:ring-2 focus-visible:!ring-primaryWhite focus-visible:ring-offset-2
         ${
           isActive
             ? "font-bold text-primaryWhite underline"
