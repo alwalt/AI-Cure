@@ -10,8 +10,8 @@ import logging
 import re
 
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 
 from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,6 +58,7 @@ from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES, route
 from pdf_handlers.pdf_tools import router as pdf_router
 from image_handlers.image_tools import router as image_router
 from table_handlers.table_tools import router as table_router
+from collection_handlers.collection_tools import router as collection_router, initialize_session, SESSIONS
 
 from ingest.ingest_route import ingest_collection
 from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
@@ -134,6 +135,7 @@ app.include_router(pdf_router) # Include pdf end points
 app.include_router(table_router) # Include table end points
 app.include_router(image_router) # Include image end points
 app.include_router(file_router) # Include file end points
+app.include_router(collection_router) # Include collections end points
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -672,6 +674,7 @@ async def rename_collection(
     return JSONResponse({
         "message": f"Collection renamed to '{new_name}' successfully"
     })
+
 
 
 # Magic Wand / Sparkles Description tables route
