@@ -42,10 +42,10 @@ export default function AssaysComponent() {
               onKeyDown={(e) => handleKeyDown(e, tab.id)}
               id={`${tab.id}-tab`}
               tabIndex={activeTab === tab.id ? 0 : -1}
-              className={`py-2 px-1 border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-selectedBlue focus-visible:ring-offset-2 ${
+              className={`py-2 px-1 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-selectedBlue focus-visible:ring-offset-2 ${
                 activeTab === tab.id
-                  ? "border-selectedBlue text-selectedBlue font-bold text-lg"
-                  : "border-transparent text-brightGrey font-normal text-sm hover:text-primaryWhite hover:border-brightGrey hover:font-semibold"
+                  ? "font-bold text-lg text-primaryWhite border-b-2"
+                  : "font-normal text-brightGrey text-sm hover:underline hover:text-base hover:text-selectedBlue"
               }`}
             >
               {tab.name}
