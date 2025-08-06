@@ -85,7 +85,7 @@ export interface ButtonProps {
   spanClassName?: string;
   role?: string; // Add role prop (optional)
   "aria-label"?: string; // Optional aria-label for accessibility
-  className: string;
+  className?: string;
   tooltipId: string;
 }
 

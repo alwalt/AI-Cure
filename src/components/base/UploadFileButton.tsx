@@ -32,15 +32,14 @@ export default function UploadFileButton({
     <div className="flex items-center justify-center relative group">
       <div data-cy="open-upload-dialog" className="cursor-pointer">
         <Button
-          targetId="ArrowUpTrayIcon"
-          buttonDescription="Upload files"
+          targetId="UploadIcon"
+          buttonDescription="Upload files button"
           Icon={Upload}
           iconClassName="h-6 w-6 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
           spanClassName="mt-2 left-1/2 -translate-x-1/2"
           onClick={() => setIsOpen(true)}
           aria-label="Upload files button" // Accessible label for screen readers
-          role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
-          className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
+          className=""
           tooltipId="tooltip-upload-files"
         />
         <input

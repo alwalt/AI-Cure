@@ -16,16 +16,17 @@ export default function Button({
 
   return (
     <div className="relative group">
-      <button
-        onClick={handleClick}
-        className={`flex ${className}`}
-        aria-label={ariaLabel || buttonDescription}
+      <div
+        className={`focus-within:outline-none focus-within:ring-2 focus-within:ring-white rounded ${className}`}
       >
-        <Icon
-          className={`focus-visible:ring-2 focus-visible:ring-white ${iconClassName}`}
-        />
-      </button>
-
+        <button
+          onClick={handleClick}
+          className="flex focus:outline-none"
+          aria-label={ariaLabel || buttonDescription}
+        >
+          <Icon className={iconClassName} />
+        </button>
+      </div>
       {/* Tooltip */}
       <span
         id={tooltipId}
