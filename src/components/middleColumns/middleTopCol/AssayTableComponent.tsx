@@ -59,7 +59,7 @@ export const AssaysTable: React.FC<AssaysTableProps> = () => {
                     onChange={(e) =>
                       handleCellChange(rowIndex, colIndex, e.target.value)
                     }
-                    className="w-full min-h-[60px] p-2 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-primaryBlue focus:border-transparent bg-selectedBlack text-primaryWhite"
+                    className="w-full min-h-[60px] p-2 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-selectedBlue focus:border-transparent bg-selectedBlack text-primaryWhite"
                     placeholder={`Enter ${columnHeaders[
                       colIndex
                     ].toLowerCase()}...`}
