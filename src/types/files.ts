@@ -85,7 +85,7 @@ export interface ButtonProps {
   spanClassName?: string;
   role?: string; // Add role prop (optional)
   "aria-label"?: string; // Optional aria-label for accessibility
-  className: string;
+  className?: string;
   tooltipId: string;
 }
 
@@ -112,6 +112,7 @@ export interface CollapsibleSectionProps {
   onChange: (text: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  initiallyOpen?: boolean;
 }
 
 export interface EditableTextAreaProps {
@@ -147,5 +148,5 @@ export interface SettingsButtonProps {
   ariaLabel?: string;
   iconClassName?: string;
   spanClassName?: string;
+  strokeWidth?: number;
 }
-

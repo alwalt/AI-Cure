@@ -4,13 +4,42 @@ import { apiBase } from "@/lib/api";
 // Single RAG call
 export type SingleRagResponse = {
   description?: string;
+  studies?: string;
+  payload?: string;
+  "subjects/biospecimens"?: string;
+  hardware?: string;
+  publications?: string;
+  files?: string;
+  "version history"?: string;
+  experiments?: string;
+  mission?: string;
+  protocols?: string;
+  samples?: string;
+  assays?: string;
+  visualization?: string;
   title?: string;
   keywords?: string[];
 };
 
 // call `/api/generate_rag_with_description` or `/generate_rag_with_title` etc.
 export async function generateSingleRag(
-  section: "description" | "title" | "keywords",
+  section:
+    | "description"
+    | "studies"
+    | "payload"
+    | "subjects/biospecimens"
+    | "hardware"
+    | "publications"
+    | "files"
+    | "version history"
+    | "experiments"
+    | "mission"
+    | "protocols"
+    | "samples"
+    | "assays"
+    | "visualization"
+    | "keywords"
+    | "title",
   fileNames: string[],
   sessionId: string
 ): Promise<string | string[]> {

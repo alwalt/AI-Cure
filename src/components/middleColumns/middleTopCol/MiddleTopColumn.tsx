@@ -1,35 +1,27 @@
 "use client";
 import { useState } from "react";
-import PDFExtractor from "./PDFExtractorComponent";
 import StudyComponent from "./StudyComponent";
 import TextButton from "../../base/TextButton";
-import PowerPointExtractor from "./PowerPointExtractor";
 import { TabButtons } from "@/types/files";
+import AssaysComponent from "./AssaysComponent";
 
 export default function MiddleTopColumn() {
   const [activeTab, setActiveTab] = useState("study");
   const tabs: TabButtons[] = [
     { id: "study", label: "Study", description: "Study tab" },
     {
-      id: "pdfextractor",
-      label: "PDF Extractor",
-      description: "PDF Extractor tab",
-    },
-    {
-      id: "PowerPointExtractor",
-      label: "Power Point Extractor",
-      description: "Power Point Extractor tab",
+      id: "assays",
+      label: "Assays",
+      description: "Assays",
     },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case "pdfextractor":
-        return <PDFExtractor />;
       case "study":
         return <StudyComponent />;
-      case "PowerPointExtractor":
-        return <PowerPointExtractor />;
+      case "assays":
+        return <AssaysComponent />;
       default:
         return null;
     }
