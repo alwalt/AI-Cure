@@ -399,9 +399,12 @@ async def get_chat_response(
     model = request.model
     
     if session_id not in SESSIONS:
-        raise HTTPException(status_code=404, detail="Session not found")
+        try:
+            initialize_session(session_id)
+        except Exception:
+            raise HTTPException(status_code=404, detail="Session not found")
     
-    initialize_session(session_id)
+    # initialize_session(session_id)
 
     # Get history from Redis
     history = get_session_history(session_id)
@@ -788,4 +791,4 @@ def generate_rag_with_template(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
+    uvicorn.run(app, host="0.0.0.0", port=8000 )
