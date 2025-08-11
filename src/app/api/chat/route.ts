@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiBase } from "@/lib/api";
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,15 +22,21 @@ export async function POST(req: NextRequest) {
     if (isSearchMode) {
       // OSDR search endpoint
       endpoint = `${apiBase}/api/mcp_query`;
+      endpoint = `http://127.0.0.1:8000/api/mcp_query`;
       body = { query: lastMessage.content };
     } else {
       // Regular chat endpoint
       endpoint = `${apiBase}/api/get_chat_response/${sessionId}`;
+      endpoint = `http://127.0.0.1:8000/api/get_chat_response/${sessionId}`;
+      console.error('api:', apiBase)
+      console.error('endpoint:', endpoint)
       body = {
         query: lastMessage.content,
         model: model,
       };
     }
+    console.log('api:', apiBase)
+    console.log('endpoint:', endpoint)
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",

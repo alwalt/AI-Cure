@@ -1,4 +1,4 @@
-import SaveButton from "@/components/base/SaveButton";
+//import SaveButton from "@/components/base/SaveButton";
 import { apiBase } from "@/lib/api";
 import { Collection, useSessionFileStore } from "@/store/useSessionFileStore";
 import { IngestResponse, UploadedFile } from "@/types/files";

@@ -38,7 +38,7 @@ export interface AssaysStoreState {
   removeAssayEntry: (index: number) => void;
 }
 
-const useAssaysStore = create<AssaysStoreState>((set, get) => ({
+const useAssaysStore = create<AssaysStoreState>((set) => ({
   // Initial state
   assayTitles: null,
   assaysData: null,

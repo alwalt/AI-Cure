@@ -1,10 +1,10 @@
 import { useState } from "react";
-
-interface AssaysTableProps {
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+//interface AssaysTableProps {
   // Remove the complex props - keep it simple
-}
+//}
 
-export const AssaysTable: React.FC<AssaysTableProps> = () => {
+export function AssaysTable () {
   // Initialize a 4x5 grid for the data rows (4 rows, 5 columns)
   const [tableData, setTableData] = useState<string[][]>([
     ["", "", "", "", ""], // Row 1

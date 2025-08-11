@@ -12,7 +12,7 @@ export default function SettingsButton({
   strokeWidth = 1,
 }: SettingsButtonProps) {
   // Create a custom icon component with the strokeWidth applied
-  const CustomSettingsIcon = (props: any) => (
+  const CustomSettingsIcon = (props: object) => (
     <Settings {...props} strokeWidth={strokeWidth} />
   );
   return (
