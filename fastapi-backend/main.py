@@ -143,6 +143,8 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+        "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -254,6 +256,86 @@ async def mcp_query(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/mcp_query/viz")
+async def mcp_query(
+    query: str = Body(..., embed=True),
+): 
+    try:
+        logger = get_logger(__name__)
+        # Create Agent
+        osdr_agent = Agent(
+            name="osdr_bot",
+            instruction=(
+                """
+                make sure you use the tool `osdr_plot_top_rna` and not `osdr_fetch_metadata`
+                    You are an AI agent that visualizes and plots NASA space biology datasets in the OSDR repository.
+
+                    Your job is to:
+                    1. Detect if the user referenced an OSD study (e.g., "study 488", "osd488", "OSD-488").
+                    2. Normalize it to the correct dataset ID format: `OSD-###`.
+                    3. Use the tool `osdr_plot_top_rna` to create a matplot and return the filename as a msg string.
+
+                    return a json object like below:
+                    {
+                        "summary": "summary_text generated",
+                        "plot_file": "absolute filepath"
+                    }
+                """
+            ),
+            server_names=["OSDRServer"],
+        )
+
+        async with osdr_agent:
+
+            # Automatically initialize the MCP servers and adds their tools for LLM use
+            tools = await osdr_agent.list_tools()
+            logger.info(f"Tools available:", data=tools)
+
+            # Attach an LLM and send the question
+            llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+
+            # Call the LLM (which should invoke the MCP viz tool)
+            resp = await llm.generate_str(message=query)
+            logger.info(f"Result: {resp}")
+
+            # Try to extract structured fields from the response for the frontend
+            summary = None
+            plot_file = None
+            try:
+                parsed = json.loads(resp) if isinstance(resp, str) else resp
+                if isinstance(parsed, dict):
+                    summary = parsed.get("summary")
+                    plot_file = parsed.get("plot_file")
+            except Exception:
+                if isinstance(resp, str):
+                    import re
+                    m_plot = re.search(r'plot_file\"?\s*[:=]\s*\"([^\"]+\.png)\"', resp)
+                    if m_plot:
+                        plot_file = m_plot.group(1)
+                    m_sum = re.search(r'summary\"?\s*[:=]\s*\"([\s\S]*?)\"\s*(,|})', resp)
+                    if m_sum:
+                        summary = m_sum.group(1)
+
+            if not plot_file:
+                try:
+                    import re as _re
+                    # Extract dataset id like OSD-120, osd120, study 120, etc.
+                    m = _re.search(r'(?:OSD[-\s]?|osd[-\s]?|study\s+)(\d{2,4})', query)
+                    if m:
+                        ds_num = m.group(1)
+                        dataset_id = f"OSD-{ds_num}"
+                        from mcp_modules.mcp_tools import osdr_plot_top_rna
+                        tool_result = await osdr_plot_top_rna(dataset_id)
+                        summary = tool_result.get("summary", summary)
+                        plot_file = tool_result.get("plot_file", plot_file)
+                except Exception as tool_exc:
+                    logger.error(f"Fallback tool call failed: {tool_exc}")
+
+            return {"response": resp, "summary": summary, "plot_file": plot_file}
+
+                 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
