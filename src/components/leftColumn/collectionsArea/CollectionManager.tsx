@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import SettingsButton from "@/components/base/SettingsButton";
 
 export default function CollectionManager() {
   const collections = useSessionFileStore((state) => state.collections);
@@ -44,6 +45,7 @@ export default function CollectionManager() {
     null
   );
   const [editingName, setEditingName] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   // Fetch collections when component mounts to load default collection
   useEffect(() => {
@@ -242,7 +244,6 @@ export default function CollectionManager() {
     collectionId: string,
     newName: string
   ) => {
-
     // Check if collection is ingested
     const collection = collections.find((c) => c.id === collectionId);
 
@@ -309,9 +310,16 @@ export default function CollectionManager() {
 
   return (
     <div className="space-y-2 last:mb-0">
-      <div className="flex justify-between w-full overflow-hidden">
+      <div className="flex justify-between w-full">
         <h2 className="text-2xl font-bold text-primaryWhite">Collections</h2>
-        <SaveButton />
+        <SettingsButton
+          onClick={() => setShowSettings(!showSettings)}
+          iconClassName="w-5 h-5 text-primaryWhite transition-colors hover:stroke-redFill duration-300"
+          spanClassName="right-1 mt-2"
+          tooltipId="chatbot-settings-tooltip"
+          className="inline-flex items-center justify-center w-8 h-8 font-medium text-primaryWhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          strokeWidth={1.25}
+        />
       </div>
       <div className="min-h-[200px] border-grey border rounded bg-unSelectedBlack pt-2 pr-2 pl-2 pb-2">
         {/* React Query Loading State */}

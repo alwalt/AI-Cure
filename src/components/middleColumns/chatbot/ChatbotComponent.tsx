@@ -211,6 +211,7 @@ export default function Chatbot() {
             spanClassName="left-1/2 -translate-x-1/2 mt-2"
             tooltipId="chatbot-settings-tooltip"
             className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            strokeWidth={2}
           />
           <Button
             variant="ghost"

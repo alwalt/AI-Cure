@@ -1,7 +1,7 @@
 # rag_calls/api_rag_calls.py
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from rag_calls.models import SingleRagRequest, DescriptionResponse, TitleResponse, KeywordsResponse 
+from rag_calls.models import SingleRagRequest, DescriptionResponse, TitleResponse, KeywordsResponse, AssaysResponse 
 from dependencies.llm import get_llm
 from config.shared import get_vectorstore
 from pydantic import ValidationError
@@ -257,6 +257,93 @@ async def generate_rag_with_keywords(
                 model=payload.model,
                 messages=[{"role": "user", "content": final_prompt}],
                 format=KeywordsResponse.model_json_schema(),
+            )
+            raw = retry["message"]["content"]
+
+    return result.model_dump()
+
+
+@router.post("/api/generate_rag_with_assays", response_model=AssaysResponse)
+async def generate_rag_with_assays(
+    payload: SingleRagRequest = Body(...),
+    llm = Depends(get_llm),
+    vs  = Depends(get_vectorstore),
+):
+    # 1) Build the "job" instruction
+    instruction_block = (
+    "You are an expert at reading scientific articles. "
+    "Your task is to identify and extract all experimental assays used in the study. "
+    "An assay is a laboratory procedure or test designed to measure, detect, or analyze a specific biological component or process (e.g., Western Blotting, ELISA, PCR, Calcium Uptake, Cell viability). "
+    "Do NOT include sample preparation steps, statistical methods, general procedures, or descriptions. "
+    "Return each assay name as a separate string in the 'assays' array. "
+    "Respond ONLY with JSON, following this schema:\n\n"
+    f"{AssaysResponse.model_json_schema()}\n\n"
+)
+
+    # 2) Let the LLM refine that into a focused search query
+    refine_resp = await run_in_threadpool(
+        llm.chat,
+        model=payload.model,
+        messages=[{
+            "role": "user",
+            "content": (
+                instruction_block +
+                "Based on the above, suggest a concise search query (2-5 words)."
+            )
+        }],
+    )
+    search_query = refine_resp["message"]["content"].strip().strip('"')
+
+    # 3) Gather top‐k docs + scores per file
+    docs_and_scores_all: list[tuple] = []
+    for src in payload.file_names:
+        ds = vs.similarity_search_with_score(
+            query=search_query,
+            k=payload.top_k,
+            filter={"source": src},
+        )
+        docs_and_scores_all.extend(ds)
+
+    if not docs_and_scores_all:
+        raise HTTPException(404, "No documents found for any of the requested files")
+
+    # 3a) apply score threshold
+    filtered = [doc for doc, score in docs_and_scores_all if score >= 0.65]
+    # 3b) fallback if nothing passes
+    if not filtered:
+        filtered = [doc for doc, _ in docs_and_scores_all]
+
+    # 4) Build context
+    context = "\n\n".join(d.page_content for d in filtered)
+
+    # 5) Final prompt for assays extraction
+    final_prompt = (
+        instruction_block +
+        "Data snippets:\n" + context + "\n\n"
+        "Do NOT include any extra text."
+    )
+    res = await run_in_threadpool(
+        llm.chat,
+        model=payload.model,
+        messages=[{"role": "user", "content": final_prompt}],
+        format=AssaysResponse.model_json_schema(),
+    )
+    raw = res["message"]["content"]
+
+    # 6) Validate & retry up to 5×
+    for attempt in range(1, 6):
+        try:
+            result = AssaysResponse.model_validate_json(raw)
+            break
+        except ValidationError as e:
+            if attempt == 5:
+                raise HTTPException(500, f"LLM returned invalid schema after 5 tries: {e}")
+            # retry
+            retry = await run_in_threadpool(
+                llm.chat,
+                model=payload.model,
+                messages=[{"role": "user", "content": final_prompt}],
+                format=AssaysResponse.model_json_schema(),
             )
             raw = retry["message"]["content"]
 
