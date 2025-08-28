@@ -16,7 +16,7 @@ export default function Navigation() {
         className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-300 ${
           pathname === "/"
             ? "bg-button-card text-text-default underline"
-            : "text-button-navigation hover:bg-button-hover-card hover:text-text-default hover:font-bold"
+            : "text-button-card hover:bg-button-hover-card hover:text-text-default hover:font-bold"
         }`}
       >
         AI Curation
