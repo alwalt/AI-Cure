@@ -67,6 +67,7 @@ export default {
         "text-default": "var(--gray-0)", // primaryWhite
         "text-hover-emphasis": "var(--gray-1000)", // Access Database text button hover
         "text-accent": "var(--blue-300)",
+        "text-chevron": "var(--gray-150)",
 
         // border
         "border-emphasis": "var(--gray-1000)", // unSelectedBlack
