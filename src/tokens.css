@@ -1,0 +1,20 @@
+:root {
+  /* PRIMARY COLOR TOKENS */
+  --gray-0: #ffffff;
+  --gray-150: #ececec;
+  --gray-200: #c9c9c9;
+  --gray-500: rgba(0, 0, 0, 0.5);
+  --gray-800: #393834;
+  --gray-850: #212121;
+  --gray-900: #1d1b19;
+  --gray-950: #121212;
+  --gray-1000: #000000;
+
+  --blue-300: #2a79ff;
+  --blue-700: #0b3d91;
+
+  --red-600: #b05447;
+  --red-700: #952f2d;
+
+  --overlay-default: rgba(0, 0, 0, 0.85);
+}
