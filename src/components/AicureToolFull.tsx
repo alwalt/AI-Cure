@@ -14,9 +14,9 @@ export default function AicureToolFull() {
   return (
     <div
       data-cy="root-app"
-      className="flex h-screen grid-cols-3 bg-primaryBlack"
+      className="flex h-screen grid-cols-3 bg-background-default"
     >
-      <div className="overflow-hidden min-w-[350px] max-w-[350px] 2xl:min-w-[450px] 2xl:max-w-[450px] flex flex-col">
+      <div className="overflow-hidden min-w-[350px] max-w-[350px] 2xl:min-w-[450px] 2xl:max-w-[450px] flex flex-col border-r-2 border-border-column">
         <div className="flex-none p-2">
           <Navigation />
         </div>
@@ -41,7 +41,7 @@ export default function AicureToolFull() {
           isRightColumnVisible
             ? "min-w-[300px] max-w-[400px] 2xl:min-w-[400px] 2xl:max-w-[450px]"
             : "w-[36px]"
-        } flex h-full`}
+        } flex h-full border-l-2 border-border-column`}
       >
         <RightColumn />
       </div>

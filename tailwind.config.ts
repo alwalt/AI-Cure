@@ -28,6 +28,7 @@ export default {
         "gray-150": "var(--gray-150)", // brightGray
         "gray-200": "var(--gray-200)", // buttonBg
         "gray-500": "var(--gray-500)", // 85% opacity black = rgb(128, 128, 128)
+        "gray-700": "var(--gray-700", // column border
         "gray-800": "var(--gray-800)", // gray
         "gray-850": "var(--gray-850)", // selectedBlack
         "gray-900": "var(--gray-900)", // primaryBlack
@@ -42,7 +43,7 @@ export default {
 
         // SEMANTIC TOKENS (reference the primitives)
         // backgrounds
-        "background-default": "var(--gray-800)", // default background
+        "background-default": "var(--gray-900)", // default background
 
         // surface
         "surface-emphasis": "var(--gray-850)", // Access Database area
@@ -73,6 +74,7 @@ export default {
         "border-accent": "var(--blue-300)", // selectedBlue
         "border-default": "var(--gray-0)", // primaryWhite
         "border-card": "var(--blue-700)",
+        "border-column": "var(--gray-700)", // column border
 
         // focus
         "focus-default": "var(--gray-0)", // primaryWhite (all borders)

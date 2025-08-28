@@ -101,9 +101,9 @@ export default function TrainingTopMiddle() {
   };
 
   return (
-    <div className="h-full bg-gray-950 border-b border-border-accent flex flex-col">
+    <div className="h-full bg-gray-950 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           <h2 className="text-text-default text-lg font-semibold">
             Training Terminal
