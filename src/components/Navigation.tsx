@@ -10,10 +10,10 @@ export default function Navigation() {
   };
 
   return (
-    <div className="flex bg-surface-navigation rounded-lg p-1 mb-4">
+    <div className="flex bg-surface-navigation rounded-lg p-1">
       <button
         onClick={() => handleNavigation("/")}
-        className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
           pathname === "/"
             ? "bg-button-navigation text-text-emphasis"
             : "text-button-navigation hover:bg-button-hover-navigation hover:text-text-default"
@@ -23,7 +23,7 @@ export default function Navigation() {
       </button>
       <button
         onClick={() => handleNavigation("/ai-training")}
-        className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
           pathname === "/ai-training"
             ? "bg-button-navigation text-text-emphasis"
             : "text-button-navigation hover:bg-button-hover-navigation hover:text-text-default"
