@@ -28,12 +28,12 @@ export default function MiddleTopColumn() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-primaryBlack overflow-y-auto custom-scrollbar border-b border-gray-700">
-      <div className="sticky top-0 z-10 bg-primaryBlack overflow-hidden">
-        <h2 className="font-bold text-primaryWhite text-xl p-2 capitalize">
+    <div className="flex flex-col h-full min-h-0 bg-background-default overflow-y-auto custom-scrollbar column">
+      <div className="sticky top-0 z-10 bg-background-default overflow-hidden">
+        <h2 className="font-bold text-text-default text-xl p-2 capitalize">
           Scientific data curation
         </h2>
-        <div className="border-b border-grey mb-0 overflow-hidden">
+        <div className="mb-0 overflow-hidden">
           {/* Tab Buttons */}
           <div className="flex gap-x-4 mb-4 overflow-auto items-center">
             {tabs.map(({ id, label, description }) => (
