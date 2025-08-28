@@ -1,3 +1,4 @@
+// src/app/page.tsx
 import AicureToolFull from "@/components/AicureToolFull";
 import Footer from "@/components/Footer";
 import NasaHeader from "@/components/NasaHeader";
