@@ -47,14 +47,13 @@ export default {
 
         // surface
         "surface-emphasis": "var(--gray-850)", // Access Database area
-        "surface-navigation": "var(--blue-700)", // nav bar background color
+        "surface-navigation": "var(--gray-700)", // nav bar background color
         "surface-accent": "var(--blue-300)",
-        "surface-card": "var(--gray-900)",
         "surface-card-expanded": "var(--gray-850)",
 
         // buttons
         "button-emphasis": "var(--gray-500)", // Access Database button
-        "button-navigation": "var(--gray-0)", // nav buttons
+        "button-navigation": "var(--blue-700)", // nav buttons
         "button-close": "var(--red-700)", // redFill
         "button-card": "var(--blue-300)",
 

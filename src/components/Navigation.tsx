@@ -10,23 +10,23 @@ export default function Navigation() {
   };
 
   return (
-    <div className="flex bg-surface-navigation rounded-lg p-1">
+    <div className="flex bg-surface-emphasis border-2 border-border-column rounded-lg p-1">
       <button
         onClick={() => handleNavigation("/")}
-        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-300 ${
           pathname === "/"
-            ? "bg-button-navigation text-text-emphasis"
-            : "text-button-navigation hover:bg-button-hover-navigation hover:text-text-default"
+            ? "bg-button-card text-text-default underline"
+            : "text-button-navigation hover:bg-button-hover-card hover:text-text-default hover:font-bold"
         }`}
       >
         AI Curation
       </button>
       <button
         onClick={() => handleNavigation("/ai-training")}
-        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-300 ${
           pathname === "/ai-training"
-            ? "bg-button-navigation text-text-emphasis"
-            : "text-button-navigation hover:bg-button-hover-navigation hover:text-text-default"
+            ? "bg-button-navigation text-text-default underline"
+            : "text-button-card hover:bg-button-hover-card hover:text-text-default hover:font-bold"
         }`}
       >
         AI Training
