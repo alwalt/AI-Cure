@@ -1,8 +1,9 @@
 "use client";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTrainingHyperparameters } from "@/store/useTrainingHyperparameters";
+import CustomSlider from "@/components/base/CustomSlider";
 
-export default function TraingingHyperparameterSettings() {
+export default function TrainingHyperparameterSettings() {
   // Zustand store
   const {
     learningRate,
@@ -34,6 +35,11 @@ export default function TraingingHyperparameterSettings() {
     // TODO: Send hyperparams to backend/training system
   };
 
+  // Format functions for different value types
+  const formatLearningRate = (value: number) => value.toFixed(4);
+  const formatDecimal = (value: number) => value.toFixed(2);
+  const formatPercentage = (value: number) => `${(value * 100).toFixed(0)}%`;
+
   return (
     <div className="bg-surface-contrast rounded-lg">
       {/* Header */}
@@ -54,25 +60,18 @@ export default function TraingingHyperparameterSettings() {
       {/* Expandable Content */}
       {isExpanded && (
         <div className="bg-surface-file-area border-border-file-area border rounded p-2 max-h-[400px] overflow-y-auto">
-          <div className="px-4 space-y-4">
+          <div className="px-4 space-y-4 pt-2">
             {/* Learning Rate Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-text-default text-xs font-medium">
-                  Learning Rate
-                </label>
-                <span className="text-gray-500 text-xs">{learningRate}</span>
-              </div>
-              <input
-                type="range"
-                min="0.0001"
-                max="0.1"
-                step="0.0001"
-                value={learningRate}
-                onChange={(e) => setLearningRate(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
+            <CustomSlider
+              label="Learning Rate"
+              value={learningRate}
+              min={0.0001}
+              max={0.1}
+              step={0.0001}
+              onChange={setLearningRate}
+              formatValue={formatLearningRate}
+              formatMinMax={formatLearningRate}
+            />
 
             {/* Batch Size Dropdown */}
             <div className="space-y-2">
@@ -127,42 +126,28 @@ export default function TraingingHyperparameterSettings() {
             </div>
 
             {/* Momentum Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-text-default text-xs font-medium">
-                  Momentum
-                </label>
-                <span className="text-gray-500 text-xs">{momentum}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={momentum}
-                onChange={(e) => setMomentum(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
+            <CustomSlider
+              label="Momentum"
+              value={momentum}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={setMomentum}
+              formatValue={formatDecimal}
+              formatMinMax={formatDecimal}
+            />
 
             {/* Dropout Rate Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-text-default text-xs font-medium">
-                  Dropout Rate
-                </label>
-                <span className="text-gray-500 text-xs">{dropout}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="0.8"
-                step="0.05"
-                value={dropout}
-                onChange={(e) => setDropout(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
+            <CustomSlider
+              label="Dropout Rate"
+              value={dropout}
+              min={0}
+              max={0.8}
+              step={0.05}
+              onChange={setDropout}
+              formatValue={formatPercentage}
+              formatMinMax={formatPercentage}
+            />
 
             {/* Regularization Type */}
             <div className="space-y-2">
@@ -182,23 +167,16 @@ export default function TraingingHyperparameterSettings() {
             </div>
 
             {/* Validation Split Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-text-default text-xs font-medium">
-                  Validation Split
-                </label>
-                <span className="text-gray-500 text-xs">{validationSplit}</span>
-              </div>
-              <input
-                type="range"
-                min="0.1"
-                max="0.4"
-                step="0.05"
-                value={validationSplit}
-                onChange={(e) => setValidationSplit(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer slider"
-              />
-            </div>
+            <CustomSlider
+              label="Validation Split"
+              value={validationSplit}
+              min={0.1}
+              max={0.4}
+              step={0.05}
+              onChange={setValidationSplit}
+              formatValue={formatPercentage}
+              formatMinMax={formatPercentage}
+            />
 
             {/* Action Buttons */}
             <div className="pt-2 space-y-2">
@@ -218,26 +196,6 @@ export default function TraingingHyperparameterSettings() {
           </div>
         </div>
       )}
-
-      {/* Custom Slider Styles */}
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: var(--blue-300);
-          cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: var(--blue-300);
-          cursor: pointer;
-          border: none;
-        }
-      `}</style>
     </div>
   );
 }
