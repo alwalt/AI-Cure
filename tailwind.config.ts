@@ -71,7 +71,7 @@ export default {
 
         // border
         "border-emphasis": "var(--gray-1000)", // unSelectedBlack
-        "border-accent": "var(--blue-300)", // selectedBlue
+        "border-accent": "var(--gray-200)",
         "border-default": "var(--gray-0)", // primaryWhite
         "border-card": "var(--blue-700)",
         "border-column": "var(--gray-700)", // column border
