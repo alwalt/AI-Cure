@@ -12,6 +12,9 @@ export interface TrainingHyperparameterState {
   regularization: string;
   validationSplit: number;
 
+  // Model selection
+  selectedModel: string;
+
   // UI state
   isExpanded: boolean;
 
@@ -24,6 +27,7 @@ export interface TrainingHyperparameterState {
   setDropout: (value: number) => void;
   setRegularization: (value: string) => void;
   setValidationSplit: (value: number) => void;
+  setSelectedModel: (value: string) => void;
   setIsExpanded: (value: boolean) => void;
 
   // Reset to defaults
@@ -39,6 +43,7 @@ export interface TrainingHyperparameterState {
     dropout: number;
     regularization: string;
     validationSplit: number;
+    selectedModel: string;
   };
 }
 
@@ -52,6 +57,7 @@ const defaultTrainingHyperparameters = {
   dropout: 0.2,
   regularization: "l2",
   validationSplit: 0.2,
+  selectedModel: "llama3.2",
   isExpanded: true,
 };
 
@@ -69,6 +75,7 @@ export const useTrainingHyperparameters = create<TrainingHyperparameterState>(
     setDropout: (value: number) => set({ dropout: value }),
     setRegularization: (value: string) => set({ regularization: value }),
     setValidationSplit: (value: number) => set({ validationSplit: value }),
+    setSelectedModel: (value: string) => set({ selectedModel: value }),
     setIsExpanded: (value: boolean) => set({ isExpanded: value }),
 
     resetToDefaults: () => set(defaultTrainingHyperparameters),
@@ -84,6 +91,7 @@ export const useTrainingHyperparameters = create<TrainingHyperparameterState>(
         dropout: state.dropout,
         regularization: state.regularization,
         validationSplit: state.validationSplit,
+        selectedModel: state.selectedModel,
       };
     },
   })

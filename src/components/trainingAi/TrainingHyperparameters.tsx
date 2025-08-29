@@ -45,15 +45,15 @@ export default function TraingingHyperparameterSettings() {
           Hyperparameter Settings
         </h3>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-400" />
+          <ChevronUp className="w-4 h-4 text-text-default" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400" />
+          <ChevronDown className="w-4 h-4 text-text-default" />
         )}
       </div>
 
       {/* Expandable Content */}
-      <div className="bg-surface-file-area border-border-file-area border rounded p-2 max-h-[450px] overflow-y-auto">
-        {isExpanded && (
+      {isExpanded && (
+        <div className="bg-surface-file-area border-border-file-area border rounded p-2 max-h-[400px] overflow-y-auto">
           <div className="px-4 space-y-4">
             {/* Learning Rate Slider */}
             <div className="space-y-2">
@@ -216,28 +216,28 @@ export default function TraingingHyperparameterSettings() {
               </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Custom Slider Styles */}
-        <style jsx>{`
-          .slider::-webkit-slider-thumb {
-            appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--blue-300);
-            cursor: pointer;
-          }
-          .slider::-moz-range-thumb {
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--blue-300);
-            cursor: pointer;
-            border: none;
-          }
-        `}</style>
-      </div>
+      {/* Custom Slider Styles */}
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          background: var(--blue-300);
+          cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          background: var(--blue-300);
+          cursor: pointer;
+          border: none;
+        }
+      `}</style>
     </div>
   );
 }

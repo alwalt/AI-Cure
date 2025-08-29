@@ -1,5 +1,6 @@
 import TrainingFilesManager from "./TraingingFilesManager";
 import TraingingHyperparameterSettings from "./TrainingHyperparameters";
+import TrainingModelSelection from "./TrainingModelSelection";
 
 export default function TrainingLeftColumn() {
   return (
@@ -11,6 +12,7 @@ export default function TrainingLeftColumn() {
         <TrainingFilesManager />
       </div>
       <TraingingHyperparameterSettings />
+      <TrainingModelSelection />
     </div>
   );
 }
