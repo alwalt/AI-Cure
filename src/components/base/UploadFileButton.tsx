@@ -20,7 +20,9 @@ export default function UploadFileButton({
   const inputRef = useRef<HTMLInputElement>(null); // for testing with cy
 
   const handleTablesUpdate = (tables: Table[]) => {
-    onTablesUpdate(tables);
+    if (onTablesUpdate) {
+      onTablesUpdate(tables);
+    }
     setIsOpen(false);
   };
 
