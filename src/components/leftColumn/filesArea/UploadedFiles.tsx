@@ -80,22 +80,22 @@ export default function UploadedFiles({
 
   if (!files.length) {
     return (
-      <div className="p-2 bg-unSelectedBlack rounded text-primaryWhite text-center">
+      <div className="p-2 bg-unSelectedBlack rounded text-text-default text-center">
         No files uploaded yet.
       </div>
     );
   }
 
   return (
-    <div className="bg-panelBlack border-grey border rounded p-2">
-      <h3 className="text-lg font-semibold text-primaryWhite">
+    <div className="bg-surface-file-area border-border-file-area border rounded p-2">
+      <h3 className="text-lg font-semibold text-text-default">
         Uploaded Files
       </h3>
 
       <div className="max-h-[300px] overflow-y-auto bg-unselectedBlack rounded overflow-auto">
         {/* ^^ overflow-auto add for overflow bug, we need to be able to scroll here */}
         <table className="w-full">
-          <thead className="bg-unselectedBlack text-primaryWhite text-sm">
+          <thead className="bg-unselectedBlack text-text-default text-sm">
             <tr>
               <th className="px-2 text-left w-12"></th>
               <th className="px-2 text-left">Name</th>
@@ -132,16 +132,16 @@ export default function UploadedFiles({
                 </td>
                 <td className="p-2 flex items-center gap-2">
                   {getFileIcon(file.type)}
-                  <span className="text-primaryWhite text-sm">{file.name}</span>
+                  <span className="text-text-default text-sm">{file.name}</span>
                 </td>
                 <td className="p-2">
                   <div className="flex items-center">
                     <div className="h-3 w-3 rounded-full bg-green-400 mr-2"></div>
-                    <span className="text-sm text-primaryWhite">Ready</span>
+                    <span className="text-sm text-text-default">Ready</span>
                   </div>
                 </td>
-                <td className="p-2 text-sm text-primaryWhite">{file.type}</td>
-                <td className="p-2 text-sm text-primaryWhite">
+                <td className="p-2 text-sm text-text-default">{file.type}</td>
+                <td className="p-2 text-sm text-text-default">
                   {file.dateCreated}
                 </td>
                 <td className="p-2">
@@ -171,13 +171,13 @@ export default function UploadedFiles({
 
       {selectedFiles.length > 0 && (
         <div className="mt-2 p-2 rounded border-grey border bg-unSelectedBlack">
-          <p className="text-sm text-primaryWhite bg-unSelectedBlack mb-2">
+          <p className="text-sm text-text-default bg-unSelectedBlack mb-2">
             {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}{" "}
             selected
           </p>
           <button
             onClick={handleAddToCollectionClick}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-primaryWhite rounded transition-colors"
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-text-default rounded transition-colors"
           >
             Add to Collection
           </button>

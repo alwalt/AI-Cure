@@ -49,7 +49,8 @@ export default {
         "surface-emphasis": "var(--gray-850)", // Access Database area
         "surface-navigation": "var(--gray-700)", // nav bar background color
         "surface-accent": "var(--blue-300)",
-        "surface-card-expanded": "var(--gray-850)",
+        "surface-card-expanded": "var(--gray-850)", // selectedBlack
+        "surface-file-area": "var(--gray-950)", // panelBlack
 
         // buttons
         "button-emphasis": "var(--gray-500)", // Access Database button
@@ -75,6 +76,7 @@ export default {
         "border-default": "var(--gray-0)", // primaryWhite
         "border-card": "var(--blue-700)",
         "border-column": "var(--gray-700)", // column border
+        "border-file-area": "var(--gray-800)",
 
         // focus
         "focus-default": "var(--gray-0)", // primaryWhite (all borders)
