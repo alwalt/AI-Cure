@@ -38,7 +38,7 @@ export default function TraingingHyperparameterSettings() {
     <div className="bg-surface-contrast rounded-lg">
       {/* Header */}
       <div
-        className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-800 transition-colors rounded-t-lg"
+        className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-800 transition-colors rounded-lg"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <h3 className="text-text-default font-bold text-lg">
@@ -53,7 +53,7 @@ export default function TraingingHyperparameterSettings() {
 
       {/* Expandable Content */}
       {isExpanded && (
-        <div className="p-3 pt-0 space-y-4">
+        <div className="p-3 mt-2 space-y-4">
           {/* Learning Rate Slider */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
