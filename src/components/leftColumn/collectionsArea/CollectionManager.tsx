@@ -1,3 +1,4 @@
+// src/app/components/leftColumn/collectionsArea/CollectionManager
 import SaveButton from "@/components/base/SaveButton";
 import { apiBase } from "@/lib/api";
 import { Collection, useSessionFileStore } from "@/store/useSessionFileStore";
@@ -8,10 +9,12 @@ import {
   ChevronRightIcon,
   PencilIcon,
   TrashIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import SettingsButton from "@/components/base/SettingsButton";
+import HyperparameterSettings from "@/components/HyperparameterSettings"; // Adjust path as needed
 
 export default function CollectionManager() {
   const collections = useSessionFileStore((state) => state.collections);
@@ -51,6 +54,25 @@ export default function CollectionManager() {
   useEffect(() => {
     fetchCollections();
   }, [fetchCollections]);
+
+  // Close modal when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showSettings) {
+        setShowSettings(false);
+      }
+    };
+
+    if (showSettings) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden"; // Prevent background scroll
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [showSettings]);
 
   const handleIngestCollection = async (collection: Collection) => {
     if (collection.files.length === 0) {
@@ -308,225 +330,260 @@ export default function CollectionManager() {
     }
   };
 
+  const handleModalBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setShowSettings(false);
+    }
+  };
+
   return (
-    <div className="space-y-2 last:mb-0">
-      <div className="flex justify-between w-full">
-        <h2 className="text-2xl font-bold text-primaryWhite">Collections</h2>
-        <SettingsButton
-          onClick={() => setShowSettings(!showSettings)}
-          iconClassName="w-5 h-5 text-primaryWhite transition-colors hover:stroke-redFill duration-300"
-          spanClassName="right-1 mt-2"
-          tooltipId="chatbot-settings-tooltip"
-          className="inline-flex items-center justify-center w-8 h-8 font-medium text-primaryWhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          strokeWidth={1.25}
-        />
-      </div>
-      <div className="min-h-[200px] border-grey border rounded bg-unSelectedBlack pt-2 pr-2 pl-2 pb-2">
-        {/* React Query Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-primaryWhite">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-selectedBlue mx-auto mb-2"></div>
-              <p>Loading collections...</p>
+    <>
+      <div className="space-y-2 last:mb-0">
+        <div className="flex justify-between w-full">
+          <h2 className="text-2xl font-bold text-primaryWhite">Collections</h2>
+          <SettingsButton
+            onClick={() => setShowSettings(!showSettings)}
+            iconClassName="w-5 h-5 text-primaryWhite transition-colors hover:stroke-redFill duration-300"
+            spanClassName="right-1 mt-2"
+            tooltipId="chatbot-settings-tooltip"
+            className="inline-flex items-center justify-center w-8 h-8 font-medium text-primaryWhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            strokeWidth={1.25}
+          />
+        </div>
+        <div className="min-h-[200px] border-grey border rounded bg-unSelectedBlack pt-2 pr-2 pl-2 pb-2">
+          {/* React Query Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-primaryWhite">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-selectedBlue mx-auto mb-2"></div>
+                <p>Loading collections...</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Collections Content */}
-        {!isLoading && (
-          <>
-            {collections.length === 0 ? (
-              <p className="p-2 text-gray-400">
-                No collections yet. Add files to create your first collection.
-              </p>
-            ) : (
-              <div className="space-y-2 last:mb-0">
-                {collections.map((collection: Collection) => (
-                  <div
-                    key={collection.id}
-                    className={`border border-grey rounded bg-unSelectedBlack ${
-                      activeCollectionId === collection.id
-                        ? "ring-2 ring-selectedBlue"
-                        : ""
-                    }`}
-                  >
-                    {/* Collection Header */}
-                    <div className="flex items-center justify-between p-2 bg-primaryBlack text-primaryWhite rounded-t border-b border-grey">
-                      <div className="flex items-center gap-2 flex-1">
-                        <button
-                          onClick={() =>
-                            toggleCollectionExpanded(collection.id)
-                          }
-                          className="p-1 hover:bg-grey rounded transition-colors duration-200"
-                        >
-                          {collection.isExpanded ? (
-                            <ChevronDownIcon className="h-4 w-4" />
+          {/* Collections Content */}
+          {!isLoading && (
+            <>
+              {collections.length === 0 ? (
+                <p className="p-2 text-gray-400">
+                  No collections yet. Add files to create your first collection.
+                </p>
+              ) : (
+                <div className="space-y-2 last:mb-0">
+                  {collections.map((collection: Collection) => (
+                    <div
+                      key={collection.id}
+                      className={`border border-grey rounded bg-unSelectedBlack ${
+                        activeCollectionId === collection.id
+                          ? "ring-2 ring-selectedBlue"
+                          : ""
+                      }`}
+                    >
+                      {/* Collection Header */}
+                      <div className="flex items-center justify-between p-2 bg-primaryBlack text-primaryWhite rounded-t border-b border-grey">
+                        <div className="flex items-center gap-2 flex-1">
+                          <button
+                            onClick={() =>
+                              toggleCollectionExpanded(collection.id)
+                            }
+                            className="p-1 hover:bg-grey rounded transition-colors duration-200"
+                          >
+                            {collection.isExpanded ? (
+                              <ChevronDownIcon className="h-4 w-4" />
+                            ) : (
+                              <ChevronRightIcon className="h-4 w-4" />
+                            )}
+                          </button>
+
+                          {editingCollection === collection.id ? (
+                            <input
+                              type="text"
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              onBlur={saveEdit}
+                              onKeyDown={handleKeyPress}
+                              className="bg-primaryBlack text-primaryWhite px-2 py-1 rounded border border-grey flex-1 focus:border-primaryWhite focus:outline-none"
+                              autoFocus
+                            />
                           ) : (
-                            <ChevronRightIcon className="h-4 w-4" />
+                            <span className="flex-1 font-medium">
+                              {collection.name}
+                            </span>
                           )}
-                        </button>
 
-                        {editingCollection === collection.id ? (
-                          <input
-                            type="text"
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            onBlur={saveEdit}
-                            onKeyDown={handleKeyPress}
-                            className="bg-primaryBlack text-primaryWhite px-2 py-1 rounded border border-grey flex-1 focus:border-primaryWhite focus:outline-none"
-                            autoFocus
-                          />
-                        ) : (
-                          <span className="flex-1 font-medium">
-                            {collection.name}
+                          <span className="text-xs text-gray-400">
+                            {collection.files.length} file
+                            {collection.files.length !== 1 ? "s" : ""}
                           </span>
-                        )}
+                        </div>
 
-                        <span className="text-xs text-gray-400">
-                          {collection.files.length} file
-                          {collection.files.length !== 1 ? "s" : ""}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => startEditing(collection)}
+                            className="p-1 hover:bg-grey rounded transition-colors duration-200"
+                            title="Rename collection"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+
+                          {collection.isIngested && (
+                            <button
+                              onClick={() => handleExportCollection(collection)}
+                              className="p-1 hover:bg-selectedBlue rounded transition-colors duration-200"
+                              title="Export collection"
+                            >
+                              <ArrowDownTrayIcon className="h-4 w-4" />
+                            </button>
+                          )}
+
+                          {collection.id !== "default" && (
+                            <button
+                              onClick={() => handleDeleteCollection(collection)}
+                              className="p-1 hover:bg-redFill rounded transition-colors duration-200"
+                              title="Delete collection"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => startEditing(collection)}
-                          className="p-1 hover:bg-grey rounded transition-colors duration-200"
-                          title="Rename collection"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
+                      {/* Collection Content */}
+                      {collection.isExpanded && (
+                        <div className="p-2">
+                          {collection.files.length > 0 ? (
+                            <>
+                              <ul className="space-y-1 mb-3 last:mb-0">
+                                {collection.files.map((file: UploadedFile) => (
+                                  <li
+                                    key={file.name}
+                                    className="text-sm text-primaryWhite bg-primaryBlack p-2 rounded border border-grey hover:bg-grey transition-colors duration-200"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span>{file.name}</span>
+                                      <span className="text-xs text-gray-400">
+                                        {file.type}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
 
-                        {collection.isIngested && (
-                          <button
-                            onClick={() => handleExportCollection(collection)}
-                            className="p-1 hover:bg-selectedBlue rounded transition-colors duration-200"
-                            title="Export collection"
-                          >
-                            <ArrowDownTrayIcon className="h-4 w-4" />
-                          </button>
-                        )}
-
-                        {collection.id !== "default" && (
-                          <button
-                            onClick={() => handleDeleteCollection(collection)}
-                            className="p-1 hover:bg-redFill rounded transition-colors duration-200"
-                            title="Delete collection"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Collection Content */}
-                    {collection.isExpanded && (
-                      <div className="p-2">
-                        {collection.files.length > 0 ? (
-                          <>
-                            <ul className="space-y-1 mb-3 last:mb-0">
-                              {collection.files.map((file: UploadedFile) => (
-                                <li
-                                  key={file.name}
-                                  className="text-sm text-primaryWhite bg-primaryBlack p-2 rounded border border-grey hover:bg-grey transition-colors duration-200"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <span>{file.name}</span>
-                                    <span className="text-xs text-gray-400">
-                                      {file.type}
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() =>
-                                  handleIngestCollection(collection)
-                                }
-                                disabled={isLoading || collection.isIngested}
-                                className={`flex-1 px-4 py-2 rounded transition-colors duration-200 ${
-                                  collection.isIngested
-                                    ? "bg-green-600 text-primaryWhite cursor-not-allowed"
-                                    : "bg-primaryBlue hover:bg-selectedBlue text-primaryWhite"
-                                } ${
-                                  isLoading
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                                }`}
-                              >
-                                {collection.isIngested
-                                  ? "Ingested"
-                                  : "Ingest Collection"}
-                              </button>
-
-                              {collection.isIngested && (
+                              <div className="flex gap-2">
                                 <button
                                   onClick={() =>
-                                    handleLoadCollection(collection)
+                                    handleIngestCollection(collection)
                                   }
-                                  disabled={
-                                    isLoading ||
-                                    activeCollectionId === collection.id
-                                  }
+                                  disabled={isLoading || collection.isIngested}
                                   className={`flex-1 px-4 py-2 rounded transition-colors duration-200 ${
-                                    activeCollectionId === collection.id
-                                      ? "bg-selectedBlue text-primaryWhite cursor-not-allowed"
-                                      : "bg-grey hover:bg-selectedBlue text-primaryWhite"
+                                    collection.isIngested
+                                      ? "bg-green-600 text-primaryWhite cursor-not-allowed"
+                                      : "bg-primaryBlue hover:bg-selectedBlue text-primaryWhite"
                                   } ${
                                     isLoading
                                       ? "opacity-50 cursor-not-allowed"
                                       : ""
                                   }`}
                                 >
-                                  {activeCollectionId === collection.id
-                                    ? "Active"
-                                    : "Load"}
+                                  {collection.isIngested
+                                    ? "Ingested"
+                                    : "Ingest Collection"}
                                 </button>
-                              )}
-                            </div>
-                          </>
-                        ) : collection.id === "default" ? (
-                          <div className="text-center py-4">
-                            <p className="text-primaryWhite text-sm mb-2">
-                              Default chat collection - ready for general
-                              conversation
-                            </p>
-                            <p className="text-gray-400 text-xs">
-                              {activeCollectionId === collection.id
-                                ? "Currently active - you can chat now!"
-                                : "No document context, but chatbot is available"}
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-gray-400 text-sm text-center py-2">
-                            No files in this collection.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
 
-        {statusMessage && (
-          <div
-            className={`p-2 text-primaryWhite text-center mt-2 rounded ${
-              statusMessage.includes("Error") || statusMessage.includes("error")
-                ? "bg-redFill"
-                : isLoading
-                ? "bg-primaryBlue"
-                : "bg-grey"
-            }`}
-          >
-            <p>{statusMessage}</p>
-          </div>
-        )}
+                                {collection.isIngested && (
+                                  <button
+                                    onClick={() =>
+                                      handleLoadCollection(collection)
+                                    }
+                                    disabled={
+                                      isLoading ||
+                                      activeCollectionId === collection.id
+                                    }
+                                    className={`flex-1 px-4 py-2 rounded transition-colors duration-200 ${
+                                      activeCollectionId === collection.id
+                                        ? "bg-selectedBlue text-primaryWhite cursor-not-allowed"
+                                        : "bg-grey hover:bg-selectedBlue text-primaryWhite"
+                                    } ${
+                                      isLoading
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                    }`}
+                                  >
+                                    {activeCollectionId === collection.id
+                                      ? "Active"
+                                      : "Load"}
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          ) : collection.id === "default" ? (
+                            <div className="text-center py-4">
+                              <p className="text-primaryWhite text-sm mb-2">
+                                Default chat collection - ready for general
+                                conversation
+                              </p>
+                              <p className="text-gray-400 text-xs">
+                                {activeCollectionId === collection.id
+                                  ? "Currently active - you can chat now!"
+                                  : "No document context, but chatbot is available"}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-gray-400 text-sm text-center py-2">
+                              No files in this collection.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {statusMessage && (
+            <div
+              className={`p-2 text-primaryWhite text-center mt-2 rounded ${
+                statusMessage.includes("Error") ||
+                statusMessage.includes("error")
+                  ? "bg-redFill"
+                  : isLoading
+                  ? "bg-primaryBlue"
+                  : "bg-grey"
+              }`}
+            >
+              <p>{statusMessage}</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={handleModalBackdropClick}
+        >
+          <div className="bg-primaryBlack border border-grey rounded-lg shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-grey">
+              <h2 className="text-xl font-bold text-primaryWhite">Settings</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="p-1 hover:bg-grey rounded transition-colors duration-200"
+              >
+                <XMarkIcon className="h-6 w-6 text-primaryWhite" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4">
+              <HyperparameterSettings />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
