@@ -29,7 +29,7 @@ export default {
         "gray-200": "var(--gray-200)", // buttonBg
         "gray-500": "var(--gray-500)", // 85% opacity black = rgb(128, 128, 128)
         "gray-700": "var(--gray-700", // column border
-        "gray-800": "var(--gray-800)", // gray
+        "gray-800": "var(--gray-800)", // grey
         "gray-850": "var(--gray-850)", // selectedBlack
         "gray-900": "var(--gray-900)", // primaryBlack
         "gray-950": "var(--gray-950)", // panelBlack
@@ -51,7 +51,7 @@ export default {
         "surface-accent": "var(--blue-300)",
         "surface-card-expanded": "var(--gray-850)", // selectedBlack
         "surface-file-area": "var(--gray-950)", // panelBlack
-
+        "surface-modal-margin": "var(--gray-800)", // grey
         // buttons
         "button-emphasis": "var(--gray-500)", // Access Database button
         "button-navigation": "var(--blue-700)", // nav buttons
@@ -70,6 +70,9 @@ export default {
         "text-hover-emphasis": "var(--gray-1000)", // Access Database text button hover
         "text-accent": "var(--blue-300)",
         "text-chevron": "var(--gray-150)",
+
+        // stroke
+        "stroke-hover-red": "var(--red-700)",
 
         // border
         "border-emphasis": "var(--gray-1000)", // unSelectedBlack
