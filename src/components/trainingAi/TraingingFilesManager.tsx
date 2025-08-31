@@ -77,7 +77,7 @@ export default function FilesManager() {
   return (
     <div className="space-y-2 last:mb-0">
       <div className="flex justify-between w-full">
-        <h2 className="text-2xl font-bold text-primaryWhite">Files</h2>
+        <h2 className="text-2xl font-bold text-text-default">Data Sets</h2>
         <div className="flex justify-content">
           <UploadFileButton
             onTablesUpdate={handleTablesUpdate}

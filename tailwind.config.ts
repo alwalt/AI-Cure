@@ -63,6 +63,7 @@ export default {
         "button-hover-navigation": "var(--blue-300)", // nav hover buttons
         "button-hover-close": "var(--blue-300)",
         "button-hover-card": "var(--blue-700)",
+        "button-hover-red": "var(--red-700)",
 
         // text
         "text-default": "var(--gray-0)", // primaryWhite

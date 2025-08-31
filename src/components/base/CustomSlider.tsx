@@ -1,6 +1,7 @@
 // components/base/CustomSlider.tsx
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import InfoModal from "@/components/base/InfoModal";
 
 interface CustomSliderProps {
   label: string;
@@ -12,6 +13,8 @@ interface CustomSliderProps {
   formatValue?: (value: number) => string;
   formatMinMax?: (value: number) => string;
   className?: string;
+  infoTitle?: string;
+  infoDescription?: string;
 }
 
 export default function CustomSlider({
@@ -24,6 +27,8 @@ export default function CustomSlider({
   formatValue,
   formatMinMax,
   className = "",
+  infoTitle,
+  infoDescription,
 }: CustomSliderProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const sliderRef = useRef<HTMLInputElement>(null);
@@ -40,9 +45,16 @@ export default function CustomSlider({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      {/* Label */}
+      {/* Label with Optional Info Icon */}
       <div className="flex justify-between items-center">
-        <label className="text-text-default text-xs font-medium">{label}</label>
+        <div className="flex items-center gap-2">
+          <label className="text-text-default text-xs font-medium">
+            {label}
+          </label>
+          {infoTitle && infoDescription && (
+            <InfoModal title={infoTitle} description={infoDescription} />
+          )}
+        </div>
       </div>
 
       {/* Slider Container with Min/Max Labels */}

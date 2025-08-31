@@ -61,7 +61,7 @@ export default function TrainingHyperparameterSettings() {
       {isExpanded && (
         <div className="bg-surface-file-area border-border-file-area border rounded p-2 max-h-[400px] overflow-y-auto">
           <div className="px-4 space-y-4 pt-2">
-            {/* Learning Rate Slider */}
+            {/* Learning Rate Slider  - hardcode value 2x10^-4 */}
             <CustomSlider
               label="Learning Rate"
               value={learningRate}
@@ -71,9 +71,11 @@ export default function TrainingHyperparameterSettings() {
               onChange={setLearningRate}
               formatValue={formatLearningRate}
               formatMinMax={formatLearningRate}
+              infoTitle="Learning Rate"
+              infoDescription="Controls how much the model's weights are adjusted during each training step. Higher values learn faster but may be unstable. Lower values are more stable but slower to converge. Typical range: 0.001-0.01."
             />
 
-            {/* Batch Size Dropdown */}
+            {/* Batch Size Dropdown  - hardcode value 32 */}
             <div className="space-y-2">
               <label className="text-text-default text-xs font-medium">
                 Batch Size
@@ -92,7 +94,7 @@ export default function TrainingHyperparameterSettings() {
               </select>
             </div>
 
-            {/* Epochs Input */}
+            {/* Epochs Input - hardcode value 60 */}
             <div className="space-y-2">
               <label className="text-text-default text-xs font-medium">
                 Epochs
@@ -107,7 +109,7 @@ export default function TrainingHyperparameterSettings() {
               />
             </div>
 
-            {/* Optimizer Dropdown */}
+            {/* Optimizer Dropdown -  - hardcode value AdamW8bit */}
             <div className="space-y-2">
               <label className="text-text-default text-xs font-medium">
                 Optimizer
@@ -125,19 +127,7 @@ export default function TrainingHyperparameterSettings() {
               </select>
             </div>
 
-            {/* Momentum Slider */}
-            <CustomSlider
-              label="Momentum"
-              value={momentum}
-              min={0}
-              max={1}
-              step={0.05}
-              onChange={setMomentum}
-              formatValue={formatDecimal}
-              formatMinMax={formatDecimal}
-            />
-
-            {/* Dropout Rate Slider */}
+            {/* Dropout Rate Slider - 0% */}
             <CustomSlider
               label="Dropout Rate"
               value={dropout}
@@ -147,9 +137,11 @@ export default function TrainingHyperparameterSettings() {
               onChange={setDropout}
               formatValue={formatPercentage}
               formatMinMax={formatPercentage}
+              infoTitle="Dropout Rate"
+              infoDescription="Randomly sets a percentage of neurons to zero during training to prevent overfitting. Higher dropout rates (20-50%) force the model to learn more robust patterns by not relying on specific neurons. Too high can hurt learning capacity."
             />
 
-            {/* Regularization Type */}
+            {/* Regularization Type
             <div className="space-y-2">
               <label className="text-text-default text-xs font-medium">
                 Regularization
@@ -164,9 +156,9 @@ export default function TrainingHyperparameterSettings() {
                 <option value="l2">L2 (Ridge)</option>
                 <option value="elastic">Elastic Net</option>
               </select>
-            </div>
+            </div> */}
 
-            {/* Validation Split Slider */}
+            {/* Validation Split Slider - hardcode value 20% */}
             <CustomSlider
               label="Validation Split"
               value={validationSplit}
@@ -176,6 +168,8 @@ export default function TrainingHyperparameterSettings() {
               onChange={setValidationSplit}
               formatValue={formatPercentage}
               formatMinMax={formatPercentage}
+              infoTitle="Validation Split"
+              infoDescription="Percentage of training data reserved for validation during training. Used to monitor model performance and prevent overfitting. 20% is standard - enough data to get reliable validation metrics without significantly reducing training data."
             />
 
             {/* Action Buttons */}
