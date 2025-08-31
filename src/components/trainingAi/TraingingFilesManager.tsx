@@ -5,7 +5,7 @@ import { useSessionFileStore } from "@/store/useSessionFileStore";
 import { Table as TableType, UploadedFile } from "@/types/files";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import UploadedFiles from "@/components/leftColumn/filesArea/UploadedFiles";
+import TrainingUploadedDataSets from "./TrainingUploadedDataSets";
 
 export default function FilesManager() {
   const [uploadedTables, setUploadedTables] = useState<TableType[]>([]);
@@ -88,10 +88,7 @@ export default function FilesManager() {
       </div>
       {!loading && !error && (
         <>
-          <UploadedFiles
-            files={uploadedFiles}
-            currentPreviewFile={currentPreviewFile}
-          />
+          <TrainingUploadedDataSets />
         </>
       )}
     </div>
