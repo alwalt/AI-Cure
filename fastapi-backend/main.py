@@ -8,15 +8,14 @@ import shutil
 from typing import Dict, List, Optional, Literal
 import logging
 import re
-import datetime
 
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 
 from fastapi import FastAPI, File, Request, UploadFile, Form, Depends, HTTPException, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import JSONResponse, Response
 from contextlib import asynccontextmanager
 api_router = APIRouter()
 
@@ -24,7 +23,6 @@ api_router = APIRouter()
 from utils import create_table_summary_prompt, segment_and_export_tables, clean_dataframe, get_magic_wand_suggestions
 
 from pydantic import BaseModel
-import base64
 from io import BytesIO
 
 import uvicorn
@@ -33,16 +31,16 @@ import tempfile
 import zipfile
 from io import BytesIO
 
-from langchain_community.document_loaders import PyMuPDFLoader
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain_ollama import ChatOllama
+from langchain_community.chat_models import ChatOllama
 from langchain.prompts import PromptTemplate
 from chromadb.config import Settings as ChromaSettings # hyperparams
 from langchain_community.vectorstores import Chroma # hyperparams
+import textwrap
 
 import asyncio, yaml
 from mcp_agent.app import MCPApp
@@ -60,7 +58,10 @@ from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES, route
 from pdf_handlers.pdf_tools import router as pdf_router
 from image_handlers.image_tools import router as image_router
 from table_handlers.table_tools import router as table_router
+from collection_handlers.collection_tools import router as collection_router, initialize_session, SESSIONS
 
+from ingest.ingest_route import ingest_collection
+from config.shared import SESSIONS, initialize_session, chroma_settings, hnsw_metadata
 
 from pydantic import ValidationError
 
@@ -134,6 +135,7 @@ app.include_router(pdf_router) # Include pdf end points
 app.include_router(table_router) # Include table end points
 app.include_router(image_router) # Include image end points
 app.include_router(file_router) # Include file end points
+app.include_router(collection_router) # Include collections end points
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -141,6 +143,8 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+        "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -153,78 +157,12 @@ app.add_middleware(
 # Add to config
 SESSION_TIMEOUT = 86400  # 24 hours in seconds
 
-# Chroma / HNSW Defaults for hyperparams
-chroma_settings = ChromaSettings(anonymized_telemetry=False)
-hnsw_metadata = {
-    "hnsw:space": "cosine",
-    "hnsw:search_ef": 150,
-}
-
 # Session tracking dict
 ACTIVE_SESSIONS = {}  # {session_id: last_activity_timestamp}
 
-# UPLOAD_DIR = "uploaded_files"
+
 OUTPUT_DIR = "output_tables"
-# os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-
-
-# Session structure for collection-based vectorstores
-SESSIONS = {}
-
-def initialize_session(session_id: str):
-    """Initialize a new session with a default empty collection"""
-    if session_id not in SESSIONS:
-        # Create default empty vectorstore
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2", 
-            model_kwargs={'trust_remote_code': True}
-        )
-        
-        # Create collection directory for default collection
-        default_collection_dir = os.path.join(USER_DIRS, session_id, "collections", "default")
-        os.makedirs(default_collection_dir, exist_ok=True)
-        
-        # Create empty vectorstore
-        default_vectorstore = Chroma(
-            embedding_function=embeddings,
-            persist_directory=default_collection_dir
-        )
-        
-        # Create LLM and chatbot chain for default collection
-        llm = ChatOllama(model="llama3.1", temperature=0)
-        qa_prompt = PromptTemplate(
-            input_variables=["context", "question"],
-            template="You are a helpful AI assistant. Use the following context to answer the question if available, otherwise answer based on your general knowledge:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
-        )
-        
-        # Create retriever (will be empty initially)
-        retriever = default_vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
-        
-        # Create chain
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=llm, 
-            retriever=retriever, 
-            return_source_documents=True,
-            combine_docs_chain_kwargs={"prompt": qa_prompt},
-            verbose=True
-        )
-        
-        SESSIONS[session_id] = {
-            "collections": {
-                "default": {
-                    "vectorstore": default_vectorstore,
-                    "name": "Default Chat",
-                    "files": [],
-                    "created_at": time.time(),
-                    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
-                }
-            },
-            "active_collection_id": "default",
-            "history": [],
-            "chain": chain
-        }
 
 # MCP server var init
 mcp_server = None
@@ -318,6 +256,86 @@ async def mcp_query(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/mcp_query/viz")
+async def mcp_query(
+    query: str = Body(..., embed=True),
+): 
+    try:
+        logger = get_logger(__name__)
+        # Create Agent
+        osdr_agent = Agent(
+            name="osdr_bot",
+            instruction=(
+                """
+                make sure you use the tool `osdr_plot_top_rna` and not `osdr_fetch_metadata`
+                    You are an AI agent that visualizes and plots NASA space biology datasets in the OSDR repository.
+
+                    Your job is to:
+                    1. Detect if the user referenced an OSD study (e.g., "study 488", "osd488", "OSD-488").
+                    2. Normalize it to the correct dataset ID format: `OSD-###`.
+                    3. Use the tool `osdr_plot_top_rna` to create a matplot and return the filename as a msg string.
+
+                    return a json object like below:
+                    {
+                        "summary": "summary_text generated",
+                        "plot_file": "absolute filepath"
+                    }
+                """
+            ),
+            server_names=["OSDRServer"],
+        )
+
+        async with osdr_agent:
+
+            # Automatically initialize the MCP servers and adds their tools for LLM use
+            tools = await osdr_agent.list_tools()
+            logger.info(f"Tools available:", data=tools)
+
+            # Attach an LLM and send the question
+            llm = await osdr_agent.attach_llm(OpenAIAugmentedLLM)
+
+            # Call the LLM (which should invoke the MCP viz tool)
+            resp = await llm.generate_str(message=query)
+            logger.info(f"Result: {resp}")
+
+            # Try to extract structured fields from the response for the frontend
+            summary = None
+            plot_file = None
+            try:
+                parsed = json.loads(resp) if isinstance(resp, str) else resp
+                if isinstance(parsed, dict):
+                    summary = parsed.get("summary")
+                    plot_file = parsed.get("plot_file")
+            except Exception:
+                if isinstance(resp, str):
+                    import re
+                    m_plot = re.search(r'plot_file\"?\s*[:=]\s*\"([^\"]+\.png)\"', resp)
+                    if m_plot:
+                        plot_file = m_plot.group(1)
+                    m_sum = re.search(r'summary\"?\s*[:=]\s*\"([\s\S]*?)\"\s*(,|})', resp)
+                    if m_sum:
+                        summary = m_sum.group(1)
+
+            if not plot_file:
+                try:
+                    import re as _re
+                    # Extract dataset id like OSD-120, osd120, study 120, etc.
+                    m = _re.search(r'(?:OSD[-\s]?|osd[-\s]?|study\s+)(\d{2,4})', query)
+                    if m:
+                        ds_num = m.group(1)
+                        dataset_id = f"OSD-{ds_num}"
+                        from mcp_modules.mcp_tools import osdr_plot_top_rna
+                        tool_result = await osdr_plot_top_rna(dataset_id)
+                        summary = tool_result.get("summary", summary)
+                        plot_file = tool_result.get("plot_file", plot_file)
+                except Exception as tool_exc:
+                    logger.error(f"Fallback tool call failed: {tool_exc}")
+
+            return {"response": resp, "summary": summary, "plot_file": plot_file}
+
+                 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 # Vector Generator
 @app.post("/api/create_vectorstore")
 async def generate_vectors(
@@ -463,9 +481,12 @@ async def get_chat_response(
     model = request.model
     
     if session_id not in SESSIONS:
-        raise HTTPException(status_code=404, detail="Session not found")
+        try:
+            initialize_session(session_id)
+        except Exception:
+            raise HTTPException(status_code=404, detail="Session not found")
     
-    initialize_session(session_id)
+    # initialize_session(session_id)
 
     # Get history from Redis
     history = get_session_history(session_id)
@@ -567,146 +588,14 @@ async def get_chat_response(
 
 
 @app.post("/api/ingest")
-async def ingest_collection(
+async def ingest_collection_endpoint(
     request: Request,
     files: List[UploadFile] = File(...),
     collection_id: str = Form(...),
     collection_name: str = Form(...),
     embedding_model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
 ):
-    """
-    Create a new vectorstore for a specific collection.
-    Each collection gets its own isolated vectorstore.
-    """
-    session_id = request.state.session_id
-    
-    # Initialize session if needed
-    initialize_session(session_id)
-    
-    # Create collection-specific directory
-    collection_dir = os.path.join(USER_DIRS, session_id, "collections", collection_id)
-    os.makedirs(collection_dir, exist_ok=True)
-    
-    # Process files and create documents
-    all_docs = []
-    file_info_list = []
-    
-    for upload in files:
-        ext = Path(upload.filename).suffix.lower()
-        metadata = {"source": upload.filename, "filetype": ext}
-        
-        # Store file info for frontend
-        file_info = {
-            "name": upload.filename,
-            "type": ext.lstrip('.'), 
-            "size": upload.size if hasattr(upload, 'size') else 0,
-            "dateCreated": time.strftime("%m/%d/%Y")
-        }
-        file_info_list.append(file_info)
-        
-        # Handle different file types
-        if ext == ".csv":
-            df = pd.read_csv(BytesIO(await upload.read()))
-            df = clean_dataframe(df)
-            for _, row in df.iterrows():
-                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
-                doc = Document(page_content=text, metadata=metadata)
-                all_docs.append(doc)
-                
-        elif ext in {".xlsx", ".xls"}:
-            df = pd.read_excel(BytesIO(await upload.read()), engine="openpyxl")
-            df = clean_dataframe(df)
-            for _, row in df.iterrows():
-                text = ", ".join(f"{col}: {row[col]}" for col in df.columns)
-                doc = Document(page_content=text, metadata=metadata)
-                all_docs.append(doc)
-                
-        elif ext == ".pdf":
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-            tmp.write(await upload.read())
-            tmp.flush()
-            docs = PyMuPDFLoader(tmp.name).load()
-            for doc in docs:
-                doc.metadata.update(metadata)
-                all_docs.append(doc)
-            os.unlink(tmp.name)  # Clean up temp file
-            
-        elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
-            # TODO: implement image embedding with CLIP
-            continue
-    
-    if not all_docs:
-        raise HTTPException(400, "No processable files found")
-    
-    # Create embeddings and vectorstore
-    embeddings = HuggingFaceEmbeddings(
-        model_name=embedding_model, 
-        model_kwargs={'trust_remote_code': True}
-    )
-    
-    # Create text splitter
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
-    split_docs = text_splitter.split_documents(all_docs)
-    
-    # Create vectorstore for this collection
-    vectorstore = Chroma.from_documents(
-        documents=split_docs,
-        embedding=embeddings,
-        persist_directory=collection_dir,
-        client_settings=chroma_settings,
-        collection_metadata=hnsw_metadata,
-    )
-    
-    # Store collection info in session
-    SESSIONS[session_id]["collections"][collection_id] = {
-        "vectorstore": vectorstore,
-        "name": collection_name,
-        "files": file_info_list,
-        "created_at": time.time(),
-        "embedding_model": embedding_model
-    }
-    
-    # Set as active collection
-    SESSIONS[session_id]["active_collection_id"] = collection_id
-    
-    # Automatically create a chatbot for this collection
-    try:
-        # Create LLM
-        llm = ChatOllama(model="llama3.1", temperature=0)
-        
-        # Create prompt template
-        qa_prompt = PromptTemplate(
-            input_variables=["context", "question"],
-            template="You are a helpful AI. Use the following context to answer the question:\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
-        )
-        
-        # Create retriever
-        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
-        
-        # Create chain
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=llm, 
-            retriever=retriever, 
-            return_source_documents=True,
-            combine_docs_chain_kwargs={"prompt": qa_prompt},
-            verbose=True
-        )
-        
-        # Store chain in session
-        SESSIONS[session_id]["chain"] = chain
-        print(f"DEBUG: Chatbot automatically created for collection {collection_id} in session {session_id}")
-        
-    except Exception as e:
-        print(f"ERROR: Failed to create chatbot automatically: {str(e)}")
-        # Don't fail the ingestion if chatbot creation fails
-    
-    return JSONResponse({
-        "session_id": session_id,
-        "collection_id": collection_id,
-        "collection_name": collection_name,
-        "files_processed": len(files),
-        "chatbot_created": "chain" in SESSIONS[session_id] and SESSIONS[session_id]["chain"] is not None
-    })
+    return await ingest_collection(request, files, collection_id, collection_name, embedding_model)
 
 
 # Collection Management Endpoints
@@ -872,6 +761,7 @@ async def rename_collection(
     })
 
 
+
 # Magic Wand / Sparkles Description tables route
 # For main.py refactore, this to be moved to it's own folder/file, services/rag_services.py
 def _generic_rag_summarizer(
@@ -983,4 +873,4 @@ def generate_rag_with_template(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, lifespan=lifespan, workers=4)
+    uvicorn.run(app, host="0.0.0.0", port=8000 )

@@ -1,11 +1,12 @@
+// src/app/page.tsx
 import AicureToolFull from "@/components/AicureToolFull";
-import MainNavigation from "@/components/MainNavigation";
 import Footer from "@/components/Footer";
+import NasaHeader from "@/components/NasaHeader";
 
 export default function Home() {
   return (
     <div>
-      <MainNavigation />
+      <NasaHeader />
       <main id="main-content">
         <AicureToolFull />
       </main>

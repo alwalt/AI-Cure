@@ -33,11 +33,11 @@ export default function RightColumn() {
   }, [previewFile]);
 
   return (
-    <div className="bg-primaryBlack border-l-2 border-gray-700 pt-2 flex flex-col items-start w-full">
+    <div className="bg-background-default pt-2 flex flex-col items-start w-full">
       <div className="relative group overflow-hidden">
         <button
           onClick={toggleRightColumn}
-          className="text-primaryWhite rounded"
+          className="text-text-default rounded"
         >
           {isRightColumnVisible ? (
             <ChevronRight className="h-8 w-8" />
@@ -47,7 +47,7 @@ export default function RightColumn() {
         </button>
         {/* Tooltip */}
         <span
-          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-primaryBlack border-primaryWhite border text-xs text-primaryWhite opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 z-20
+          className={`absolute top-full mt-1 whitespace-nowrap rounded bg-background-default text-xs text-text-default opacity-0 transition-opacity group-hover:opacity-100 px-2 py-1 z-20
       ${
         isRightColumnVisible ? "left-1/2 -translate-x-1/2" : "left-0 ml-[-30px]"
       }`}

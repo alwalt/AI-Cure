@@ -1,4 +1,4 @@
-import { PlayIcon } from "@heroicons/react/24/outline";
+import { Play } from "lucide-react";
 import Button from "@/components/base/Button";
 
 export default function PlayButton() {
@@ -10,7 +10,7 @@ export default function PlayButton() {
     <Button
       targetId="PlayButton"
       buttonDescription="Play"
-      Icon={PlayIcon}
+      Icon={Play}
       iconClassName="h-8 w-8"
       onClick={handleClick}
       aria-label="Generate vector store" // Accessible label for screen readers

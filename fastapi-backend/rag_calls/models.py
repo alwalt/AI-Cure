@@ -18,6 +18,18 @@ class TitleResponse(BaseModel):
 class KeywordsResponse(BaseModel):
     keywords: List[str]
 
+# For detailed assay res, instead of `str` in AssayResponse,
+# do     assays: list[AssayDetail]
+class AssayDetail(BaseModel):
+    name: str
+    purpose: str
+    target_proteins: list[str] = []
+    methodology: str = ""
+    key_parameters: dict[str, str] = {}
+
+class AssaysResponse(BaseModel):
+    assays: List[str]
+
 class SingleRagRequest(BaseModel):
     session_id: str
     file_names: List[str]

@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import Providers from "@/components/Providers";
 import SkipLink from "@/components/SkipLink";
 import type { Metadata } from "next";
@@ -30,9 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SkipLink targetId="main-content">Skip to main content</SkipLink>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

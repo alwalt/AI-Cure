@@ -9,12 +9,17 @@ export default function SettingsButton({
   iconClassName = "",
   spanClassName = "left-1/2 -translate-x-1/2 mt-2",
   className = "",
+  strokeWidth = 1,
 }: SettingsButtonProps) {
+  // Create a custom icon component with the strokeWidth applied
+  const CustomSettingsIcon = (props: any) => (
+    <Settings {...props} strokeWidth={strokeWidth} />
+  );
   return (
     <Button
       targetId="SettingsButton"
       onClick={onClick}
-      Icon={Settings}
+      Icon={CustomSettingsIcon}
       buttonDescription="Settings"
       iconClassName={iconClassName}
       spanClassName={spanClassName}

@@ -1,4 +1,4 @@
-import { BookmarkIcon } from "@heroicons/react/24/outline";
+import { Save } from "lucide-react";
 import Button from "@/components/base/Button";
 
 export default function SaveButton() {
@@ -10,7 +10,7 @@ export default function SaveButton() {
     <Button
       targetId="SaveButton"
       buttonDescription="Save"
-      Icon={BookmarkIcon}
+      Icon={Save}
       iconClassName="h-7 w-7 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
       onClick={handleClick}
       aria-label="Save" // Accessible label for screen reader

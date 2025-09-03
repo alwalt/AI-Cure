@@ -2,7 +2,7 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import axios from "axios";
 import { SummaryViewerProps, AnalysisResponse } from "@/types/files";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { Download } from "lucide-react";
 import { apiBase } from "@/lib/api";
 import { useState, useEffect } from "react";
 
@@ -200,7 +200,7 @@ export default function SummaryViewer({
           className="absolute top-2 right-2 p-1 hover:bg-gray-800 rounded-md"
           aria-label="Download JSON"
         >
-          <ArrowDownTrayIcon className="h-4 w-4 text-gray-400" />
+          <Download className="h-4 w-4 text-gray-400" />
         </button>
         <h3 className="text-lg font-semibold mb-2">Output</h3>
         <div className="bg-gray-900 p-3 rounded-md overflow-auto max-h-40 relative">

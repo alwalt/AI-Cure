@@ -5,6 +5,8 @@ import {
   SessionFileStoreState,
   useSessionFileStore,
 } from "@/store/useSessionFileStore";
+import useAssaysStore from "@/store/useAssaysStore";
+
 import { useState } from "react";
 // import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
 // import { RagResponse, UploadedFile } from "@/types/files";
@@ -32,7 +34,14 @@ export default function StudyComponent() {
     (state: SessionFileStoreState) => state.updateRagSection
   );
 
-  const CollapsibleSectionTitles = ["description", "title", "keywords"];
+  const setAssayTitles = useAssaysStore((state) => state.setAssayTitles);
+
+  const CollapsibleSectionTitles = [
+    "description",
+    "title",
+    "keywords",
+    "assays",
+  ];
 
   const activeCollection = collections.find((c) => c.id === activeCollectionId);
 
@@ -73,26 +82,52 @@ export default function StudyComponent() {
 
     setLoadingSection(sectionToLoad);
     try {
-      // const ragResponse: RagResponse = await generateWithTemplate(
-      //   fileNamesForRAG,
-      //   "biophysics"
-      // );
-      // console.log("StudyComponent: RAG data received:", ragResponse);
-      // setFullRagData(ragResponse);
-
-      // 🔥 new per-section call
+      // new per-section call
       const result = await generateSingleRag(
-        sectionToLoad as "description" | "title" | "keywords",
+        sectionToLoad as "description" | "title" | "keywords" | "assays",
         fileNamesForRAG,
         sessionId
       );
 
-      // normalize keywords array into a string for editableTextArea
-      const textResult =
-        sectionToLoad === "keywords" && Array.isArray(result)
-          ? result.join(", ")
-          : (result as string);
+      // Debug logging to see what we actually got
+      console.log(
+        "StudyComponent: Raw result from generateSingleRag:",
+        result,
+        typeof result
+      );
 
+      // Handle different result types
+      let textResult: string;
+      let titlesArray: string[];
+
+      if (sectionToLoad === "assays") {
+        if (Array.isArray(result)) {
+          // Backend returns List[str] - result is already an array
+          titlesArray = result as string[];
+          textResult = titlesArray.join(", ");
+        } else if (typeof result === "string") {
+          // Backend returns str - need to parse
+          textResult = result;
+          titlesArray = textResult.split(",").map((title) => title.trim());
+        } else {
+          throw new Error(`Unexpected assays result type: ${typeof result}`);
+        }
+
+        // Store in AssaysStore
+        setAssayTitles(titlesArray);
+        console.log(
+          "StudyComponent: Stored assay titles in AssaysStore:",
+          titlesArray
+        );
+      } else if (sectionToLoad === "keywords" && Array.isArray(result)) {
+        // Handle keywords array
+        textResult = result.join(", ");
+      } else {
+        // Handle other sections (description, title)
+        textResult = result as string;
+      }
+
+      // Update the main RAG data store for the text area
       updateRagSection(sectionToLoad, textResult);
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);

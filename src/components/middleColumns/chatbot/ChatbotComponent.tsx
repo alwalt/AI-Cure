@@ -1,11 +1,13 @@
 "use client";
 
+import SettingsButton from "@/components/base/SettingsButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSessionFileStore } from "@/store/useSessionFileStore";
 import {
   AlertCircle,
+  BarChart3,
   ChevronDown,
   MessageCircle,
   Search,
@@ -13,7 +15,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import SettingsButton from "@/components/base/SettingsButton";
 
 interface Message {
   id: string;
@@ -38,8 +39,13 @@ export default function Chatbot() {
     { value: "llava", label: "Llava" },
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMessage = async (
+    e?: React.FormEvent | null,
+    mode: "chat" | "search" | "viz" = isSearchMode ? "search" : "chat"
+  ) => {
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault();
+    }
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -55,12 +61,13 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: newMessages,
           isSearchMode,
+          mode,
           model: selectedModel,
         }),
       });
@@ -87,6 +94,12 @@ export default function Chatbot() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => sendMessage(e);
+  const handleViz = async () => {
+    if (!input.trim() || isLoading) return;
+    await sendMessage(undefined, "viz");
   };
 
   const clearChat = () => {
@@ -198,6 +211,7 @@ export default function Chatbot() {
             spanClassName="left-1/2 -translate-x-1/2 mt-2"
             tooltipId="chatbot-settings-tooltip"
             className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            strokeWidth={2}
           />
           <Button
             variant="ghost"
@@ -389,13 +403,24 @@ export default function Chatbot() {
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             )}
           </div>
-          <Button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              disabled={isLoading || !input.trim()}
+              onClick={handleViz}
+              className="bg-green-600 hover:bg-green-700 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              title="OSDR Plot"
+            >
+              <BarChart3 className="w-4 h-4" />
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </form>
 
         <div className="flex items-center gap-2 mt-2">
@@ -403,7 +428,7 @@ export default function Chatbot() {
             Using{" "}
             {availableModels.find((m) => m.value === selectedModel)?.label}
           </span>
-          {isSearchMode && (
+          {(isSearchMode) && (
             <span className="text-xs bg-green-900/20 text-green-400 px-2 py-1 rounded-full border border-green-700/30">
               OSDR Search Active
             </span>
