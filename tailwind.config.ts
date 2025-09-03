@@ -52,6 +52,7 @@ export default {
         "surface-card-expanded": "var(--gray-850)", // selectedBlack
         "surface-file-area": "var(--gray-950)", // panelBlack
         "surface-modal-margin": "var(--gray-800)", // grey
+
         // buttons
         "button-emphasis": "var(--gray-500)", // Access Database button
         "button-navigation": "var(--blue-700)", // nav buttons

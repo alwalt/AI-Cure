@@ -23,7 +23,7 @@ export default function InfoModal({
       {/* Info Icon Button */}
       <button
         onClick={openModal}
-        className={`inline-flex items-center justify-center w-4 h-4 text-text-default hover:text-text-default transition-all duration-300 ${className}`}
+        className={`inline-flex items-center justify-center w-4 h-4 text-text-default hover:text-button-hover-red transition-all duration-300 ${className}`}
         aria-label={`Information about ${title}`}
       >
         <Info className="w-3 h-3" />
@@ -37,7 +37,7 @@ export default function InfoModal({
         >
           {/* Modal Content */}
           <div
-            className="bg-surface-contrast border border-border-accent rounded-lg p-6 max-w-md w-full mx-4 shadow-lg"
+            className="bg-surface-modal-margin border border-border-accent rounded-lg p-6 max-w-md w-full mx-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -63,7 +63,7 @@ export default function InfoModal({
             <div className="mt-6 flex justify-end">
               <button
                 onClick={closeModal}
-                className="bg-surface-navigation text-button-navigation px-4 py-2 rounded-md text-sm font-medium hover:bg-button-hover-navigation transition-colors"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-button-navigation text-text-default hover:bg-button-hover-navigation hover:font-bold transition-all duration-300"
               >
                 Got it
               </button>
