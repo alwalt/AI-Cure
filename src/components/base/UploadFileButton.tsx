@@ -20,7 +20,9 @@ export default function UploadFileButton({
   const inputRef = useRef<HTMLInputElement>(null); // for testing with cy
 
   const handleTablesUpdate = (tables: Table[]) => {
-    onTablesUpdate(tables);
+    if (onTablesUpdate) {
+      onTablesUpdate(tables);
+    }
     setIsOpen(false);
   };
 
@@ -32,15 +34,14 @@ export default function UploadFileButton({
     <div className="flex items-center justify-center relative group">
       <div data-cy="open-upload-dialog" className="cursor-pointer">
         <Button
-          targetId="ArrowUpTrayIcon"
-          buttonDescription="Upload files"
+          targetId="UploadIcon"
+          buttonDescription="Upload files button"
           Icon={Upload}
-          iconClassName="h-6 w-6 stroke-primaryWhite stroke-1 text-primaryBlack  hover:stroke-redFill transition-colors duration-300"
+          iconClassName="h-6 w-6 stroke-border-default stroke-1 hover:stroke-stroke-hover-red transition-colors duration-300"
           spanClassName="mt-2 left-1/2 -translate-x-1/2"
           onClick={() => setIsOpen(true)}
           aria-label="Upload files button" // Accessible label for screen readers
-          role="button" // Explicitly defines the role as a button (this is usually implied for <button> elements)
-          className="focus:outline-none focus:ring-2 focus:ring-primaryWhite" // Focus ring for keyboard navigation
+          className=""
           tooltipId="tooltip-upload-files"
         />
         <input
@@ -82,7 +83,7 @@ export default function UploadFileButton({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-70" />
+            <div className="fixed inset-0 bg-overlay-default" />
           </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -96,14 +97,14 @@ export default function UploadFileButton({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-grey border border-primaryWhite p-6 text-left align-middle shadow-xl transition-all">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-surface-modal-margin border border-border-default p-6 text-left align-middle shadow-xl transition-all">
                   <FileUploader
                     onTablesUpdate={handleTablesUpdate}
                     onFilesUpdate={handleFilesUpdate}
                   />
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="flex justify-center items-center border border-primaryWhite mt-4 px-4 py-2 hover:bg-red-600 bg-redFill hover:redBorder transition-colors duration-300 text-white rounded"
+                    className="flex justify-center items-center border border-border-default mt-4 px-4 py-2 hover:bg-button-hover-close bg-button-close transition-all hover:font-semibold duration-300 text-text-default rounded"
                   >
                     Close
                   </button>
