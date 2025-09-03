@@ -47,26 +47,16 @@ export default function InfoModal({
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-text-default transition-colors p-1"
+                className="text-text-default hover:text-button-hover-navigation transition-all duration-300 p-1"
                 aria-label="Close modal"
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Description */}
-            <div className="text-text-default text-sm leading-relaxed">
+            <div className="text-text-default text-sm leading-relaxed pb-10">
               {description}
-            </div>
-
-            {/* Close Button */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-button-navigation text-text-default hover:bg-button-hover-navigation hover:font-bold transition-all duration-300"
-              >
-                Got it
-              </button>
             </div>
           </div>
         </div>

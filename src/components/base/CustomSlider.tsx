@@ -66,21 +66,6 @@ export default function CustomSlider({
           </span>
 
           <div className="relative flex-1">
-            {/* Dynamic value tooltip */}
-            <div
-              className="absolute -top-8 transform -translate-x-1/2 transition-opacity duration-200"
-              style={{
-                left: `${thumbPosition}%`,
-                opacity: showTooltip ? 1 : 0,
-              }}
-            >
-              <div className="bg-gray-900 text-text-default text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                {valueFormatter(value)}
-              </div>
-              {/* Arrow pointing down */}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-            </div>
-
             {/* Slider Input */}
             <input
               ref={sliderRef}

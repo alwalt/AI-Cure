@@ -2,6 +2,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTrainingHyperparameters } from "@/store/useTrainingHyperparameters";
 import CustomSlider from "@/components/base/CustomSlider";
+import InfoModal from "@/components/base/InfoModal";
 
 export default function TrainingHyperparameterSettings() {
   // Zustand store
@@ -77,9 +78,15 @@ export default function TrainingHyperparameterSettings() {
 
             {/* Batch Size Dropdown  - hardcode value 32 */}
             <div className="space-y-2">
-              <label className="text-text-default text-xs font-medium">
-                Batch Size
-              </label>
+              <div className="flex items-center gap-1">
+                <label className="text-text-default text-xs font-medium">
+                  Batch Size
+                </label>
+                <InfoModal
+                  title="Batch Size"
+                  description="Number of training examples processed together in one forward pass. Larger batches (64-256) provide more stable gradients and faster training but require more memory. Smaller batches (8-32) use less memory and can provide regularization effects but may have noisier gradients."
+                />
+              </div>
               <select
                 value={batchSize}
                 onChange={(e) => setBatchSize(parseInt(e.target.value))}
@@ -96,9 +103,15 @@ export default function TrainingHyperparameterSettings() {
 
             {/* Epochs Input - hardcode value 60 */}
             <div className="space-y-2">
-              <label className="text-text-default text-xs font-medium">
-                Epochs
-              </label>
+              <div className="flex items-center gap-1">
+                <label className="text-text-default text-xs font-medium">
+                  Epochs
+                </label>
+                <InfoModal
+                  title="Epochs"
+                  description="Complete passes through the entire training dataset. More epochs allow the model to learn more complex patterns but increase risk of overfitting. Monitor validation metrics to find the optimal number - typically ranges from 10-100 depending on dataset size and complexity."
+                />
+              </div>
               <input
                 type="number"
                 min="1"
@@ -111,9 +124,15 @@ export default function TrainingHyperparameterSettings() {
 
             {/* Optimizer Dropdown -  - hardcode value AdamW8bit */}
             <div className="space-y-2">
-              <label className="text-text-default text-xs font-medium">
-                Optimizer
-              </label>
+              <div className="flex items-center gap-1">
+                <label className="text-text-default text-xs font-medium">
+                  Optimizer
+                </label>
+                <InfoModal
+                  title="Optimizer"
+                  description="Algorithm that updates model weights based on gradients. Adam is most popular for general use, combining momentum and adaptive learning rates. SGD is simpler but may need learning rate scheduling. AdamW adds weight decay. RMSprop works well for RNNs. Choose Adam for most cases."
+                />
+              </div>
               <select
                 value={optimizer}
                 onChange={(e) => setOptimizer(e.target.value)}
