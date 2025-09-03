@@ -1,16 +1,16 @@
 // src/app/components/leftColumn/collectionsArea/CollectionManager
-import SaveButton from "@/components/base/SaveButton";
 import { apiBase } from "@/lib/api";
 import { Collection, useSessionFileStore } from "@/store/useSessionFileStore";
 import { IngestResponse, UploadedFile } from "@/types/files";
 import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+  Download,
+  ChevronRight,
+  ChevronDown,
+  Pencil,
+  Trash,
+  X,
+} from "lucide-react";
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import SettingsButton from "@/components/base/SettingsButton";
@@ -389,9 +389,9 @@ export default function CollectionManager() {
                             className="p-1 hover:bg-grey rounded transition-colors duration-200"
                           >
                             {collection.isExpanded ? (
-                              <ChevronDownIcon className="h-4 w-4" />
+                              <ChevronDown className="h-4 w-4" />
                             ) : (
-                              <ChevronRightIcon className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4" />
                             )}
                           </button>
 
@@ -423,7 +423,7 @@ export default function CollectionManager() {
                             className="p-1 hover:bg-grey rounded transition-colors duration-200"
                             title="Rename collection"
                           >
-                            <PencilIcon className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" />
                           </button>
 
                           {collection.isIngested && (
@@ -432,7 +432,7 @@ export default function CollectionManager() {
                               className="p-1 hover:bg-selectedBlue rounded transition-colors duration-200"
                               title="Export collection"
                             >
-                              <ArrowDownTrayIcon className="h-4 w-4" />
+                              <Download className="h-4 w-4" />
                             </button>
                           )}
 
@@ -442,7 +442,7 @@ export default function CollectionManager() {
                               className="p-1 hover:bg-redFill rounded transition-colors duration-200"
                               title="Delete collection"
                             >
-                              <TrashIcon className="h-4 w-4" />
+                              <Trash className="h-4 w-4" />
                             </button>
                           )}
                         </div>
@@ -573,7 +573,7 @@ export default function CollectionManager() {
                 onClick={() => setShowSettings(false)}
                 className="p-1 hover:bg-grey rounded transition-colors duration-200"
               >
-                <XMarkIcon className="h-6 w-6 text-primaryWhite" />
+                <X className="h-6 w-6 text-text-default" />
               </button>
             </div>
 
