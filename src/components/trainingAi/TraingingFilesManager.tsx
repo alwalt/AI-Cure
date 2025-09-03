@@ -1,6 +1,6 @@
-import ClearFilesButton from "@/components/base/ClearFilesButton";
 import TrainingUploadDataSetButton from "@/components/base/TrainingUploadDataSetsButton";
 import TrainingUploadedDataSets from "@/components/trainingAi/TrainingUploadedDataSets";
+import ClearDataSetsButton from "../base/ClearDataSetsButton";
 
 export default function TrainingFilesManager() {
   return (
@@ -11,7 +11,7 @@ export default function TrainingFilesManager() {
         </h2>
         <div className="flex justify-content">
           <TrainingUploadDataSetButton />
-          <ClearFilesButton />
+          <ClearDataSetsButton />
         </div>
       </div>
       <TrainingUploadedDataSets />
