@@ -137,8 +137,8 @@ export default function TrainingUploadedDataSets() {
                       }}
                       className={`px-2 py-1 text-xs rounded transition-colors ${
                         currentPreviewDataSet?.id === dataSet.id
-                          ? "bg-green-600 text-white"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
+                          ? "bg-green-600 text-text-default"
+                          : "bg-blue-600 text-text-default hover:bg-blue-700"
                       }`}
                     >
                       {currentPreviewDataSet?.id === dataSet.id

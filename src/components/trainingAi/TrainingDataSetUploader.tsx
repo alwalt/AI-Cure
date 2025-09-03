@@ -177,7 +177,7 @@ export default function TrainingDataSetUploader() {
             <p>Drag and drop your training datasets here, or</p>
             <button
               onClick={() => inputRef.current?.click()}
-              className="mt-2 px-4 py-2 bg-surface-navigation text-button-navigation rounded-md hover:bg-button-hover-navigation transition-colors"
+              className="mt-2 px-4 py-2 bg-button-navigation text-text-default rounded-md hover:bg-button-hover-navigation hover:font-bold transition-all duration-300"
               disabled={isUploading}
             >
               Browse Datasets
@@ -222,7 +222,7 @@ export default function TrainingDataSetUploader() {
                 <button
                   onClick={handleUpload}
                   disabled={isUploading}
-                  className="px-6 py-2 bg-surface-navigation text-button-navigation rounded-md hover:bg-button-hover-navigation transition-colors disabled:bg-button-emphasis disabled:text-gray-500"
+                  className="px-6 py-2 bg-button-navigation text-text-default rounded-md hover:bg-button-hover-navigation hover:font-bold transition-all duration-300"
                   data-cy="dataset-upload-submit"
                 >
                   {isUploading ? "Uploading..." : "Upload Datasets"}
