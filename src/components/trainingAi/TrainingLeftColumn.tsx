@@ -1,5 +1,6 @@
-import FilesManager from "@/components/leftColumn/filesArea/FilesManager";
-import HyperparameterSettings from "@/components/HyperparameterSettings";
+import TrainingFilesManager from "./TraingingFilesManager";
+import TraingingHyperparameterSettings from "./TrainingHyperparameters";
+import TrainingModelSelection from "./TrainingModelSelection";
 
 export default function TrainingLeftColumn() {
   return (
@@ -7,8 +8,11 @@ export default function TrainingLeftColumn() {
       data-cy="left-column"
       className="overflow-y-auto overflow-x-hidden bg-background-default pt-2 pr-2 pl-2 h-full space-y-4 last:mb-0"
     >
-      <FilesManager />
-      <HyperparameterSettings />
+      <div className="mb-4">
+        <TrainingFilesManager />
+      </div>
+      <TraingingHyperparameterSettings />
+      <TrainingModelSelection />
     </div>
   );
 }

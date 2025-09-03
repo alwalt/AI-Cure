@@ -32,8 +32,7 @@ export interface IngestResponse {
 }
 
 export interface UploadFileButtonProps {
-  onTablesUpdate: (tables: Table[]) => void;
-  // onSessionUpdate: (sessionId: string) => void;
+  onTablesUpdate?: (tables: Table[]) => void;
   onFilesUpdate: (files: UploadedFile[]) => void;
 }
 

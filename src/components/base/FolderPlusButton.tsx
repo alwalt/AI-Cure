@@ -1,4 +1,4 @@
-import { FolderPlusIcon } from "@heroicons/react/24/solid";
+import { FolderPlus } from "lucide-react";
 import Button from "@/components/base/Button";
 // import ButtonProps from "@/types/files";
 
@@ -11,7 +11,7 @@ export default function FolderPlusButton() {
     <Button
       targetId="FolderPlusButton"
       buttonDescription="Add folder"
-      Icon={FolderPlusIcon}
+      Icon={FolderPlus}
       iconClassName="h-8 w-8 p-1"
       onClick={handleClick}
       aria-label="Add folder" // Accessible label for screen readers

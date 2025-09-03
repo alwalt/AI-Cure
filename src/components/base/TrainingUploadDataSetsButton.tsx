@@ -6,64 +6,41 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import FileUploader from "@/components/leftColumn/filesArea/FileUploader";
+import TrainingDataSetUploader from "@/components/trainingAi/TrainingDataSetUploader";
 import { Upload } from "lucide-react";
-
-import { Table, UploadedFile, UploadFileButtonProps } from "@/types/files";
 import Button from "@/components/base/Button";
 
-export default function UploadFileButton({
-  onTablesUpdate,
-  onFilesUpdate,
-}: UploadFileButtonProps) {
+export default function TrainingUploadDataSetButton() {
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null); // for testing with cy
 
-  const handleTablesUpdate = (tables: Table[]) => {
-    if (onTablesUpdate) {
-      onTablesUpdate(tables);
-    }
+  const handleUploadComplete = () => {
     setIsOpen(false);
-  };
-
-  const handleFilesUpdate = (files: UploadedFile[]) => {
-    onFilesUpdate(files);
   };
 
   return (
     <div className="flex items-center justify-center relative group">
-      <div data-cy="open-upload-dialog" className="cursor-pointer">
+      <div data-cy="open-dataset-upload-dialog" className="cursor-pointer">
         <Button
-          targetId="UploadIcon"
-          buttonDescription="Upload files button"
+          targetId="UploadDatasetIcon"
+          buttonDescription="Upload training datasets button"
           Icon={Upload}
           iconClassName="h-6 w-6 stroke-border-default stroke-1 hover:stroke-stroke-hover-red transition-colors duration-300"
           spanClassName="mt-2 left-1/2 -translate-x-1/2"
           onClick={() => setIsOpen(true)}
-          aria-label="Upload files button" // Accessible label for screen readers
+          aria-label="Upload training datasets button"
           className=""
-          tooltipId="tooltip-upload-files"
+          tooltipId="tooltip-upload-datasets"
         />
         <input
           type="file"
           multiple
-          // data-cy="file-input"
+          accept=".csv,.xlsx,.xls,.json,.jsonl,.txt,.tsv,.parquet,.h5,.hdf5,.sql,.xml"
           ref={inputRef}
           className="hidden"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const fl = e.target.files;
-            if (!fl) return;
-            // Map FileList to your UploadedFile type
-            const uploads = Array.from(fl).map((file) => ({
-              name: file.name,
-              type: file.name.split(".").pop() || "",
-              dateCreated: new Date().toISOString(),
-              size: file.size,
-              file: file,
-              selected: false,
-            }));
-            // Call the original callback to update state
-            handleFilesUpdate(uploads);
+            // This could be used for direct file input if needed
+            // The TrainingDataSetUploader handles the actual upload logic
           }}
         />
       </div>
@@ -98,13 +75,10 @@ export default function UploadFileButton({
                 leaveTo="opacity-0 scale-95"
               >
                 <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-surface-modal-margin border border-border-default p-6 text-left align-middle shadow-xl transition-all">
-                  <FileUploader
-                    onTablesUpdate={handleTablesUpdate}
-                    onFilesUpdate={handleFilesUpdate}
-                  />
+                  <TrainingDataSetUploader />
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="flex justify-center items-center border border-border-default mt-4 px-4 py-2 hover:bg-button-hover-close bg-button-close transition-all hover:font-semibold duration-300 text-text-default rounded"
+                    className="flex justify-center items-center border border-border-default mt-4 px-4 py-2 hover:bg-button-hover-close bg-button-close transition-all hover:font-semibold duration-300 text-text-default rounded w-full"
                   >
                     Close
                   </button>
