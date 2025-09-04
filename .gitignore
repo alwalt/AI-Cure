@@ -47,6 +47,7 @@ util/__pycache__/
 fastapi-backend/user_uploads/
 
 fastapi-backend/cached_jsons/
+fastapi-backend/training_datasets/*
 package-lock.json
 package-lock.json
 
