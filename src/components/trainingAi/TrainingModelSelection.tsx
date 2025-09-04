@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
-import axios from "axios";
 import { apiBase } from "@/lib/api";
-import { useTrainingHyperparameters } from "@/store/useTrainingHyperparameters";
 import { useDataSets } from "@/store/useDataSets";
+import { useTrainingHyperparameters } from "@/store/useTrainingHyperparameters";
+import axios from "axios";
+import { useState } from "react";
 
 export default function TrainingModelSelection() {
   const [isTraining, setIsTraining] = useState(false);
@@ -75,8 +75,18 @@ export default function TrainingModelSelection() {
         }
       );
 
-      setTrainingStatus("Training started successfully!");
+      const jobId: string | undefined = response?.data?.job_id;
+      setTrainingStatus(
+        jobId ? `Training started successfully (job: ${jobId})` : "Training started successfully!"
+      );
       console.log("Training response:", response.data);
+
+      // Notify the terminal to start streaming logs for this job
+      if (jobId && typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("start-training-stream", { detail: { jobId } })
+        );
+      }
 
       // TODO: You might want to start polling for training status updates
       // or establish a WebSocket connection for real-time updates

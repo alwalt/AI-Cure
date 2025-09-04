@@ -1,8 +1,8 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import { apiBase } from "@/lib/api";
-import { useDataSets, DataSet } from "@/store/useDataSets";
+import { DataSet, useDataSets } from "@/store/useDataSets";
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
 
 export default function TrainingDataSetUploader() {
   const [dragActive, setDragActive] = useState(false);
@@ -111,8 +111,9 @@ export default function TrainingDataSetUploader() {
           }
         );
 
+        const serverId = response?.data?.dataset_id || `${Date.now()}-${Math.random()}`;
         currentUploadedDataSets.push({
-          id: `${Date.now()}-${Math.random()}`,
+          id: serverId,
           name: file.name,
           type: fileType,
           dateCreated: new Date().toLocaleDateString(),

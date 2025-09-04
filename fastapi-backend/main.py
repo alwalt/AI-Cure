@@ -55,6 +55,7 @@ from rag_calls.rag_templates import TEMPLATES
 from rag_calls.api_rag_calls import router as rag_router
 
 from file_handlers.file_tools import USER_DIRS, JSON_DIRS, SESSION_TABLES, router as file_router
+from training.training_routes import router as training_router
 from pdf_handlers.pdf_tools import router as pdf_router
 from image_handlers.image_tools import router as image_router
 from table_handlers.table_tools import router as table_router
@@ -136,6 +137,7 @@ app.include_router(table_router) # Include table end points
 app.include_router(image_router) # Include image end points
 app.include_router(file_router) # Include file end points
 app.include_router(collection_router) # Include collections end points
+app.include_router(training_router) # Training endpoints
 
 # Allow CORS from localhost:5173 (the default Vite port) or adjust to your front-end domain
 origins = [
@@ -189,25 +191,35 @@ async def session_manager(request: Request, call_next):
     
     response = await call_next(request)
 
-    # Restore the response for FastAPI
+    # If this is an SSE stream, don't buffer cause it breaks streaming.
+    if getattr(response, "media_type", None) == "text/event-stream" or request.url.path.startswith("/api/training/stream"):
+        response.set_cookie(
+            "user_session",
+            session_id,
+            max_age=SESSION_TIMEOUT,
+            httponly=True,
+            secure=True,
+            samesite="Lax",
+        )
+        return response
+
+    # Otherwise, rebuild the response to attach cookies safely
     from starlette.responses import Response
-    new_response = Response(
+    rebuilt = Response(
         content=b"".join([chunk async for chunk in response.body_iterator]),
         status_code=response.status_code,
         headers=dict(response.headers),
         media_type=response.media_type,
     )
-    
-    new_response.set_cookie(
+    rebuilt.set_cookie(
         "user_session",
         session_id,
         max_age=SESSION_TIMEOUT,
         httponly=True,
         secure=True,
-        samesite="Lax"
+        samesite="Lax",
     )
-
-    return new_response
+    return rebuilt
 
 ###############################################################################
 # AI and Vector Routes

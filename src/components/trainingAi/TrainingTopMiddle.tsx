@@ -1,6 +1,7 @@
 // components/trainingColumns/TrainingTopColumn.tsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { apiBase } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
 
 interface TerminalLine {
   id: string;
@@ -26,6 +27,7 @@ export default function TrainingTopMiddle() {
   ]);
   const [isConnected, setIsConnected] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   // Auto-scroll to bottom when new lines are added
   useEffect(() => {
@@ -53,37 +55,43 @@ export default function TrainingTopMiddle() {
     setTerminalLines([]);
   };
 
-  // Mock function to simulate training output (remove when backend is ready)
-  const simulateTrainingOutput = () => {
-    const mockOutputs = [
-      { content: "Loading training dataset...", type: "info" as const },
-      {
-        content: "Dataset loaded successfully (10,000 samples)",
-        type: "success" as const,
-      },
-      { content: "Initializing model architecture", type: "info" as const },
-      { content: "Starting training epoch 1/10", type: "info" as const },
-      {
-        content: "Epoch 1 complete - Loss: 0.234, Accuracy: 87.3%",
-        type: "success" as const,
-      },
-      {
-        content: "Warning: Learning rate may be too high",
-        type: "warning" as const,
-      },
-      { content: "Adjusting learning rate to 0.001", type: "info" as const },
-    ];
+  // Listen for app-wide event to start streaming logs
+  useEffect(() => {
+    function handleStartStream(e: Event) {
+      const detail = (e as CustomEvent).detail as { jobId: string };
+      const { jobId } = detail || {};
+      if (!jobId) return;
 
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < mockOutputs.length) {
-        addTerminalLine(mockOutputs[index].content, mockOutputs[index].type);
-        index++;
-      } else {
-        clearInterval(interval);
+      // Close previous stream if any
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
-    }, 1500);
-  };
+
+      const url = `${apiBase}/api/training/stream/${jobId}`;
+      const es = new EventSource(url);
+      eventSourceRef.current = es;
+      setIsConnected(true);
+      addTerminalLine(`Connected to job ${jobId}`, "info");
+
+      es.onmessage = (ev) => {
+        const text = ev.data as string;
+        if (text) addTerminalLine(text, "info");
+      };
+      es.onerror = () => {
+        addTerminalLine("[stream] disconnected", "warning");
+        setIsConnected(false);
+        es.close();
+        eventSourceRef.current = null;
+      };
+    }
+
+    window.addEventListener("start-training-stream", handleStartStream as EventListener);
+    return () => {
+      window.removeEventListener("start-training-stream", handleStartStream as EventListener);
+      if (eventSourceRef.current) eventSourceRef.current.close();
+    };
+  }, []);
 
   const getLineColor = (type: TerminalLine["type"]) => {
     switch (type) {
@@ -96,7 +104,7 @@ export default function TrainingTopMiddle() {
       case "command":
         return "text-blue-300";
       default:
-        return "text-text-default";
+        return "text-gray-200";
     }
   };
 
@@ -123,12 +131,6 @@ export default function TrainingTopMiddle() {
         {/* Control buttons */}
         <div className="flex space-x-2">
           <button
-            onClick={simulateTrainingOutput}
-            className="px-3 py-1 bg-blue-700 text-button-navigation rounded text-sm hover:bg-button-hover-navigation transition-colors"
-          >
-            Start Training
-          </button>
-          <button
             onClick={clearTerminal}
             className="px-3 py-1 bg-gray-700 text-text-default rounded text-sm hover:bg-gray-600 transition-colors"
           >
@@ -149,7 +151,7 @@ export default function TrainingTopMiddle() {
         ) : (
           terminalLines.map((line) => (
             <div key={line.id} className="mb-1 flex">
-              <span className="text-gray-500 mr-3 min-w-[80px]">
+              <span className="text-gray-400 mr-3 min-w-[80px]">
                 [{line.timestamp}]
               </span>
               <span className={getLineColor(line.type)}>{line.content}</span>
@@ -158,18 +160,6 @@ export default function TrainingTopMiddle() {
         )}
       </div>
 
-      {/* Command Input Area (for future use) */}
-      <div className="border-t border-gray-800 p-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-blue-300 font-mono">$</span>
-          <input
-            type="text"
-            placeholder="Enter training commands... (backend integration pending)"
-            className="flex-1 bg-transparent text-text-default font-mono text-sm outline-none placeholder-gray-500"
-            disabled={!isConnected}
-          />
-        </div>
-      </div>
     </div>
   );
 }
