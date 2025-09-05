@@ -1,8 +1,8 @@
 import AiGenerateButton from "@/components/base/AiGenerateButton";
 import { CollapsibleSectionProps } from "@/types/files";
-import { File, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { sectionIcons } from "@/util/sectionIcons";
+import { ChevronDown, ChevronUp, File, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { sectionIcons } from "../../../util/sectionIcons";
 import EditableTextArea from "./EditableTextArea";
 
 export default function CollapsibleSection({

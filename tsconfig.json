@@ -21,7 +21,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@config": ["./tailwind.config.ts"]
+      "@config": ["./tailwind.config.ts"],
+      "@/util/*": ["./util/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
