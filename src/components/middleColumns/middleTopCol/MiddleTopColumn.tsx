@@ -1,3 +1,4 @@
+// src/components/middleColumns/middleTopCol/MiddleTopColumn.tsx
 "use client";
 import { useState } from "react";
 import StudyComponent from "./StudyComponent";

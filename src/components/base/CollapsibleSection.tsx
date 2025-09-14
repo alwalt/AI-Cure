@@ -1,18 +1,18 @@
+// src/components/base/CollapsibleSection.tsx
 import AiGenerateButton from "@/components/base/AiGenerateButton";
 import { CollapsibleSectionProps } from "@/types/files";
 import { sectionIcons } from "@/util/sectionIcons";
 import { ChevronDown, ChevronUp, File, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import EditableTextArea from "./EditableTextArea";
 
 export default function CollapsibleSection({
   title,
+  sectionId,
   onGenerate,
-  value,
-  onChange,
   isLoading = false,
   disabled = false,
   initiallyOpen = false,
+  children, // Allow custom content inside the section
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(initiallyOpen);
   const Icon = sectionIcons[title] || File; // Dynamically get the correct icon | backup icon if not in Dict
@@ -28,6 +28,11 @@ export default function CollapsibleSection({
     }
   };
 
+  // Enhanced onGenerate that passes the sectionId
+  const handleGenerate = () => {
+    onGenerate(sectionId);
+  };
+
   return (
     <div className="w-full bg-grey p-2">
       <button
@@ -35,7 +40,7 @@ export default function CollapsibleSection({
         onClick={toggleSection}
         onKeyDown={handleKeyDown} // Allow Space/Enter for toggle
         aria-expanded={isOpen} // Indicate whether the content is expanded or collapsed
-        aria-controls={`section-content-${title}`} // Link button with content
+        aria-controls={`section-content-${sectionId}`} // Link button with content using sectionId
         className="group flex justify-between items-center w-full bg-primaryBlue text-primaryWhite p-3 rounded-md hover:bg-selectedBlue hover:font-bold transition-colors duration-300"
       >
         <div className="flex items-center gap-2">
@@ -56,10 +61,10 @@ export default function CollapsibleSection({
 
       {/* Content */}
       {isOpen && (
-        <div id={`section-content-${title}`} className="p-2">
+        <div id={`section-content-${sectionId}`} className="p-2">
           <div className="flex items-center gap-2">
             <AiGenerateButton
-              onClick={onGenerate}
+              onClick={handleGenerate}
               disabled={isLoading || disabled}
             />
             {isLoading && (
@@ -74,11 +79,8 @@ export default function CollapsibleSection({
               </span>
             )}
           </div>
-          <EditableTextArea
-            value={value}
-            onChange={onChange}
-            placeholder={`Enter ${title}…`}
-          />
+          {/* Custom content can be placed here via children prop */}
+          {children}
         </div>
       )}
     </div>

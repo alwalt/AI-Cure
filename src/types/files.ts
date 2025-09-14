@@ -104,21 +104,42 @@ export interface FilePreviewerProps {
   objectUrl: string;
 }
 
+// export interface CollapsibleSectionProps {
+//   title: string;
+//   onGenerate: () => void;
+//   value: string;
+//   onChange: (text: string) => void;
+//   isLoading?: boolean;
+//   disabled?: boolean;
+//   initiallyOpen?: boolean;
+// }
+
+// export interface EditableTextAreaProps {
+//   value: string;
+//   onChange: (newValue: string) => void;
+//   placeholder?: string;
+//   rows?: number;
+// }
+
 export interface CollapsibleSectionProps {
   title: string;
-  onGenerate: () => void;
-  value: string;
-  onChange: (text: string) => void;
+  sectionId: string; // Unique identifier to link with corresponding EditableTextArea
+  onGenerate: (sectionId: string) => void; // Pass sectionId to identify which section triggered the call
   isLoading?: boolean;
   disabled?: boolean;
   initiallyOpen?: boolean;
+  children?: React.ReactNode; // Allow custom content inside the section
 }
 
 export interface EditableTextAreaProps {
+  sectionId: string; // Unique identifier to link with corresponding CollapsibleSection
   value: string;
-  onChange: (newValue: string) => void;
+  onChange: (sectionId: string, newValue: string) => void; // Pass sectionId for proper state management
   placeholder?: string;
   rows?: number;
+  className?: string; // Allow custom styling
+  disabled?: boolean; // Allow disabling the textarea
+  maxHeight?: string; // Customizable max height
 }
 
 export interface RagResponse extends Record<string, string | string[]> {

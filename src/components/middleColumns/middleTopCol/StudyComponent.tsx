@@ -1,5 +1,6 @@
 "use client";
 import CollapsibleSection from "@/components/base/CollapsibleSection";
+import EditableTextArea from "@/components/base/EditableTextArea";
 import { generateSingleRag } from "@/lib/ragClient";
 import {
   SessionFileStoreState,
@@ -8,8 +9,6 @@ import {
 import useAssaysStore from "@/store/useAssaysStore";
 
 import { useState } from "react";
-// import { generateWithTemplate, generateSingleRag } from "@/lib/ragClient";
-// import { RagResponse, UploadedFile } from "@/types/files";
 import { UploadedFile } from "@/types/files";
 
 export default function StudyComponent() {
@@ -24,9 +23,6 @@ export default function StudyComponent() {
   const sessionId = useSessionFileStore(
     (state: SessionFileStoreState) => state.sessionId
   );
-  // const setFullRagData = useSessionFileStore(
-  //   (state: SessionFileStoreState) => state.setFullRagData
-  // );
   const ragData = useSessionFileStore(
     (state: SessionFileStoreState) => state.ragData
   );
@@ -45,7 +41,8 @@ export default function StudyComponent() {
 
   const activeCollection = collections.find((c) => c.id === activeCollectionId);
 
-  const onGenerate = async (sectionToLoad: string) => {
+  // Updated to accept sectionId parameter
+  const onGenerate = async (sectionId: string) => {
     if (!sessionId) {
       console.error(
         "StudyComponent: No active session ID. Cannot generate RAG data."
@@ -71,7 +68,7 @@ export default function StudyComponent() {
     );
     console.log(
       "StudyComponent: Calling RAG generation for section:",
-      sectionToLoad,
+      sectionId,
       "with fileNames from active collection:",
       fileNamesForRAG
     );
@@ -80,11 +77,11 @@ export default function StudyComponent() {
       activeCollection.name
     );
 
-    setLoadingSection(sectionToLoad);
+    setLoadingSection(sectionId);
     try {
       // new per-section call
       const result = await generateSingleRag(
-        sectionToLoad as "description" | "title" | "keywords" | "assays",
+        sectionId as "description" | "title" | "keywords" | "assays",
         fileNamesForRAG,
         sessionId
       );
@@ -100,7 +97,7 @@ export default function StudyComponent() {
       let textResult: string;
       let titlesArray: string[];
 
-      if (sectionToLoad === "assays") {
+      if (sectionId === "assays") {
         if (Array.isArray(result)) {
           // Backend returns List[str] - result is already an array
           titlesArray = result as string[];
@@ -119,7 +116,7 @@ export default function StudyComponent() {
           "StudyComponent: Stored assay titles in AssaysStore:",
           titlesArray
         );
-      } else if (sectionToLoad === "keywords" && Array.isArray(result)) {
+      } else if (sectionId === "keywords" && Array.isArray(result)) {
         // Handle keywords array
         textResult = result.join(", ");
       } else {
@@ -128,7 +125,7 @@ export default function StudyComponent() {
       }
 
       // Update the main RAG data store for the text area
-      updateRagSection(sectionToLoad, textResult);
+      updateRagSection(sectionId, textResult);
     } catch (error) {
       console.error("StudyComponent: Error generating RAG data:", error);
       alert(
@@ -139,6 +136,11 @@ export default function StudyComponent() {
     } finally {
       setLoadingSection(null);
     }
+  };
+
+  // Updated to accept sectionId parameter
+  const handleTextChange = (sectionId: string, newValue: string) => {
+    updateRagSection(sectionId, newValue);
   };
 
   return (
@@ -176,18 +178,87 @@ export default function StudyComponent() {
         </div>
       )}
 
-      <div className="flex flex-col overflow-hidden">
-        {CollapsibleSectionTitles.map((sectionTitle) => (
-          <CollapsibleSection
-            key={sectionTitle}
-            title={sectionTitle}
-            onGenerate={() => onGenerate(sectionTitle)}
-            value={ragData[sectionTitle] || ""}
-            onChange={(txt) => updateRagSection(sectionTitle, txt)}
-            isLoading={loadingSection === sectionTitle}
-            disabled={!activeCollection} // Disable if no active collection
+      <div className="flex flex-col overflow-hidden space-y-4">
+        {/* Description Section - Traditional layout with textarea inside */}
+        <CollapsibleSection
+          title="description"
+          sectionId="description"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "description"}
+          disabled={!activeCollection}
+          initiallyOpen={true}
+        >
+          <EditableTextArea
+            sectionId="description"
+            value={ragData["description"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter description…"
+            rows={6}
+            disabled={!activeCollection}
           />
-        ))}
+        </CollapsibleSection>
+
+        {/* Title Section - Side by side layout for more compact view */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <CollapsibleSection
+              title="title"
+              sectionId="title"
+              onGenerate={onGenerate}
+              isLoading={loadingSection === "title"}
+              disabled={!activeCollection}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <EditableTextArea
+              sectionId="title"
+              value={ragData["title"] || ""}
+              onChange={handleTextChange}
+              placeholder="Enter title…"
+              rows={3}
+              disabled={!activeCollection}
+              className="lg:mt-2"
+            />
+          </div>
+        </div>
+
+        {/* Keywords Section - Stacked layout with custom sizing */}
+        <CollapsibleSection
+          title="keywords"
+          sectionId="keywords"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "keywords"}
+          disabled={!activeCollection}
+        />
+        <EditableTextArea
+          sectionId="keywords"
+          value={ragData["keywords"] || ""}
+          onChange={handleTextChange}
+          placeholder="Enter keywords…"
+          rows={2}
+          maxHeight="150px"
+          disabled={!activeCollection}
+          className="mb-2"
+        />
+
+        {/* Assays Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="assays"
+          sectionId="assays"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "assays"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="assays"
+            value={ragData["assays"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter assays…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
       </div>
     </div>
   );

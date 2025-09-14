@@ -1,3 +1,4 @@
+// src/lib/ragClient.ts
 import { RagResponse } from "@/types/files";
 import { apiBase } from "@/lib/api";
 
