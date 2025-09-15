@@ -13,6 +13,10 @@ import { UploadedFile } from "@/types/files";
 import DescriptionCollapsibleSection from "../collapsibleSections/DescriptionCollapsibleSection";
 import KeywordsCollapsibleSection from "../collapsibleSections/KeywordsCollapsibleSection";
 import TitleCollapsibleSection from "../collapsibleSections/TitleCollapsibleSection";
+import ProtocolsCollapsibleSection from "../collapsibleSections/ProtocolsCollapsibleSection";
+import PayloadsCollapsibleSection from "../collapsibleSections/PayloadsCollapsibleSection";
+import ExperimentsCollapsibleSection from "../collapsibleSections/ExperimentsCollapsibleSection";
+import AssaysCollapsibleSection from "../collapsibleSections/AssaysCollapsibleSection";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -210,88 +214,48 @@ export default function StudyComponent() {
 
         {/* Keywords Section - Stacked layout with custom sizing */}
         <KeywordsCollapsibleSection
-          onGenerate={onGenerate} // Passes RAG function
-          isLoading={loadingSection === "keywords"} // Checks if this section is loading
-          disabled={!activeCollection} // Disables if no collection
-          value={ragData["keywords"] || ""} // Current keywords text
-          onChange={handleTextChange} // Text change handler
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "keywords"}
+          disabled={!activeCollection}
+          value={ragData["keywords"] || ""}
+          onChange={handleTextChange}
         />
 
         {/* Assays Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="assays"
-          sectionId="assays"
+        <AssaysCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "assays"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="assays"
-            value={ragData["assays"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter assays…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["assays"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* Experiments Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="experiments"
-          sectionId="experiments"
+        <ExperimentsCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "experiments"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="experiments"
-            value={ragData["experiments"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter experiments…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["experiments"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* payloads Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="payloads"
-          sectionId="payloads"
+        <PayloadsCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "payloads"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="payloads"
-            value={ragData["payloads"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter payloads…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["payloads"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* protocols Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="protocols"
-          sectionId="protocols"
+        <ProtocolsCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "protocols"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="protocols"
-            value={ragData["protocols"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter protocols…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["protocols"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* samples Section - Traditional layout but with custom sizing */}
         <CollapsibleSection
