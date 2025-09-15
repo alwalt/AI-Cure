@@ -320,12 +320,102 @@ export default function StudyComponent() {
             disabled={!activeCollection}
           />
         </CollapsibleSection>
+
+        {/* samples Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="samples"
+          sectionId="samples"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "samples"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="samples"
+            value={ragData["samples"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter samples…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* publications Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="publications"
+          sectionId="publications"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "publications"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="publications"
+            value={ragData["publications"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter publications…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* files Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="files"
+          sectionId="files"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "files"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="files"
+            value={ragData["files"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter files…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* version history Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="version history"
+          sectionId="version history"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "version history"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="version history"
+            value={ragData["version history"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter version history…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* visualization Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="visualization"
+          sectionId="visualization"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "visualization"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="visualization"
+            value={ragData["visualization"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter protocols…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
       </div>
     </div>
   );
 }
-//   "samples",
-//   "publications",
-//   "files",
-//   "version history",
-//   "visualization",

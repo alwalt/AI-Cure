@@ -25,5 +25,5 @@ export const sectionIcons: Record<string, any> = {
   publications: BookOpenText,
   files: FileDown,
   "version history": SquareChartGantt,
-  vizualization: BarChart3,
+  visualization: BarChart3,
 };
