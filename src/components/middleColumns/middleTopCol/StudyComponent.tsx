@@ -10,6 +10,9 @@ import useAssaysStore from "@/store/useAssaysStore";
 
 import { useState } from "react";
 import { UploadedFile } from "@/types/files";
+import DescriptionCollapsibleSection from "../collapsibleSections/DescriptionCollapsibleSection";
+import KeywordsCollapsibleSection from "../collapsibleSections/KeywordsCollapsibleSection";
+import TitleCollapsibleSection from "../collapsibleSections/TitleCollapsibleSection";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -185,65 +188,34 @@ export default function StudyComponent() {
           </p>
         </div>
       )}
-
+      {/* !!! It's hard coded instead of map because each section will have its own styling in the end. */}
       <div className="flex flex-col overflow-hidden space-y-4">
         {/* Description Section - Traditional layout with textarea inside */}
-        <CollapsibleSection
-          title="description"
-          sectionId="description"
-          onGenerate={onGenerate}
-          isLoading={loadingSection === "description"}
-          disabled={!activeCollection}
-          initiallyOpen={true}
-        >
-          <EditableTextArea
-            sectionId="description"
-            value={ragData["description"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter description…"
-            rows={6}
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+        <DescriptionCollapsibleSection
+          onGenerate={onGenerate} // Passes RAG function
+          isLoading={loadingSection === "description"} // Checks if this section is loading
+          disabled={!activeCollection} // Disables if no collection
+          value={ragData["description"] || ""} // Current description text
+          onChange={handleTextChange} // Text change handler
+        />
 
         {/* Title Section - Side by side layout for more compact view */}
-        <CollapsibleSection
-          title="title"
-          sectionId="title"
-          onGenerate={onGenerate}
-          isLoading={loadingSection === "title"}
-          disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="title"
-            value={ragData["title"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter title…"
-            rows={2}
-            disabled={!activeCollection}
-            className="lg:mt-2"
-          />
-        </CollapsibleSection>
+        <TitleCollapsibleSection
+          onGenerate={onGenerate} // Passes RAG function
+          isLoading={loadingSection === "title"} // Checks if this section is loading
+          disabled={!activeCollection} // Disables if no collection
+          value={ragData["title"] || ""} // Current title text
+          onChange={handleTextChange} // Text change handler
+        />
 
         {/* Keywords Section - Stacked layout with custom sizing */}
-        <CollapsibleSection
-          title="keywords"
-          sectionId="keywords"
-          onGenerate={onGenerate}
-          isLoading={loadingSection === "keywords"}
-          disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="keywords"
-            value={ragData["keywords"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter keywords…"
-            rows={4}
-            maxHeight="150px"
-            disabled={!activeCollection}
-            className="mb-2"
-          />
-        </CollapsibleSection>
+        <KeywordsCollapsibleSection
+          onGenerate={onGenerate} // Passes RAG function
+          isLoading={loadingSection === "keywords"} // Checks if this section is loading
+          disabled={!activeCollection} // Disables if no collection
+          value={ragData["keywords"] || ""} // Current keywords text
+          onChange={handleTextChange} // Text change handler
+        />
 
         {/* Assays Section - Traditional layout but with custom sizing */}
         <CollapsibleSection
