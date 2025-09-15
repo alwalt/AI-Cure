@@ -199,28 +199,23 @@ export default function StudyComponent() {
         </CollapsibleSection>
 
         {/* Title Section - Side by side layout for more compact view */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-1">
-            <CollapsibleSection
-              title="title"
-              sectionId="title"
-              onGenerate={onGenerate}
-              isLoading={loadingSection === "title"}
-              disabled={!activeCollection}
-            />
-          </div>
-          <div className="lg:col-span-2">
-            <EditableTextArea
-              sectionId="title"
-              value={ragData["title"] || ""}
-              onChange={handleTextChange}
-              placeholder="Enter title…"
-              rows={3}
-              disabled={!activeCollection}
-              className="lg:mt-2"
-            />
-          </div>
-        </div>
+        <CollapsibleSection
+          title="title"
+          sectionId="title"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "title"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="title"
+            value={ragData["title"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter title…"
+            rows={3}
+            disabled={!activeCollection}
+            className="lg:mt-2"
+          />
+        </CollapsibleSection>
 
         {/* Keywords Section - Stacked layout with custom sizing */}
         <CollapsibleSection
@@ -229,17 +224,18 @@ export default function StudyComponent() {
           onGenerate={onGenerate}
           isLoading={loadingSection === "keywords"}
           disabled={!activeCollection}
-        />
-        <EditableTextArea
-          sectionId="keywords"
-          value={ragData["keywords"] || ""}
-          onChange={handleTextChange}
-          placeholder="Enter keywords…"
-          rows={2}
-          maxHeight="150px"
-          disabled={!activeCollection}
-          className="mb-2"
-        />
+        >
+          <EditableTextArea
+            sectionId="keywords"
+            value={ragData["keywords"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter keywords…"
+            rows={2}
+            maxHeight="150px"
+            disabled={!activeCollection}
+            className="mb-2"
+          />
+        </CollapsibleSection>
 
         {/* Assays Section - Traditional layout but with custom sizing */}
         <CollapsibleSection
