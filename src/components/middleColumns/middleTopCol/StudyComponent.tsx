@@ -17,6 +17,11 @@ import ProtocolsCollapsibleSection from "../collapsibleSections/ProtocolsCollaps
 import PayloadsCollapsibleSection from "../collapsibleSections/PayloadsCollapsibleSection";
 import ExperimentsCollapsibleSection from "../collapsibleSections/ExperimentsCollapsibleSection";
 import AssaysCollapsibleSection from "../collapsibleSections/AssaysCollapsibleSection";
+import SamplesCollapsibleSection from "../collapsibleSections/SamplesCollapsibleSection";
+import PublicationsCollapsibleSection from "../collapsibleSections/PublicationsCollapsibleSection";
+import FilesCollapsibleSection from "../collapsibleSections/FilesCollapsibleSection";
+import VersionHistoryCollapsibleSection from "../collapsibleSections/VersionHistoryCollapsibleSection";
+import VisualizationCollapsibleSection from "../collapsibleSections/VisualizationCollapsibleSection";
 
 export default function StudyComponent() {
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -258,99 +263,49 @@ export default function StudyComponent() {
         />
 
         {/* samples Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="samples"
-          sectionId="samples"
+        <SamplesCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "samples"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="samples"
-            value={ragData["samples"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter samples…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["samples"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* publications Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="publications"
-          sectionId="publications"
+        <PublicationsCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "publications"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="publications"
-            value={ragData["publications"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter publications…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["publications"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* files Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="files"
-          sectionId="files"
+        <FilesCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "files"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="files"
-            value={ragData["files"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter files…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["files"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* version history Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="version history"
-          sectionId="version history"
+        <VersionHistoryCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "version history"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="version history"
-            value={ragData["version history"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter version history…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["version history"] || ""}
+          onChange={handleTextChange}
+        />
 
         {/* visualization Section - Traditional layout but with custom sizing */}
-        <CollapsibleSection
-          title="visualization"
-          sectionId="visualization"
+        <VisualizationCollapsibleSection
           onGenerate={onGenerate}
           isLoading={loadingSection === "visualization"}
           disabled={!activeCollection}
-        >
-          <EditableTextArea
-            sectionId="visualization"
-            value={ragData["visualization"] || ""}
-            onChange={handleTextChange}
-            placeholder="Enter protocols…"
-            rows={4}
-            maxHeight="300px"
-            disabled={!activeCollection}
-          />
-        </CollapsibleSection>
+          value={ragData["visualization"] || ""}
+          onChange={handleTextChange}
+        />
       </div>
     </div>
   );

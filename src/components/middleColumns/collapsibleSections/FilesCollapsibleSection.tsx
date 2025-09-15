@@ -1,8 +1,8 @@
-// src/components/collapsibleSections/PayloadsCollapsibleSection.tsx
+// src/components/collapsibleSections/FilesCollapsibleSection.tsx
 import CollapsibleSection from "@/components/base/CollapsibleSection";
 import EditableTextArea from "@/components/base/EditableTextArea";
 
-interface PayloadsCollapsibleSectionProps {
+interface FilesCollapsibleSectionProps {
   onGenerate: (sectionId: string) => void;
   isLoading: boolean;
   disabled: boolean;
@@ -10,29 +10,29 @@ interface PayloadsCollapsibleSectionProps {
   onChange: (sectionId: string, newValue: string) => void;
 }
 
-export default function PayloadsCollapsibleSection({
+export default function FilesCollapsibleSection({
   onGenerate,
   isLoading,
   disabled,
   value,
   onChange,
-}: PayloadsCollapsibleSectionProps) {
+}: FilesCollapsibleSectionProps) {
   return (
     <CollapsibleSection
-      title="payloads"
-      sectionId="payloads"
+      title="files"
+      sectionId="files"
       onGenerate={onGenerate}
       isLoading={isLoading}
       disabled={disabled}
       initiallyOpen={false}
     >
       <EditableTextArea
-        sectionId="payloads"
+        sectionId="files"
         value={value}
         onChange={onChange}
-        placeholder="Enter payloads information…"
+        placeholder="Enter files information…"
         rows={4}
-        maxHeight="320px"
+        maxHeight="300px"
         disabled={disabled}
       />
     </CollapsibleSection>
