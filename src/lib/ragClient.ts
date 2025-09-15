@@ -6,7 +6,7 @@ import { apiBase } from "@/lib/api";
 export type SingleRagResponse = {
   description?: string;
   studies?: string;
-  payload?: string;
+  payloads?: string;
   "subjects/biospecimens"?: string;
   hardware?: string;
   publications?: string;
@@ -27,7 +27,7 @@ export async function generateSingleRag(
   section:
     | "description"
     | "studies"
-    | "payload"
+    | "payloads"
     | "subjects/biospecimens"
     | "hardware"
     | "publications"

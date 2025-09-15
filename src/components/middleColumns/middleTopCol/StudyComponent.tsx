@@ -37,6 +37,14 @@ export default function StudyComponent() {
     "title",
     "keywords",
     "assays",
+    "experiments",
+    "payloads",
+    "protocols",
+    "samples",
+    "publications",
+    "files",
+    "version history",
+    "visualization",
   ];
 
   const activeCollection = collections.find((c) => c.id === activeCollectionId);
@@ -211,7 +219,7 @@ export default function StudyComponent() {
             value={ragData["title"] || ""}
             onChange={handleTextChange}
             placeholder="Enter title…"
-            rows={3}
+            rows={2}
             disabled={!activeCollection}
             className="lg:mt-2"
           />
@@ -230,7 +238,7 @@ export default function StudyComponent() {
             value={ragData["keywords"] || ""}
             onChange={handleTextChange}
             placeholder="Enter keywords…"
-            rows={2}
+            rows={4}
             maxHeight="150px"
             disabled={!activeCollection}
             className="mb-2"
@@ -255,7 +263,69 @@ export default function StudyComponent() {
             disabled={!activeCollection}
           />
         </CollapsibleSection>
+
+        {/* Experiments Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="experiments"
+          sectionId="experiments"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "experiments"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="experiments"
+            value={ragData["experiments"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter experiments…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* payloads Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="payloads"
+          sectionId="payloads"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "payloads"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="payloads"
+            value={ragData["payloads"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter payloads…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
+
+        {/* protocols Section - Traditional layout but with custom sizing */}
+        <CollapsibleSection
+          title="protocols"
+          sectionId="protocols"
+          onGenerate={onGenerate}
+          isLoading={loadingSection === "protocols"}
+          disabled={!activeCollection}
+        >
+          <EditableTextArea
+            sectionId="protocols"
+            value={ragData["protocols"] || ""}
+            onChange={handleTextChange}
+            placeholder="Enter protocols…"
+            rows={4}
+            maxHeight="300px"
+            disabled={!activeCollection}
+          />
+        </CollapsibleSection>
       </div>
     </div>
   );
 }
+//   "samples",
+//   "publications",
+//   "files",
+//   "version history",
+//   "visualization",
