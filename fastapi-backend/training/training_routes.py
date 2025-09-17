@@ -22,6 +22,28 @@ for d in (DATASETS_DIR, MODELS_DIR, LOGS_DIR):
 
 JOBS: Dict[str, Dict[str, Any]] = {}
 
+
+def _resolve_model_alias(model_name: str) -> str:
+    """Map friendly UI model names to valid Hugging Face repo ids.
+
+    Falls back to sane defaults if the alias isn't recognized, and if the
+    provided name already looks like a repo id (contains '/'), it is
+    returned verbatim.
+    """
+    if not model_name:
+        return "unsloth/Meta-Llama-3.1-8B"
+    if "/" in model_name:
+        return model_name
+    aliases = {
+        # Core Unsloth Llama 3.1 8B
+        "llama3.1": "unsloth/Meta-Llama-3.1-8B",
+        # Smaller 3.2 for lighter local runs (adjust as needed)
+        "llama3.2": "unsloth/Meta-Llama-3.2-3B",
+        # Vision model example (placeholder – change to your preferred repo)
+        "llava": "unsloth/llava-1.6-Mistral-7B",
+    }
+    return aliases.get(model_name, "unsloth/Meta-Llama-3.1-8B")
+
 @router.post("/api/upload_training_dataset")
 async def upload_training_dataset(file: UploadFile = File(...), file_type: str = Form("json")):
     if file_type not in {"json", "jsonl", "csv", "xlsx", "tsv", "txt"}:
@@ -85,7 +107,7 @@ async def start_training(payload: Dict[str, Any] = Body(...)):
     job_dir.mkdir(parents=True, exist_ok=True)
     log_path = LOGS_DIR / f"{job_id}.log"
 
-    model_name = (payload.get("model") or "llama3.1")
+    model_name = _resolve_model_alias(payload.get("model") or "llama3.1")
     hp = payload.get("hyperparameters") or {}
 
     cmd = [
